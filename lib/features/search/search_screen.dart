@@ -1,3 +1,4 @@
+import 'package:art_port/features/search/search_view.dart';
 import 'package:flutter/material.dart';
 
 class SearchScreen extends StatelessWidget {
@@ -5,11 +6,6 @@ class SearchScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        '검색',
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-      ),
-    );
+    return const SearchView();
   }
 }

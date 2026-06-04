@@ -1,3 +1,4 @@
+import 'package:art_port/features/workroom/workroom_view.dart';
 import 'package:flutter/material.dart';
 
 class WorkroomScreen extends StatelessWidget {
@@ -5,11 +6,6 @@ class WorkroomScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        '작업실',
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-      ),
-    );
+    return const WorkroomView();
   }
 }

@@ -1,3 +1,4 @@
+import 'package:art_port/features/openslot/open_slot_view.dart';
 import 'package:flutter/material.dart';
 
 class OpenSlotScreen extends StatelessWidget {
@@ -5,11 +6,6 @@ class OpenSlotScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        '슬롯 관리',
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-      ),
-    );
+    return const OpenSlotView();
   }
 }
