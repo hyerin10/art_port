@@ -1,0 +1,25 @@
+# ArtPort Project Rules & Guidelines
+
+## 1. General Project Context
+- **App Name:** ArtPort (Art Commission Platform)
+- **Target Platform:** Android Only (Priority)
+- **Primary Language:** Korean (All UI text, labels, hints, and error messages MUST be written in Korean)
+
+## 2. Tech Stack & State Management
+- **Framework:** Flutter
+- **State Management:** Riverpod (Use `flutter_riverpod` and `@riverpod` code generation)
+- **Rule:** Avoid manual ChangeNotifier or StatefullWidget for business logic. Use `Notifier` or `AsyncNotifier` via `riverpod_generator`.
+
+## 3. Architecture & Directory Structure
+We follow a **Feature-First Layered Architecture**. Inside `lib/src/features/`, create separate directories for each domain (e.g., `auth`, `commission`, `chat`, `profile`). 
+Each feature folder must be divided into 3 layers:
+
+```text
+lib/
+└── src/
+    ├── features/
+    │   └── [feature_name]/
+    │       ├── data/         # Data sources, Repositories, DTOs
+    │       ├── domain/       # Models, Entities, Value Objects
+    │       └── presentation/ # Widgets, Screens, Controllers/Providers
+    └── core/                 # Shared widgets, themes, constants, network clients
