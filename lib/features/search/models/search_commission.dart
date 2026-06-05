@@ -1,5 +1,20 @@
 // 검색 탭 커미션 카드 데이터 모델
 
+/// 마감 기한 필터 (남은 일수 기준)
+enum SearchDeadlineFilter {
+  sameDay,
+  within7,
+  within14,
+  over14,
+}
+
+/// 열람 가능 연령 필터
+enum SearchAgeFilter {
+  allAges,
+  adultNoGore,
+  adultWithGore,
+}
+
 class SearchCommissionItem {
   const SearchCommissionItem({
     required this.id,
@@ -13,6 +28,8 @@ class SearchCommissionItem {
     required this.hasSlot,
     required this.isAvailable,
     required this.sortOrder,
+    required this.daysUntilDeadline,
+    required this.ageRating,
     this.isLiked = false,
   });
 
@@ -27,7 +44,28 @@ class SearchCommissionItem {
   final bool hasSlot;
   final bool isAvailable;
   final int sortOrder;
+  final int daysUntilDeadline;
+  final SearchAgeFilter ageRating;
   final bool isLiked;
+
+  bool matchesDeadline(SearchDeadlineFilter filter) {
+    return switch (filter) {
+      SearchDeadlineFilter.sameDay => daysUntilDeadline <= 0,
+      SearchDeadlineFilter.within7 => daysUntilDeadline <= 7,
+      SearchDeadlineFilter.within14 => daysUntilDeadline <= 14,
+      SearchDeadlineFilter.over14 => daysUntilDeadline >= 14,
+    };
+  }
+
+  bool matchesAge(SearchAgeFilter filter) => ageRating == filter;
+
+  bool matchesPriceRange({int? minMan, int? maxMan}) {
+    final minWon = minMan != null ? minMan * 10000 : null;
+    final maxWon = maxMan != null ? maxMan * 10000 : null;
+    if (minWon != null && startPriceWon < minWon) return false;
+    if (maxWon != null && startPriceWon > maxWon) return false;
+    return true;
+  }
 
   String get priceLabel {
     final formatted = _formatWon(startPriceWon);
@@ -38,11 +76,12 @@ class SearchCommissionItem {
 
   bool matchesQuery(String query) {
     if (query.isEmpty) return true;
-    final q = query.toLowerCase();
+    final q = query.toLowerCase().replaceAll('#', '');
     if (title.toLowerCase().contains(q)) return true;
     if (artistName.toLowerCase().contains(q)) return true;
     for (final tag in tags) {
-      if (tag.toLowerCase().contains(q)) return true;
+      final t = tag.toLowerCase().replaceAll('#', '');
+      if (t.contains(q) || q.contains(t)) return true;
     }
     return false;
   }
@@ -56,6 +95,19 @@ class SearchCommissionItem {
     }
     return '${buf.toString()}원';
   }
+}
+
+/// 검색창 하단 '연관 인기 태그' 더미 데이터
+abstract final class SearchPopularTags {
+  static const labels = [
+    '#LD',
+    '#오마카세',
+    '#SD',
+    '#그림커미션',
+    '#빠른마감',
+    '#전신',
+    '#두상',
+  ];
 }
 
 abstract final class SearchDummyData {
@@ -97,6 +149,8 @@ abstract final class SearchDummyData {
       hasSlot: true,
       isAvailable: true,
       sortOrder: 0,
+      daysUntilDeadline: 0,
+      ageRating: SearchAgeFilter.allAges,
     ),
     SearchCommissionItem(
       id: 'search-2',
@@ -110,6 +164,8 @@ abstract final class SearchDummyData {
       hasSlot: true,
       isAvailable: true,
       sortOrder: 1,
+      daysUntilDeadline: 5,
+      ageRating: SearchAgeFilter.allAges,
       isLiked: true,
     ),
     SearchCommissionItem(
@@ -124,6 +180,8 @@ abstract final class SearchDummyData {
       hasSlot: false,
       isAvailable: true,
       sortOrder: 2,
+      daysUntilDeadline: 12,
+      ageRating: SearchAgeFilter.adultNoGore,
     ),
     SearchCommissionItem(
       id: 'search-4',
@@ -137,6 +195,8 @@ abstract final class SearchDummyData {
       hasSlot: true,
       isAvailable: false,
       sortOrder: 3,
+      daysUntilDeadline: 20,
+      ageRating: SearchAgeFilter.adultWithGore,
     ),
     SearchCommissionItem(
       id: 'search-5',
@@ -150,6 +210,8 @@ abstract final class SearchDummyData {
       hasSlot: true,
       isAvailable: true,
       sortOrder: 4,
+      daysUntilDeadline: 3,
+      ageRating: SearchAgeFilter.allAges,
     ),
     SearchCommissionItem(
       id: 'search-6',
@@ -163,6 +225,8 @@ abstract final class SearchDummyData {
       hasSlot: true,
       isAvailable: true,
       sortOrder: 5,
+      daysUntilDeadline: 7,
+      ageRating: SearchAgeFilter.allAges,
     ),
     SearchCommissionItem(
       id: 'search-7',
@@ -176,6 +240,8 @@ abstract final class SearchDummyData {
       hasSlot: false,
       isAvailable: false,
       sortOrder: 6,
+      daysUntilDeadline: 14,
+      ageRating: SearchAgeFilter.adultNoGore,
     ),
     SearchCommissionItem(
       id: 'search-8',
@@ -189,6 +255,8 @@ abstract final class SearchDummyData {
       hasSlot: true,
       isAvailable: true,
       sortOrder: 7,
+      daysUntilDeadline: 30,
+      ageRating: SearchAgeFilter.adultWithGore,
     ),
   ];
 }
