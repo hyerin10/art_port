@@ -89,7 +89,7 @@ class _ClientMyPageContent extends ConsumerWidget {
                 icon: Icons.person_rounded,
                 iconBackgroundColor: AppColors.primaryLight,
                 iconColor: AppColors.primary,
-                onTap: actions.onFollowedArtists,
+                onTap: () => actions.onFollowedArtists(context),
               ),
             ],
           ),

@@ -1,3 +1,4 @@
+import 'package:art_port/features/mypage/followed_artists_screen.dart';
 import 'package:art_port/features/mypage/liked_works_screen.dart';
 import 'package:art_port/features/mypage/models/mypage_data.dart';
 import 'package:flutter/material.dart';
@@ -108,8 +109,8 @@ class ClientMyPageActions {
     LikedWorksScreen.open(context);
   }
 
-  void onFollowedArtists() {
-    // TODO: 팔로우한 작가 화면으로 이동
+  void onFollowedArtists(BuildContext context) {
+    FollowedArtistsScreen.open(context);
   }
 
   void onReceipts() {

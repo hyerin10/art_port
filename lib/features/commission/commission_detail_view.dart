@@ -5,6 +5,8 @@ import 'package:art_port/features/commission/widgets/commission_detail_header.da
 import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/common/widgets/art_port_bottom_nav.dart';
 import 'package:art_port/providers/current_tab_provider.dart';
+import 'package:art_port/features/mypage/models/followed_artist.dart';
+import 'package:art_port/providers/followed_artists_provider.dart';
 import 'package:art_port/providers/liked_commissions_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -267,13 +269,17 @@ class _ImageCarouselState extends State<_ImageCarousel> {
 
 // ─── Artist Profile ───────────────────────────────────────────────────────────
 
-class _ArtistProfileSection extends StatelessWidget {
+class _ArtistProfileSection extends ConsumerWidget {
   const _ArtistProfileSection({required this.detail});
 
   final CommissionDetail detail;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final artistId = ArtistCatalog.idForName(detail.artistName);
+    final isFollowing =
+        ref.watch(followedArtistIdsProvider).contains(artistId);
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Row(
@@ -322,18 +328,23 @@ class _ArtistProfileSection extends StatelessWidget {
           ),
           Material(
             color: AppColors.chipBackground,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(isFollowing ? 20 : 10),
             child: InkWell(
-              onTap: () {},
-              borderRadius: BorderRadius.circular(10),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              onTap: () => ref
+                  .read(followedArtistIdsProvider.notifier)
+                  .toggle(artistId),
+              borderRadius: BorderRadius.circular(isFollowing ? 20 : 10),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Text(
-                  '팔로우',
+                  isFollowing ? '팔로잉' : '팔로우',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: isFollowing ? 12 : 13,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: isFollowing
+                        ? AppColors.textSecondary
+                        : AppColors.textPrimary,
                   ),
                 ),
               ),
