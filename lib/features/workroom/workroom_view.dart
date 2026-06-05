@@ -1,6 +1,7 @@
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/features/chat/chat_room_screen.dart';
 import 'package:art_port/features/workroom/models/workroom_sample.dart';
+import 'package:art_port/features/workroom/order_detail_screen.dart';
 import 'package:art_port/features/workroom/workroom_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -379,7 +380,13 @@ class _OrderCard extends StatelessWidget {
       color: Colors.white,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => OrderDetailScreen(orderId: item.id),
+            ),
+          );
+        },
         borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.all(14),
