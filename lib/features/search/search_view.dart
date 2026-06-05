@@ -1,4 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/features/commission/commission_detail_screen.dart';
 import 'package:art_port/features/search/models/search_commission.dart';
 import 'package:art_port/features/search/search_providers.dart';
 import 'package:flutter/material.dart';
@@ -1131,131 +1132,142 @@ class _SearchCommissionCard extends ConsumerWidget {
     final likedIds = ref.watch(searchLikedIdsProvider);
     final isLiked = likedIds.contains(item.id);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Image.network(
-                  item.imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => ColoredBox(
-                    color: AppColors.primarySoft,
-                    child: Icon(
-                      Icons.image_outlined,
-                      color: AppColors.primary.withValues(alpha: 0.4),
-                    ),
-                  ),
-                ),
-                if (item.hasSlot)
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.onlineStatus,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Text(
-                        '슬롯 있음',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          height: 1.1,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => CommissionDetailScreen.open(
+          context,
+          commissionId: item.id,
+        ),
+        borderRadius: BorderRadius.circular(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(14)),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.network(
+                      item.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => ColoredBox(
+                        color: AppColors.primarySoft,
+                        child: Icon(
+                          Icons.image_outlined,
+                          color: AppColors.primary.withValues(alpha: 0.4),
                         ),
                       ),
                     ),
-                  ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: _LikeButton(
-                    isLiked: isLiked,
-                    onTap: () => ref
-                        .read(searchLikedIdsProvider.notifier)
-                        .toggle(item.id),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(2, 8, 2, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 10,
-                    backgroundColor: AppColors.chipBackground,
-                    backgroundImage: NetworkImage(item.artistAvatarUrl),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      item.artistName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
+                    if (item.hasSlot)
+                      Positioned(
+                        top: 8,
+                        left: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.onlineStatus,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Text(
+                            '슬롯 있음',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                              height: 1.1,
+                            ),
+                          ),
+                        ),
+                      ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: _LikeButton(
+                        isLiked: isLiked,
+                        onTap: () => ref
+                            .read(searchLikedIdsProvider.notifier)
+                            .toggle(item.id),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                item.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                  height: 1.25,
+                  ],
                 ),
               ),
-              const SizedBox(height: 6),
-              _TagRow(tags: item.tags),
-              const SizedBox(height: 6),
-              Row(
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(2, 8, 2, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 10,
+                        backgroundColor: AppColors.chipBackground,
+                        backgroundImage: NetworkImage(item.artistAvatarUrl),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          item.artistName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
                   Text(
-                    item.priceLabel,
+                    item.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                      height: 1.25,
                     ),
                   ),
-                  const Spacer(),
-                  Text(
-                    item.likeCountLabel,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textMuted,
-                    ),
+                  const SizedBox(height: 6),
+                  _TagRow(tags: item.tags),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Text(
+                        item.priceLabel,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        item.likeCountLabel,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

@@ -51,6 +51,7 @@ class CommissionSample {
 
 class LiveSlotSample {
   const LiveSlotSample({
+    required this.commissionId,
     required this.artistName,
     required this.categoryTag,
     required this.priceWon,
@@ -59,6 +60,8 @@ class LiveSlotSample {
     required this.artworkUrl,
   });
 
+  /// 상세 페이지 라우팅용 커미션 ID
+  final String commissionId;
   final String artistName;
   final String categoryTag;
   final int priceWon;
@@ -77,6 +80,7 @@ abstract final class ExploreDummyData {
 
   static const liveSlots = [
     LiveSlotSample(
+      commissionId: 'live-slot-choco',
       artistName: '초코쌤',
       categoryTag: '두상/LD',
       priceWon: 25000,
@@ -87,6 +91,7 @@ abstract final class ExploreDummyData {
           'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=500&fit=crop',
     ),
     LiveSlotSample(
+      commissionId: 'live-slot-miyu',
       artistName: '미유_Miyu',
       categoryTag: 'SD/치비',
       priceWon: 15000,
@@ -97,6 +102,7 @@ abstract final class ExploreDummyData {
           'https://images.unsplash.com/photo-1608889825105-e1125f4c28d2?w=400&h=480&fit=crop',
     ),
     LiveSlotSample(
+      commissionId: 'live-slot-neoneo',
       artistName: '네오네오',
       categoryTag: '버튜버/Live2D',
       priceWon: 120000,
@@ -107,6 +113,7 @@ abstract final class ExploreDummyData {
           'https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=400&h=520&fit=crop',
     ),
     LiveSlotSample(
+      commissionId: 'live-slot-pixel',
       artistName: '하늘픽셀',
       categoryTag: '픽셀아트/로그',
       priceWon: 18000,
