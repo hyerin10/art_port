@@ -1,6 +1,6 @@
 {
-    "name": "art_port",
-    "short_name": "art_port",
+    "name": "ArtPort",
+    "short_name": "ArtPort",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -8,7 +8,7 @@
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="29"/>
     <application
-        android:label="art_port"
+        android:label="ArtPort"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
