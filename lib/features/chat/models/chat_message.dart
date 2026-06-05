@@ -34,6 +34,7 @@ class ChatRoomDetail {
     required this.avatarUrl,
     required this.isOnline,
     required this.statusLabel,
+    this.artistId,
   });
 
   final String id;
@@ -41,6 +42,7 @@ class ChatRoomDetail {
   final String avatarUrl;
   final bool isOnline;
   final String statusLabel;
+  final String? artistId;
 
   ChatRoomDetail copyWith({
     String? id,
@@ -48,6 +50,7 @@ class ChatRoomDetail {
     String? avatarUrl,
     bool? isOnline,
     String? statusLabel,
+    String? artistId,
   }) {
     return ChatRoomDetail(
       id: id ?? this.id,
@@ -55,6 +58,7 @@ class ChatRoomDetail {
       avatarUrl: avatarUrl ?? this.avatarUrl,
       isOnline: isOnline ?? this.isOnline,
       statusLabel: statusLabel ?? this.statusLabel,
+      artistId: artistId ?? this.artistId,
     );
   }
 }

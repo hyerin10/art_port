@@ -1,4 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/features/artist_profile/artist_profile_screen.dart';
 import 'package:art_port/features/commission/commission_detail_providers.dart';
 import 'package:art_port/features/commission/models/commission_detail.dart';
 import 'package:art_port/features/commission/widgets/commission_detail_header.dart';
@@ -284,46 +285,65 @@ class _ArtistProfileSection extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: AppColors.chipBackground,
-            backgroundImage: NetworkImage(detail.artistAvatarUrl),
-          ),
-          const SizedBox(width: 12),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  detail.artistName,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                    height: 1.2,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => ArtistProfileScreen.open(
+                  context,
+                  artistId: artistId,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 22,
+                        backgroundColor: AppColors.chipBackground,
+                        backgroundImage: NetworkImage(detail.artistAvatarUrl),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              detail.artistName,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary,
+                                height: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.star_rounded,
+                                  size: 14,
+                                  color: Color(0xFFF59E0B),
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  detail.ratingLabel,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.textSecondary,
+                                    height: 1.2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.star_rounded,
-                      size: 14,
-                      color: Color(0xFFF59E0B),
-                    ),
-                    const SizedBox(width: 3),
-                    Text(
-                      detail.ratingLabel,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
-                        height: 1.2,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
           ),
           Material(

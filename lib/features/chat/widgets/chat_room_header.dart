@@ -9,12 +9,14 @@ class ChatRoomHeader extends StatelessWidget {
     required this.avatarUrl,
     required this.isOnline,
     required this.onBack,
+    this.onProfileTap,
   });
 
   final String counterpartName;
   final String avatarUrl;
   final bool isOnline;
   final VoidCallback onBack;
+  final VoidCallback? onProfileTap;
 
   @override
   Widget build(BuildContext context) {
@@ -31,34 +33,44 @@ class ChatRoomHeader extends StatelessWidget {
               padding: const EdgeInsets.all(8),
               constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
             ),
-            _ChatAvatar(imageUrl: avatarUrl, isOnline: isOnline),
-            const SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    counterpartName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
-                      height: 1.2,
+              child: GestureDetector(
+                onTap: onProfileTap,
+                behavior: HitTestBehavior.opaque,
+                child: Row(
+                  children: [
+                    _ChatAvatar(imageUrl: avatarUrl, isOnline: isOnline),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            counterpartName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary,
+                              height: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            isOnline ? '온라인' : '오프라인',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textSecondary,
+                              height: 1.2,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    isOnline ? '온라인' : '오프라인',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary,
-                      height: 1.2,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],

@@ -158,7 +158,7 @@ class _ArtistMyPageContent extends ConsumerWidget {
             name: profile.name,
             onOpenSettings: openSettings,
             subtitle:
-                '⭐ ${profile.rating} (리뷰 ${profile.reviewCount}개)',
+                '⭐ ${profile.rating.toStringAsFixed(2)} (리뷰 ${profile.reviewCount}개)',
             subtitleStyle: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,

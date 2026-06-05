@@ -1,4 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/features/artist_profile/artist_profile_screen.dart';
 import 'package:art_port/features/chat/chat_pending_attachments_provider.dart';
 import 'package:art_port/features/chat/chat_room_providers.dart';
 import 'package:art_port/features/chat/models/pending_attachment.dart';
@@ -147,6 +148,12 @@ class _ChatRoomViewState extends ConsumerState<ChatRoomView> {
             avatarUrl: room.avatarUrl,
             isOnline: room.isOnline,
             onBack: () => Navigator.of(context).pop(),
+            onProfileTap: room.artistId != null
+                ? () => ArtistProfileScreen.open(
+                      context,
+                      artistId: room.artistId!,
+                    )
+                : null,
           ),
           const Divider(height: 1, thickness: 1, color: AppColors.borderLight),
           ChatStatusBar(statusLabel: room.statusLabel),

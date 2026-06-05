@@ -35,6 +35,7 @@ abstract final class ChatDummyData {
           avatarUrl: _mikaAvatar,
           isOnline: true,
           statusLabel: 'Status: Rough Sketch / 러프 진행 중',
+          artistId: 'mika-art',
         ),
       _ => null,
     };
