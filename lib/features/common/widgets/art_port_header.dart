@@ -1,20 +1,24 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/features/auth/sign_in_screen.dart';
 import 'package:art_port/features/mypage/mypage_providers.dart';
 import 'package:art_port/providers/app_mode_provider.dart';
+import 'package:art_port/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ArtPortHeader extends ConsumerWidget {
   const ArtPortHeader({super.key});
 
-  static const String _defaultAvatarUrl =
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop';
-
   static const double _actionSize = 40;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isArtistMode = ref.watch(appModeProvider);
+    final isLoggedIn = ref.watch(authProvider);
+
+    final profileAvatarUrl = isArtistMode
+        ? ref.watch(artistProfileProvider).avatarUrl
+        : ref.watch(clientProfileProvider).avatarUrl;
 
     return ColoredBox(
       color: AppColors.background,
@@ -49,10 +53,15 @@ class ArtPortHeader extends ConsumerWidget {
               onTap: () => ref.read(appModeProvider.notifier).toggleMode(),
             ),
             const SizedBox(width: 10),
-            _ProfileAvatar(
-              imageUrl: _defaultAvatarUrl,
-              onTap: () => ref.read(showMyPageProvider.notifier).open(),
-            ),
+            if (isLoggedIn)
+              _ProfileAvatar(
+                imageUrl: profileAvatarUrl,
+                onTap: () => ref.read(showMyPageProvider.notifier).open(),
+              )
+            else
+              _GuestProfileIcon(
+                onTap: () => SignInScreen.open(context),
+              ),
             ],
           ),
         ),
@@ -177,6 +186,35 @@ class _ModeToggleChip extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GuestProfileIcon extends StatelessWidget {
+  const _GuestProfileIcon({required this.onTap});
+
+  final VoidCallback onTap;
+
+  static const double _size = ArtPortHeader._actionSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: _size,
+        height: _size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.chipBackground,
+          border: Border.all(color: AppColors.borderLight, width: 1.5),
+        ),
+        child: const Icon(
+          Icons.person_outline_rounded,
+          size: 22,
+          color: AppColors.textMuted,
         ),
       ),
     );
