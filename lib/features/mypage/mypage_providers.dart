@@ -1,5 +1,6 @@
 import 'package:art_port/features/mypage/artist_portfolio_edit_screen.dart';
 import 'package:art_port/features/mypage/commission_type_settings_screen.dart';
+import 'package:art_port/features/mypage/notice_settings_screen.dart';
 import 'package:art_port/features/mypage/followed_artists_screen.dart';
 import 'package:art_port/features/mypage/inquiry_list_screen.dart';
 import 'package:art_port/features/mypage/liked_works_screen.dart';
@@ -144,8 +145,8 @@ class ArtistMyPageActions {
     CommissionTypeSettingsScreen.open(context);
   }
 
-  void onNoticeSettings() {
-    // TODO: 공지사항 설정 화면으로 이동
+  void onNoticeSettings(BuildContext context) {
+    NoticeSettingsScreen.open(context);
   }
 
   void onRequestWithdrawal() {

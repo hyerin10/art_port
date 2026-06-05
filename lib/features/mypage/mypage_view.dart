@@ -188,7 +188,7 @@ class _ArtistMyPageContent extends ConsumerWidget {
                 icon: Icons.campaign_rounded,
                 iconBackgroundColor: const Color(0xFFFFEDD5),
                 iconColor: const Color(0xFFF97316),
-                onTap: actions.onNoticeSettings,
+                onTap: () => actions.onNoticeSettings(context),
               ),
             ],
           ),
