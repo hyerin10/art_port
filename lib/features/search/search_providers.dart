@@ -165,33 +165,6 @@ class SearchFilterNotifier extends Notifier<SearchFilterState> {
   void resetFilters() => state = const SearchFilterState();
 }
 
-final searchLikedIdsProvider =
-    NotifierProvider<SearchLikedIdsNotifier, Set<String>>(
-  SearchLikedIdsNotifier.new,
-);
-
-class SearchLikedIdsNotifier extends Notifier<Set<String>> {
-  @override
-  Set<String> build() {
-    return {
-      for (final item in SearchDummyData.commissions)
-        if (item.isLiked) item.id,
-    };
-  }
-
-  void toggle(String id) {
-    final next = Set<String>.from(state);
-    if (next.contains(id)) {
-      next.remove(id);
-    } else {
-      next.add(id);
-    }
-    state = next;
-  }
-
-  bool isLiked(String id) => state.contains(id);
-}
-
 /// 전체 커미션 목록 (추후 API 교체)
 final searchCommissionsProvider = Provider<List<SearchCommissionItem>>(
   (ref) => SearchDummyData.commissions,

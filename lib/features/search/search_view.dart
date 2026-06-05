@@ -2,6 +2,7 @@ import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/features/commission/commission_detail_screen.dart';
 import 'package:art_port/features/search/models/search_commission.dart';
 import 'package:art_port/features/search/search_providers.dart';
+import 'package:art_port/providers/liked_commissions_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -1129,7 +1130,7 @@ class _SearchCommissionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final likedIds = ref.watch(searchLikedIdsProvider);
+    final likedIds = ref.watch(likedCommissionIdsProvider);
     final isLiked = likedIds.contains(item.id);
 
     return Material(
@@ -1191,7 +1192,7 @@ class _SearchCommissionCard extends ConsumerWidget {
                       child: _LikeButton(
                         isLiked: isLiked,
                         onTap: () => ref
-                            .read(searchLikedIdsProvider.notifier)
+                            .read(likedCommissionIdsProvider.notifier)
                             .toggle(item.id),
                       ),
                     ),

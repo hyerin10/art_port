@@ -1,7 +1,9 @@
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/features/commission/commission_detail_screen.dart';
 import 'package:art_port/features/explore/models/commission_sample.dart';
+import 'package:art_port/providers/liked_commissions_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 /// 탐색(Explore) 탭 내부 스크롤 콘텐츠
@@ -416,13 +418,14 @@ class _CategoryChip extends StatelessWidget {
   }
 }
 
-class _GalleryCard extends StatelessWidget {
+class _GalleryCard extends ConsumerWidget {
   const _GalleryCard({required this.sample});
 
   final CommissionSample sample;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isLiked = ref.watch(likedCommissionIdsProvider).contains(sample.id);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -508,14 +511,20 @@ class _GalleryCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          Icon(
-                            sample.isLiked
-                                ? Icons.favorite_rounded
-                                : Icons.favorite_border_rounded,
-                            size: 16,
-                            color: sample.isLiked
-                                ? AppColors.primary
-                                : Colors.white.withValues(alpha: 0.9),
+                          GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () => ref
+                                .read(likedCommissionIdsProvider.notifier)
+                                .toggle(sample.id),
+                            child: Icon(
+                              isLiked
+                                  ? Icons.favorite_rounded
+                                  : Icons.favorite_border_rounded,
+                              size: 16,
+                              color: isLiked
+                                  ? AppColors.primary
+                                  : Colors.white.withValues(alpha: 0.9),
+                            ),
                           ),
                           const SizedBox(width: 3),
                           Text(

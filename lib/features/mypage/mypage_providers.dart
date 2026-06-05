@@ -1,4 +1,6 @@
+import 'package:art_port/features/mypage/liked_works_screen.dart';
 import 'package:art_port/features/mypage/models/mypage_data.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// 마이페이지 표시 여부
@@ -102,8 +104,8 @@ class ClientMyPageActions {
 
   final Ref ref;
 
-  void onLikedWorks() {
-    // TODO: 찜한 작품 화면으로 이동
+  void onLikedWorks(BuildContext context) {
+    LikedWorksScreen.open(context);
   }
 
   void onFollowedArtists() {

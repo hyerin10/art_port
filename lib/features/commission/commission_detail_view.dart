@@ -5,6 +5,7 @@ import 'package:art_port/features/commission/widgets/commission_detail_header.da
 import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/common/widgets/art_port_bottom_nav.dart';
 import 'package:art_port/providers/current_tab_provider.dart';
+import 'package:art_port/providers/liked_commissions_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -23,24 +24,11 @@ class CommissionDetailView extends ConsumerStatefulWidget {
 }
 
 class _CommissionDetailViewState extends ConsumerState<CommissionDetailView> {
-  bool? _likeOverride;
-
-  bool _isLiked(CommissionDetail detail) {
-    if (_likeOverride != null) return _likeOverride!;
-    final likedIds = ref.read(commissionLikedIdsProvider);
-    return likedIds.contains(widget.commissionId) || detail.isLiked;
-  }
-
-  void _toggleLike(CommissionDetail detail) {
-    setState(() => _likeOverride = !_isLiked(detail));
-    ref
-        .read(commissionLikedIdsProvider.notifier)
-        .toggle(widget.commissionId);
-  }
-
   @override
   Widget build(BuildContext context) {
     final detail = ref.watch(commissionDetailProvider(widget.commissionId));
+    final isLiked = ref.watch(likedCommissionIdsProvider)
+        .contains(widget.commissionId);
 
     if (detail == null) {
       return Scaffold(
@@ -85,8 +73,10 @@ class _CommissionDetailViewState extends ConsumerState<CommissionDetailView> {
         children: [
           CommissionDetailHeader(
             onBack: () => Navigator.of(context).pop(),
-            isLiked: _isLiked(detail),
-            onLikeTap: () => _toggleLike(detail),
+            isLiked: isLiked,
+            onLikeTap: () => ref
+                .read(likedCommissionIdsProvider.notifier)
+                .toggle(widget.commissionId),
             onShareTap: () => AppToast.show(
               ScaffoldMessenger.of(context),
               message: '공유 링크를 준비 중입니다.',

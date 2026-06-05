@@ -82,7 +82,7 @@ class _ClientMyPageContent extends ConsumerWidget {
                 icon: Icons.favorite_rounded,
                 iconBackgroundColor: const Color(0xFFFEE2E2),
                 iconColor: const Color(0xFFEF4444),
-                onTap: actions.onLikedWorks,
+                onTap: () => actions.onLikedWorks(context),
               ),
               MenuListItem(
                 label: '팔로우한 작가',
