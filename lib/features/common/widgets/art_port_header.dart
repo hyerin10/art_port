@@ -1,4 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/features/mypage/mypage_providers.dart';
 import 'package:art_port/providers/app_mode_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -48,7 +49,10 @@ class ArtPortHeader extends ConsumerWidget {
               onTap: () => ref.read(appModeProvider.notifier).toggleMode(),
             ),
             const SizedBox(width: 10),
-            const _ProfileAvatar(imageUrl: _defaultAvatarUrl),
+            _ProfileAvatar(
+              imageUrl: _defaultAvatarUrl,
+              onTap: () => ref.read(showMyPageProvider.notifier).open(),
+            ),
             ],
           ),
         ),
@@ -142,7 +146,7 @@ class _ModeToggleChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = isArtistMode ? 'Artist' : 'Client';
+    final label = isArtistMode ? 'Client' : 'Artist';
 
     return Material(
       color: AppColors.chipBackground,
@@ -180,46 +184,53 @@ class _ModeToggleChip extends StatelessWidget {
 }
 
 class _ProfileAvatar extends StatelessWidget {
-  const _ProfileAvatar({required this.imageUrl});
+  const _ProfileAvatar({
+    required this.imageUrl,
+    required this.onTap,
+  });
 
   final String imageUrl;
+  final VoidCallback onTap;
 
   static const double _size = ArtPortHeader._actionSize;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: _size,
-      height: _size,
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.center,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.primary, width: 2),
-            ),
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: AppColors.chipBackground,
-              backgroundImage: NetworkImage(imageUrl),
-            ),
-          ),
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: Container(
-              width: 12,
-              height: 12,
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        width: _size,
+        height: _size,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            Container(
               decoration: BoxDecoration(
-                color: AppColors.onlineStatus,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.background, width: 2),
+                border: Border.all(color: AppColors.primary, width: 2),
+              ),
+              child: CircleAvatar(
+                radius: 18,
+                backgroundColor: AppColors.chipBackground,
+                backgroundImage: NetworkImage(imageUrl),
               ),
             ),
-          ),
-        ],
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: AppColors.onlineStatus,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.background, width: 2),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -4,6 +4,8 @@ import 'package:art_port/features/common/widgets/art_port_header.dart';
 import 'package:art_port/features/explore/explore_screen.dart';
 import 'package:art_port/features/openslot/open_slot_screen.dart';
 import 'package:art_port/features/search/search_screen.dart';
+import 'package:art_port/features/mypage/mypage_providers.dart';
+import 'package:art_port/features/mypage/mypage_screen.dart';
 import 'package:art_port/features/workroom/workroom_screen.dart';
 import 'package:art_port/providers/app_mode_provider.dart';
 import 'package:art_port/providers/current_tab_provider.dart';
@@ -40,6 +42,7 @@ class MainScreen extends ConsumerWidget {
     });
 
     final isArtistMode = ref.watch(appModeProvider);
+    final showMyPage = ref.watch(showMyPageProvider);
     final screens = isArtistMode ? _artistScreens : _clientScreens;
     final currentIndex = ref.watch(currentTabProvider);
     final safeIndex = currentIndex.clamp(0, screens.length - 1);
@@ -56,9 +59,17 @@ class MainScreen extends ConsumerWidget {
         children: [
           const ArtPortHeader(),
           Expanded(
-            child: IndexedStack(
-              index: safeIndex,
-              children: screens,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 250),
+              switchInCurve: Curves.easeOut,
+              switchOutCurve: Curves.easeIn,
+              child: showMyPage
+                  ? const MyPageScreen(key: ValueKey('mypage'))
+                  : IndexedStack(
+                      key: ValueKey('tabs-$isArtistMode'),
+                      index: safeIndex,
+                      children: screens,
+                    ),
             ),
           ),
         ],

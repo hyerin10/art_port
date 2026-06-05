@@ -1,16 +1,24 @@
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/core/navigation/app_tab.dart';
+import 'package:art_port/features/mypage/mypage_providers.dart';
 import 'package:art_port/providers/app_mode_provider.dart';
 import 'package:art_port/providers/current_tab_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ArtPortBottomNav extends ConsumerWidget {
-  const ArtPortBottomNav({super.key});
+  const ArtPortBottomNav({
+    super.key,
+    this.onTabSelected,
+  });
+
+  /// 탭 선택 시 추가 동작 (설정 화면 닫기 등)
+  final void Function(int index)? onTabSelected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isArtistMode = ref.watch(appModeProvider);
+    final showMyPage = ref.watch(showMyPageProvider);
     final currentIndex = ref.watch(currentTabProvider);
     final tabs = AppTabNavigation.tabsForMode(isArtistMode: isArtistMode);
 
@@ -39,8 +47,16 @@ class ArtPortBottomNav extends ConsumerWidget {
                 child: _BottomNavItem(
                   tab: tab,
                   isSelected: isSelected,
-                  onTap: () =>
-                      ref.read(currentTabProvider.notifier).selectTab(index),
+                  onTap: () {
+                    if (onTabSelected != null) {
+                      onTabSelected!(index);
+                      return;
+                    }
+                    if (showMyPage) {
+                      ref.read(showMyPageProvider.notifier).close();
+                    }
+                    ref.read(currentTabProvider.notifier).selectTab(index);
+                  },
                 ),
               );
             }),
