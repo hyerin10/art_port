@@ -1,4 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/features/chat/chat_room_screen.dart';
 import 'package:art_port/features/workroom/models/workroom_sample.dart';
 import 'package:art_port/features/workroom/workroom_providers.dart';
 import 'package:flutter/material.dart';
@@ -188,7 +189,13 @@ class _ChatListTile extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => ChatRoomScreen(roomId: item.id),
+            ),
+          );
+        },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),

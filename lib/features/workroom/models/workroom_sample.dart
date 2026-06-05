@@ -113,6 +113,16 @@ abstract final class WorkroomDummyData {
     ),
     // 작가 모드: 내가 접수한 채팅방
     WorkroomChatItem(
+      id: 'chat-mika',
+      counterpartName: 'MikaArt',
+      avatarUrl: _avatar1,
+      lastMessagePreview: '이미지 잘 받았어요! 러프 스케치 작업 시작할게요.',
+      timeAgoLabel: '방금',
+      unreadCount: 1,
+      isOnline: true,
+      isReceivedAsArtist: true,
+    ),
+    WorkroomChatItem(
       id: 'chat-a1',
       counterpartName: '별하늘님',
       avatarUrl: _avatar4,

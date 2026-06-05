@@ -17,4 +17,12 @@ abstract final class AppColors {
 
   static const Color borderLight = Color(0xFFE5E7EB);
   static const Color shadow = Color(0x0A000000);
+
+  /// 1:1 채팅방
+  static const Color chatBackground = Color(0xFFF3F4F6);
+  static const Color chatOutgoing = Color(0xFF6C5CE7);
+  static const Color commissionStatusBar = Color(0xFFFF9500);
+  static const Color attachmentCameraBg = Color(0xFFEDE9FE);
+  static const Color attachmentGalleryBg = Color(0xFFFCE7F3);
+  static const Color attachmentFileBg = Color(0xFFCCFBF1);
 }
