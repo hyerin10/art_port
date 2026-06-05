@@ -8,11 +8,13 @@ class InquiryHeader extends ConsumerWidget {
   const InquiryHeader({
     super.key,
     required this.onBack,
+    this.title = '1:1 문의',
     this.onNotificationTap,
     this.onFilterTap,
   });
 
   final VoidCallback onBack;
+  final String title;
   final VoidCallback? onNotificationTap;
   final VoidCallback? onFilterTap;
 
@@ -46,11 +48,11 @@ class InquiryHeader extends ConsumerWidget {
                       minHeight: 40,
                     ),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      '1:1 문의',
+                      title,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,

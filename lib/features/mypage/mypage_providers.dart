@@ -1,4 +1,5 @@
 import 'package:art_port/features/mypage/artist_portfolio_edit_screen.dart';
+import 'package:art_port/features/mypage/commission_type_settings_screen.dart';
 import 'package:art_port/features/mypage/followed_artists_screen.dart';
 import 'package:art_port/features/mypage/inquiry_list_screen.dart';
 import 'package:art_port/features/mypage/liked_works_screen.dart';
@@ -139,8 +140,8 @@ class ArtistMyPageActions {
     ArtistPortfolioEditScreen.open(context);
   }
 
-  void onCommissionTypeSettings() {
-    // TODO: 커미션 타입 설정 화면으로 이동
+  void onCommissionTypeSettings(BuildContext context) {
+    CommissionTypeSettingsScreen.open(context);
   }
 
   void onNoticeSettings() {

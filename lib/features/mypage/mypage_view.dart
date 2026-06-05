@@ -181,7 +181,7 @@ class _ArtistMyPageContent extends ConsumerWidget {
                 icon: Icons.tune_rounded,
                 iconBackgroundColor: AppColors.chipBackground,
                 iconColor: AppColors.textSecondary,
-                onTap: actions.onCommissionTypeSettings,
+                onTap: () => actions.onCommissionTypeSettings(context),
               ),
               MenuListItem(
                 label: '공지사항 설정',
