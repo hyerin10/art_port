@@ -1,4 +1,6 @@
+import 'package:art_port/features/mypage/artist_portfolio_edit_screen.dart';
 import 'package:art_port/features/mypage/followed_artists_screen.dart';
+import 'package:art_port/features/mypage/inquiry_list_screen.dart';
 import 'package:art_port/features/mypage/liked_works_screen.dart';
 import 'package:art_port/features/mypage/payments_receipts_screen.dart';
 import 'package:art_port/features/mypage/models/mypage_data.dart';
@@ -118,8 +120,8 @@ class ClientMyPageActions {
     PaymentsReceiptsScreen.open(context);
   }
 
-  void onInquiry() {
-    // TODO: 1:1 문의 화면으로 이동
+  void onInquiry(BuildContext context) {
+    InquiryListScreen.open(context);
   }
 }
 
@@ -133,8 +135,8 @@ class ArtistMyPageActions {
 
   final Ref ref;
 
-  void onEditProfilePortfolio() {
-    // TODO: 프로필/포트폴리오 편집 화면으로 이동
+  void onEditProfilePortfolio(BuildContext context) {
+    ArtistPortfolioEditScreen.open(context);
   }
 
   void onCommissionTypeSettings() {

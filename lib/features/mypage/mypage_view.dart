@@ -115,7 +115,7 @@ class _ClientMyPageContent extends ConsumerWidget {
                 icon: Icons.chat_bubble_rounded,
                 iconBackgroundColor: const Color(0xFFD1FAE5),
                 iconColor: const Color(0xFF10B981),
-                onTap: actions.onInquiry,
+                onTap: () => actions.onInquiry(context),
               ),
             ],
           ),
@@ -174,7 +174,7 @@ class _ArtistMyPageContent extends ConsumerWidget {
                 icon: Icons.palette_rounded,
                 iconBackgroundColor: AppColors.primaryLight,
                 iconColor: AppColors.primary,
-                onTap: actions.onEditProfilePortfolio,
+                onTap: () => actions.onEditProfilePortfolio(context),
               ),
               MenuListItem(
                 label: '커미션 타입 설정',

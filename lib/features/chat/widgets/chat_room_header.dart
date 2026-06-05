@@ -79,6 +79,13 @@ class _ChatAvatar extends StatelessWidget {
 
   static const double _size = 44;
 
+  static ImageProvider _avatarImage(String url) {
+    if (url.startsWith('assets/')) {
+      return AssetImage(url);
+    }
+    return NetworkImage(url);
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -90,7 +97,7 @@ class _ChatAvatar extends StatelessWidget {
           CircleAvatar(
             radius: _size / 2,
             backgroundColor: AppColors.chipBackground,
-            backgroundImage: NetworkImage(imageUrl),
+            backgroundImage: _avatarImage(imageUrl),
           ),
           if (isOnline)
             Positioned(

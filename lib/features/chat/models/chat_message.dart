@@ -41,4 +41,20 @@ class ChatRoomDetail {
   final String avatarUrl;
   final bool isOnline;
   final String statusLabel;
+
+  ChatRoomDetail copyWith({
+    String? id,
+    String? counterpartName,
+    String? avatarUrl,
+    bool? isOnline,
+    String? statusLabel,
+  }) {
+    return ChatRoomDetail(
+      id: id ?? this.id,
+      counterpartName: counterpartName ?? this.counterpartName,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      isOnline: isOnline ?? this.isOnline,
+      statusLabel: statusLabel ?? this.statusLabel,
+    );
+  }
 }
