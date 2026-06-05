@@ -98,18 +98,11 @@ class _ClientMyPageContent extends ConsumerWidget {
             title: '결제 및 증빙',
             children: [
               MenuListItem(
-                label: '영수증',
+                label: '결제 및 영수증',
                 icon: Icons.receipt_long_rounded,
-                iconBackgroundColor: const Color(0xFFFFEDD5),
-                iconColor: const Color(0xFFF97316),
-                onTap: actions.onReceipts,
-              ),
-              MenuListItem(
-                label: '결제 관리',
-                icon: Icons.credit_card_rounded,
-                iconBackgroundColor: const Color(0xFFDBEAFE),
-                iconColor: const Color(0xFF3B82F6),
-                onTap: actions.onPaymentManagement,
+                iconBackgroundColor: AppColors.primaryLight,
+                iconColor: AppColors.primary,
+                onTap: () => actions.onPaymentsAndReceipts(context),
               ),
             ],
           ),

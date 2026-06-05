@@ -1,5 +1,6 @@
 import 'package:art_port/features/mypage/followed_artists_screen.dart';
 import 'package:art_port/features/mypage/liked_works_screen.dart';
+import 'package:art_port/features/mypage/payments_receipts_screen.dart';
 import 'package:art_port/features/mypage/models/mypage_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -113,12 +114,8 @@ class ClientMyPageActions {
     FollowedArtistsScreen.open(context);
   }
 
-  void onReceipts() {
-    // TODO: 영수증 화면으로 이동
-  }
-
-  void onPaymentManagement() {
-    // TODO: 결제 관리 화면으로 이동
+  void onPaymentsAndReceipts(BuildContext context) {
+    PaymentsReceiptsScreen.open(context);
   }
 
   void onInquiry() {
