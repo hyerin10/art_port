@@ -1,3 +1,5 @@
+import 'package:art_port/core/formatters/currency_formatter.dart';
+
 // 커미션 슬롯 데이터 모델
 
 class SlotModel {
@@ -26,7 +28,7 @@ class SlotModel {
     return (currentSlots.clamp(0, maxSlots)) / maxSlots;
   }
 
-  String get priceLabel => '₩ ${_formatWon(priceWon)} ~';
+  String get priceLabel => '${CurrencyFormatter.formatWonSymbol(priceWon)} ~';
 
   String get slotsLabel => '$currentSlots/$maxSlots 슬롯';
 
@@ -52,15 +54,6 @@ class SlotModel {
     );
   }
 
-  static String _formatWon(int won) {
-    final s = won.toString();
-    final buf = StringBuffer();
-    for (var i = 0; i < s.length; i++) {
-      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
-      buf.write(s[i]);
-    }
-    return buf.toString();
-  }
 }
 
 class OpenSlotDashboardStats {
@@ -74,15 +67,7 @@ class OpenSlotDashboardStats {
   final int ordersInProgress;
   final int monthlyEarningsWon;
 
-  String get earningsLabel {
-    final s = monthlyEarningsWon.toString();
-    final buf = StringBuffer();
-    for (var i = 0; i < s.length; i++) {
-      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
-      buf.write(s[i]);
-    }
-    return '${buf.toString()}원';
-  }
+  String get earningsLabel => CurrencyFormatter.formatWon(monthlyEarningsWon);
 }
 
 abstract final class SlotDummyData {
