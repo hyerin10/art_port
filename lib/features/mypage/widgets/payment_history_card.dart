@@ -133,20 +133,35 @@ class PaymentHistoryCard extends StatelessWidget {
   }
 }
 
+/// 결제 상태 배지 표시 스타일
+enum PaymentStatusBadgeVariant { card, detail }
+
 /// 결제 상태 배지
 class PaymentStatusBadge extends StatelessWidget {
-  const PaymentStatusBadge({super.key, required this.status});
+  const PaymentStatusBadge({
+    super.key,
+    required this.status,
+    this.variant = PaymentStatusBadgeVariant.card,
+  });
 
   final PaymentStatus status;
+  final PaymentStatusBadgeVariant variant;
 
   @override
   Widget build(BuildContext context) {
+    final isDetail = variant == PaymentStatusBadgeVariant.detail;
     final (bg, fg, icon) = switch (status) {
-      PaymentStatus.completed => (
-          AppColors.primaryLight,
-          AppColors.success,
-          Icons.check_circle_outline_rounded,
-        ),
+      PaymentStatus.completed => isDetail
+          ? (
+              const Color(0xFFD1FAE5),
+              const Color(0xFF059669),
+              Icons.check_circle_outline_rounded,
+            )
+          : (
+              AppColors.primaryLight,
+              AppColors.success,
+              Icons.check_circle_outline_rounded,
+            ),
       PaymentStatus.processing => (
           const Color(0xFFFEF3C7),
           const Color(0xFFD97706),
@@ -154,13 +169,16 @@ class PaymentStatusBadge extends StatelessWidget {
         ),
       PaymentStatus.canceled => (
           const Color(0xFFFEE2E2),
-          AppColors.error,
+          isDetail ? const Color(0xFFDC2626) : AppColors.error,
           Icons.cancel_outlined,
         ),
     };
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: isDetail ? 10 : 8,
+        vertical: isDetail ? 5 : 4,
+      ),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(20),
@@ -168,12 +186,12 @@ class PaymentStatusBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13, color: fg),
+          Icon(icon, size: isDetail ? 14 : 13, color: fg),
           const SizedBox(width: 4),
           Text(
             status.label,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: isDetail ? 12 : 11,
               fontWeight: FontWeight.w700,
               color: fg,
             ),

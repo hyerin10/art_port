@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/core/widgets/dashed_border.dart';
 import 'package:flutter/material.dart';
 
 /// 커미션 신청 — 참고 이미지 업로드 그리드 (최대 6장)
@@ -58,11 +59,9 @@ class _UploadButton extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
-          child: CustomPaint(
-            painter: _DashedBorderPainter(
-              color: AppColors.borderLight,
-              radius: 12,
-            ),
+          child: DashedBorder(
+            color: AppColors.borderLight,
+            radius: 12,
             child: const Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -150,46 +149,5 @@ class _ImageThumbnail extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class _DashedBorderPainter extends CustomPainter {
-  _DashedBorderPainter({required this.color, required this.radius});
-
-  final Color color;
-  final double radius;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-
-    const dashWidth = 5.0;
-    const dashSpace = 3.0;
-
-    final rect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(1.5, 1.5, size.width - 3, size.height - 3),
-      Radius.circular(radius),
-    );
-
-    final path = Path()..addRRect(rect);
-    for (final metric in path.computeMetrics()) {
-      var distance = 0.0;
-      while (distance < metric.length) {
-        final next = distance + dashWidth;
-        canvas.drawPath(
-          metric.extractPath(distance, next.clamp(0, metric.length)),
-          paint,
-        );
-        distance = next + dashSpace;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DashedBorderPainter oldDelegate) {
-    return oldDelegate.color != color || oldDelegate.radius != radius;
   }
 }

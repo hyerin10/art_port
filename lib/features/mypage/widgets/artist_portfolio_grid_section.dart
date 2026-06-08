@@ -44,6 +44,7 @@ class ArtistPortfolioGridSection extends StatelessWidget {
         const SizedBox(height: 12),
         PortfolioEditGrid(
           images: form.portfolioImages,
+          maxCount: ArtistPortfolioEditState.maxPortfolioCount,
           activeIndex: form.activePortfolioIndex,
           onItemTap: onPortfolioItemTap,
           onSetFeatured: onSetFeatured,

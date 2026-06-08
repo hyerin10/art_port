@@ -1,4 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/core/widgets/dashed_border.dart';
 import 'package:art_port/features/mypage/models/commission_type_data.dart';
 import 'package:art_port/features/mypage/widgets/commission_type_card.dart';
 import 'package:flutter/material.dart';
@@ -89,11 +90,9 @@ class _UploadSlotState extends State<_UploadSlot> {
             child: InkWell(
               onTap: widget.onTap,
               borderRadius: BorderRadius.circular(12),
-              child: CustomPaint(
-                painter: _DashedBorderPainter(
-                  color: AppColors.primary.withValues(alpha: 0.45),
-                  radius: 12,
-                ),
+              child: DashedBorder(
+                color: AppColors.primary.withValues(alpha: 0.45),
+                radius: 12,
                 child: hasSource
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(12),
@@ -182,46 +181,5 @@ class _UploadPlaceholder extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class _DashedBorderPainter extends CustomPainter {
-  _DashedBorderPainter({required this.color, required this.radius});
-
-  final Color color;
-  final double radius;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-
-    const dashWidth = 5.0;
-    const dashSpace = 3.0;
-
-    final rect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(1.5, 1.5, size.width - 3, size.height - 3),
-      Radius.circular(radius),
-    );
-
-    final path = Path()..addRRect(rect);
-    for (final metric in path.computeMetrics()) {
-      var distance = 0.0;
-      while (distance < metric.length) {
-        final next = distance + dashWidth;
-        canvas.drawPath(
-          metric.extractPath(distance, next.clamp(0, metric.length)),
-          paint,
-        );
-        distance = next + dashSpace;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DashedBorderPainter oldDelegate) {
-    return oldDelegate.color != color || oldDelegate.radius != radius;
   }
 }
