@@ -43,11 +43,6 @@ class ArtPortHeader extends ConsumerWidget {
             ),
             const Spacer(),
             _NotificationButton(onPressed: () {}),
-            const SizedBox(width: 6),
-            _IconActionButton(
-              icon: Icons.tune,
-              onPressed: () {},
-            ),
             AnimatedSize(
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeInOut,
@@ -120,36 +115,6 @@ class _NotificationButton extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _IconActionButton extends StatelessWidget {
-  const _IconActionButton({
-    required this.icon,
-    required this.onPressed,
-  });
-
-  final IconData icon;
-  final VoidCallback onPressed;
-
-  static const double _size = ArtPortHeader._actionSize;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: _size,
-      height: _size,
-      child: IconButton(
-        onPressed: onPressed,
-        icon: Icon(icon, size: 22),
-        color: AppColors.textPrimary,
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints(
-          minWidth: _size,
-          minHeight: _size,
-        ),
       ),
     );
   }
