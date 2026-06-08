@@ -3,10 +3,45 @@
 // isReceivedAsArtist — true면 작가로서 접수한 항목, false면 의뢰인으로 신청한 항목.
 // 실제 API 연동 시 appModeProvider.isArtistMode에 맞춰 필터링합니다.
 
+import 'package:flutter/material.dart';
+
 enum WorkroomOrderStatus {
   inProgress,
   review,
   completed,
+}
+
+extension WorkroomOrderStatusX on WorkroomOrderStatus {
+  static const _inProgressFg = Color(0xFF7C3AED);
+  static const _inProgressBg = Color(0xFFEDE9FE);
+  static const _reviewFg = Color(0xFFDB2777);
+  static const _reviewBg = Color(0xFFFCE7F3);
+  static const _completedFg = Color(0xFF16A34A);
+  static const _completedBg = Color(0xFFDCFCE7);
+
+  String get label => switch (this) {
+        WorkroomOrderStatus.inProgress => '진행 중',
+        WorkroomOrderStatus.review => '리뷰 중',
+        WorkroomOrderStatus.completed => '완성',
+      };
+
+  Color get foregroundColor => switch (this) {
+        WorkroomOrderStatus.inProgress => _inProgressFg,
+        WorkroomOrderStatus.review => _reviewFg,
+        WorkroomOrderStatus.completed => _completedFg,
+      };
+
+  Color get backgroundColor => switch (this) {
+        WorkroomOrderStatus.inProgress => _inProgressBg,
+        WorkroomOrderStatus.review => _reviewBg,
+        WorkroomOrderStatus.completed => _completedBg,
+      };
+
+  IconData get icon => switch (this) {
+        WorkroomOrderStatus.inProgress => Icons.schedule_rounded,
+        WorkroomOrderStatus.review => Icons.radio_button_checked_rounded,
+        WorkroomOrderStatus.completed => Icons.check_circle_outline_rounded,
+      };
 }
 
 class WorkroomChatItem {
