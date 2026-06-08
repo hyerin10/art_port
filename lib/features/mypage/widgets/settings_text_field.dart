@@ -1,5 +1,6 @@
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 export 'package:art_port/features/auth/widgets/password_visibility_toggle.dart';
 
@@ -17,6 +18,7 @@ class SettingsTextField extends StatelessWidget {
     this.keyboardType,
     this.textInputAction,
     this.onChanged,
+    this.inputFormatters,
     this.suffixIcon,
   });
 
@@ -30,6 +32,7 @@ class SettingsTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onChanged;
+  final List<TextInputFormatter>? inputFormatters;
   final Widget? suffixIcon;
 
   @override
@@ -55,6 +58,7 @@ class SettingsTextField extends StatelessWidget {
           obscureText: obscureText,
           keyboardType: keyboardType,
           textInputAction: textInputAction,
+          inputFormatters: inputFormatters,
           onChanged: onChanged,
           style: TextStyle(
             fontSize: 15,
