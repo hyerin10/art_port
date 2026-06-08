@@ -1,10 +1,12 @@
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/features/auth/auth_providers.dart';
 import 'package:art_port/features/auth/sign_up_screen.dart';
+import 'package:art_port/features/auth/widgets/auth_footer_link.dart';
 import 'package:art_port/features/auth/widgets/auth_logo.dart';
+import 'package:art_port/features/auth/widgets/auth_primary_button.dart';
 import 'package:art_port/features/auth/widgets/auth_text_field.dart';
+import 'package:art_port/features/auth/widgets/password_visibility_toggle.dart';
 import 'package:art_port/features/auth/widgets/social_login_button.dart';
-import 'package:art_port/features/mypage/widgets/settings_text_field.dart';
 import 'package:art_port/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -174,14 +176,14 @@ class _SignInViewState extends ConsumerState<SignInView> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    _PrimaryAuthButton(
+                    AuthPrimaryButton(
                       label: 'Sign In',
                       enabled: form.canSubmit,
                       isLoading: form.isSubmitting,
                       onPressed: _onSignIn,
                     ),
                     const SizedBox(height: 24),
-                    _AuthFooterLink(
+                    AuthFooterLink(
                       prompt: "Don't have an account? ",
                       actionLabel: 'Sign up',
                       onTap: _onSignUpTap,
@@ -218,99 +220,6 @@ class _OrDivider extends StatelessWidget {
         ),
         Expanded(child: Divider(color: AppColors.borderLight, thickness: 1)),
       ],
-    );
-  }
-}
-
-class _PrimaryAuthButton extends StatelessWidget {
-  const _PrimaryAuthButton({
-    required this.label,
-    required this.enabled,
-    required this.onPressed,
-    this.isLoading = false,
-  });
-
-  final String label;
-  final bool enabled;
-  final bool isLoading;
-  final VoidCallback onPressed;
-
-  static const Color _disabledColor = Color(0xFF9CA3AF);
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: FilledButton(
-        onPressed: enabled && !isLoading ? onPressed : null,
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          disabledBackgroundColor: _disabledColor,
-          foregroundColor: Colors.white,
-          disabledForegroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          elevation: 0,
-        ),
-        child: isLoading
-            ? const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  color: Colors.white,
-                ),
-              )
-            : Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-      ),
-    );
-  }
-}
-
-class _AuthFooterLink extends StatelessWidget {
-  const _AuthFooterLink({
-    required this.prompt,
-    required this.actionLabel,
-    required this.onTap,
-  });
-
-  final String prompt;
-  final String actionLabel;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: GestureDetector(
-        onTap: onTap,
-        child: RichText(
-          text: TextSpan(
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
-            ),
-            children: [
-              TextSpan(text: prompt),
-              TextSpan(
-                text: actionLabel,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.info,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

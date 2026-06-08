@@ -20,6 +20,7 @@ class AuthTextField extends StatelessWidget {
     this.onSubmitted,
     this.errorText,
     this.status = AuthFieldStatus.neutral,
+    this.enabled = true,
   });
 
   final TextEditingController controller;
@@ -34,6 +35,7 @@ class AuthTextField extends StatelessWidget {
   final ValueChanged<String>? onSubmitted;
   final String? errorText;
   final AuthFieldStatus status;
+  final bool enabled;
 
   Color get _borderColor {
     return switch (status) {
@@ -62,6 +64,7 @@ class AuthTextField extends StatelessWidget {
         ],
         TextField(
           controller: controller,
+          enabled: enabled,
           obscureText: obscureText,
           keyboardType: keyboardType,
           textInputAction: textInputAction,
