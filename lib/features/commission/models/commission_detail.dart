@@ -16,6 +16,9 @@ class CommissionPriceOption {
   final bool isPopular;
 
   String get priceLabel => '${CommissionDetail.formatWon(priceWon)} ~';
+
+  String get displayLabel =>
+      subtitle != null ? '$label ($subtitle)' : label;
 }
 
 /// 커미션 상세 화면 데이터 모델

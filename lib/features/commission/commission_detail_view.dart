@@ -1,7 +1,10 @@
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/features/artist_profile/artist_profile_screen.dart';
+import 'package:art_port/features/commission/commission_apply_screen.dart';
 import 'package:art_port/features/commission/commission_detail_providers.dart';
+import 'package:art_port/features/commission/models/commission_apply_args.dart';
 import 'package:art_port/features/commission/models/commission_detail.dart';
+import 'package:art_port/features/commission/widgets/commission_detail_bottom_bar.dart';
 import 'package:art_port/features/commission/widgets/commission_detail_header.dart';
 import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/common/widgets/art_port_bottom_nav.dart';
@@ -27,6 +30,29 @@ class CommissionDetailView extends ConsumerStatefulWidget {
 }
 
 class _CommissionDetailViewState extends ConsumerState<CommissionDetailView> {
+  int? _selectedOptionIndex;
+
+  int _defaultOptionIndex(CommissionDetail detail) {
+    final popularIndex =
+        detail.priceOptions.indexWhere((option) => option.isPopular);
+    return popularIndex >= 0 ? popularIndex : 0;
+  }
+
+  void _onApplyTap(CommissionDetail detail) {
+    final index = _selectedOptionIndex ?? _defaultOptionIndex(detail);
+    final selectedOption = detail.priceOptions[index];
+
+    CommissionApplyScreen.open(
+      context,
+      args: CommissionApplyArgs(
+        commissionId: detail.id,
+        commissionTitle: detail.title,
+        artistName: detail.artistName,
+        selectedOption: selectedOption,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final detail = ref.watch(commissionDetailProvider(widget.commissionId));
@@ -70,6 +96,10 @@ class _CommissionDetailViewState extends ConsumerState<CommissionDetailView> {
       );
     }
 
+    final selectedIndex =
+        _selectedOptionIndex ?? _defaultOptionIndex(detail);
+    final selectedOption = detail.priceOptions[selectedIndex];
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
@@ -86,30 +116,49 @@ class _CommissionDetailViewState extends ConsumerState<CommissionDetailView> {
             ),
           ),
           Expanded(
-            child: ScrollConfiguration(
-              behavior: const _CommissionDetailScrollBehavior(),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _ImageCarousel(detail: detail),
-                    _ArtistProfileSection(detail: detail),
-                    const _SectionDivider(),
-                    _TitleAndTagsSection(detail: detail),
-                    const SizedBox(height: 20),
-                    _InfoGridSection(detail: detail),
-                    const _SectionDivider(),
-                    _PriceOptionsSection(options: detail.priceOptions),
-                    const _SectionDivider(),
-                    _WorkDescriptionSection(detail: detail),
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                      child: _NoticeBox(text: detail.noticeText),
+            child: Stack(
+              children: [
+                ScrollConfiguration(
+                  behavior: const _CommissionDetailScrollBehavior(),
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.only(bottom: 88),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _ImageCarousel(detail: detail),
+                        _ArtistProfileSection(detail: detail),
+                        const _SectionDivider(),
+                        _TitleAndTagsSection(detail: detail),
+                        const SizedBox(height: 20),
+                        _InfoGridSection(detail: detail),
+                        const _SectionDivider(),
+                        _PriceOptionsSection(
+                          options: detail.priceOptions,
+                          selectedIndex: selectedIndex,
+                          onOptionSelected: (index) =>
+                              setState(() => _selectedOptionIndex = index),
+                        ),
+                        const _SectionDivider(),
+                        _WorkDescriptionSection(detail: detail),
+                        const SizedBox(height: 20),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                          child: _NoticeBox(text: detail.noticeText),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: CommissionDetailBottomBar(
+                    selectedOption: selectedOption,
+                    onApplyTap: () => _onApplyTap(detail),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -533,9 +582,15 @@ class _InfoCard extends StatelessWidget {
 // ─── Price Options ────────────────────────────────────────────────────────────
 
 class _PriceOptionsSection extends StatelessWidget {
-  const _PriceOptionsSection({required this.options});
+  const _PriceOptionsSection({
+    required this.options,
+    required this.selectedIndex,
+    required this.onOptionSelected,
+  });
 
   final List<CommissionPriceOption> options;
+  final int selectedIndex;
+  final ValueChanged<int> onOptionSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -557,7 +612,11 @@ class _PriceOptionsSection extends StatelessWidget {
           const SizedBox(height: 12),
           for (var i = 0; i < options.length; i++) ...[
             if (i > 0) const SizedBox(height: 10),
-            _PriceOptionCard(option: options[i]),
+            _PriceOptionCard(
+              option: options[i],
+              isSelected: i == selectedIndex,
+              onTap: () => onOptionSelected(i),
+            ),
           ],
         ],
       ),
@@ -566,68 +625,86 @@ class _PriceOptionsSection extends StatelessWidget {
 }
 
 class _PriceOptionCard extends StatelessWidget {
-  const _PriceOptionCard({required this.option});
+  const _PriceOptionCard({
+    required this.option,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   final CommissionPriceOption option;
+  final bool isSelected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final isPopular = option.isPopular;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      decoration: BoxDecoration(
-        color: isPopular ? AppColors.primarySoft : AppColors.background,
+    return Material(
+      color: isSelected ? AppColors.primarySoft : AppColors.background,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isPopular ? AppColors.primary : AppColors.borderLight,
-          width: isPopular ? 1.5 : 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          if (isPopular) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? AppColors.primary : AppColors.borderLight,
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                isSelected
+                    ? Icons.check_circle_rounded
+                    : Icons.radio_button_unchecked_rounded,
+                size: 20,
+                color: isSelected ? AppColors.primary : AppColors.textMuted,
               ),
-              child: const Text(
-                '인기',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  height: 1.1,
+              const SizedBox(width: 10),
+              if (option.isPopular) ...[
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Text(
+                    '인기',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      height: 1.1,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+              ],
+              Expanded(
+                child: Text(
+                  option.displayLabel,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                    height: 1.2,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 10),
-          ],
-          Expanded(
-            child: Text(
-              option.subtitle != null
-                  ? '${option.label} (${option.subtitle})'
-                  : option.label,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-                height: 1.2,
+              Text(
+                option.priceLabel,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primary,
+                  height: 1.2,
+                ),
               ),
-            ),
+            ],
           ),
-          Text(
-            option.priceLabel,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-              color: AppColors.primary,
-              height: 1.2,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
