@@ -6,6 +6,7 @@ import 'package:art_port/features/mypage/inquiry_list_screen.dart';
 import 'package:art_port/features/mypage/liked_works_screen.dart';
 import 'package:art_port/features/mypage/payments_receipts_screen.dart';
 import 'package:art_port/features/mypage/models/mypage_data.dart';
+import 'package:art_port/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -124,6 +125,31 @@ class ClientMyPageActions {
 
   void onInquiry(BuildContext context) {
     InquiryListScreen.open(context);
+  }
+
+  Future<void> confirmLogout(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('로그아웃'),
+        content: const Text('정말 로그아웃하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('로그아웃'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      ref.read(authProvider.notifier).signOut();
+      ref.read(showMyPageProvider.notifier).close();
+    }
   }
 }
 

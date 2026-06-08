@@ -2,6 +2,7 @@ import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/features/mypage/mypage_navigation.dart';
 import 'package:art_port/features/mypage/mypage_providers.dart';
 import 'package:art_port/features/mypage/widgets/menu_list_item.dart';
+import 'package:art_port/features/mypage/widgets/mypage_logout_button.dart';
 import 'package:art_port/features/mypage/widgets/mypage_profile_section.dart';
 import 'package:art_port/features/mypage/widgets/mypage_scroll_view.dart';
 import 'package:art_port/features/mypage/widgets/section_card.dart';
@@ -78,6 +79,9 @@ class ClientMyPageContent extends ConsumerWidget {
                 onTap: () => actions.onInquiry(context),
               ),
             ],
+          ),
+          MyPageLogoutButton(
+            onTap: () => actions.confirmLogout(context),
           ),
         ],
       ),
