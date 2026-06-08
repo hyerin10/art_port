@@ -1,0 +1,13 @@
+{
+  "folders": [
+    {
+      "name": "Art Port · Flutter",
+      "path": "."
+    },
+    {
+      "name": "Art Port · Server",
+      "path": "../art_port_server"
+    }
+  ],
+  "settings": {}
+}
