@@ -15,7 +15,7 @@ extension AppTabX on AppTab {
       case AppTab.search:
         return '검색';
       case AppTab.openSlot:
-        return '슬롯 관리';
+        return '오픈 슬롯';
       case AppTab.workroom:
         return '작업실';
     }
