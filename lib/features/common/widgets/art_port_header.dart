@@ -15,6 +15,7 @@ class ArtPortHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isArtistMode = ref.watch(appModeProvider);
     final isLoggedIn = ref.watch(authProvider);
+    final showMyPage = ref.watch(showMyPageProvider);
 
     final profileAvatarUrl = isArtistMode
         ? ref.watch(artistProfileProvider).avatarUrl
@@ -47,10 +48,20 @@ class ArtPortHeader extends ConsumerWidget {
               icon: Icons.tune,
               onPressed: () {},
             ),
-            const SizedBox(width: 8),
-            _ModeToggleChip(
-              isArtistMode: isArtistMode,
-              onTap: () => ref.read(appModeProvider.notifier).toggleMode(),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
+              alignment: Alignment.centerRight,
+              child: showMyPage
+                  ? Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: _ModeToggleChip(
+                        isArtistMode: isArtistMode,
+                        onTap: () =>
+                            ref.read(appModeProvider.notifier).toggleMode(),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
             ),
             const SizedBox(width: 10),
             if (isLoggedIn)
