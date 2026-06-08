@@ -8,6 +8,15 @@ enum SearchSortOption {
   priceHigh,
 }
 
+extension SearchSortOptionLabel on SearchSortOption {
+  String get label => switch (this) {
+        SearchSortOption.latest => '최신순',
+        SearchSortOption.popular => '인기순',
+        SearchSortOption.priceLow => '가격 낮은순',
+        SearchSortOption.priceHigh => '가격 높은순',
+      };
+}
+
 /// 가격 빠른 선택 프리셋 (`만` 단위)
 class SearchPricePreset {
   const SearchPricePreset({
