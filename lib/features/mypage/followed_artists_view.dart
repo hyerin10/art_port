@@ -1,10 +1,9 @@
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/features/commission/commission_detail_screen.dart';
-import 'package:art_port/features/common/widgets/art_port_bottom_nav.dart';
+import 'package:art_port/features/common/widgets/empty_state_view.dart';
 import 'package:art_port/features/mypage/models/followed_artist.dart';
-import 'package:art_port/features/mypage/mypage_providers.dart';
 import 'package:art_port/features/mypage/widgets/followed_artists_header.dart';
-import 'package:art_port/providers/current_tab_provider.dart';
+import 'package:art_port/features/mypage/widgets/mypage_sub_screen_scaffold.dart';
 import 'package:art_port/providers/followed_artists_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,83 +16,18 @@ class FollowedArtistsView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final artists = ref.watch(followedArtistsProvider);
 
-    return Scaffold(
+    return MyPageSubScreenScaffold(
       backgroundColor: const Color(0xFFF9FAFB),
-      body: Column(
-        children: [
-          FollowedArtistsHeader(
-            onBack: () => Navigator.of(context).pop(),
-          ),
-          Expanded(
-            child: artists.isEmpty
-                ? const _FollowedArtistsEmptyState()
-                : _FollowedArtistsList(artists: artists),
-          ),
-        ],
+      header: FollowedArtistsHeader(
+        onBack: () => Navigator.of(context).pop(),
       ),
-      bottomNavigationBar: ArtPortBottomNav(
-        onTabSelected: (index) {
-          ref.read(currentTabProvider.notifier).selectTab(index);
-          ref.read(showMyPageProvider.notifier).close();
-          Navigator.of(context).popUntil((route) => route.isFirst);
-        },
-      ),
-    );
-  }
-}
-
-// ─── Empty State ─────────────────────────────────────────────────────────────
-
-class _FollowedArtistsEmptyState extends StatelessWidget {
-  const _FollowedArtistsEmptyState();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 96,
-              height: 96,
-              decoration: const BoxDecoration(
-                color: AppColors.chipBackground,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.people_outline_rounded,
-                size: 44,
-                color: AppColors.textMuted,
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'No followed artists yet',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
-                letterSpacing: -0.3,
-                height: 1.3,
-              ),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Discover talented artists and follow them\nto see their latest work',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textMuted,
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
-      ),
+      body: artists.isEmpty
+          ? const EmptyStateView(
+              icon: Icons.people_outline_rounded,
+              title: '아직 팔로우한 작가가 없습니다',
+              subtitle: '마음에 드는 작가를 팔로우하고\n최신 작품을 확인해보세요',
+            )
+          : _FollowedArtistsList(artists: artists),
     );
   }
 }

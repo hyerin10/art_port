@@ -1,4 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/features/common/widgets/unread_count_badge.dart';
 import 'package:art_port/features/chat/chat_room_screen.dart';
 import 'package:art_port/features/workroom/models/workroom_sample.dart';
 import 'package:art_port/features/workroom/order_detail_screen.dart';
@@ -249,7 +250,10 @@ class _ChatListTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   if (item.unreadCount > 0)
-                    _UnreadBadge(count: item.unreadCount)
+                    UnreadCountBadge(
+                      count: item.unreadCount,
+                      backgroundColor: AppColors.primary,
+                    )
                   else
                     const SizedBox(height: 22),
                 ],
@@ -307,36 +311,6 @@ class _OnlineAvatar extends StatelessWidget {
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-class _UnreadBadge extends StatelessWidget {
-  const _UnreadBadge({required this.count});
-
-  final int count;
-
-  @override
-  Widget build(BuildContext context) {
-    final label = count > 99 ? '99+' : '$count';
-
-    return Container(
-      constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
-      padding: const EdgeInsets.symmetric(horizontal: 6),
-      alignment: Alignment.center,
-      decoration: const BoxDecoration(
-        color: AppColors.primary,
-        shape: BoxShape.circle,
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          color: Colors.white,
-          height: 1.1,
-        ),
       ),
     );
   }

@@ -22,4 +22,7 @@ abstract final class CurrencyFormatter {
   /// 예: `₩50,000~`
   static String formatWonKrw(int won, {String suffix = '~'}) =>
       '₩${formatComma(won)}$suffix';
+
+  /// 예: `₩ 1,250,000`
+  static String formatWonSymbol(int won) => '₩ ${formatComma(won)}';
 }

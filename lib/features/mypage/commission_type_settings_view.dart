@@ -1,11 +1,9 @@
 import 'package:art_port/core/constants/app_colors.dart';
-import 'package:art_port/features/common/widgets/art_port_bottom_nav.dart';
 import 'package:art_port/features/mypage/commission_type_form_screen.dart';
 import 'package:art_port/features/mypage/commission_type_settings_providers.dart';
-import 'package:art_port/features/mypage/mypage_providers.dart';
 import 'package:art_port/features/mypage/widgets/commission_type_card.dart';
 import 'package:art_port/features/mypage/widgets/commission_type_settings_header.dart';
-import 'package:art_port/providers/current_tab_provider.dart';
+import 'package:art_port/features/mypage/widgets/mypage_sub_screen_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -18,15 +16,12 @@ class CommissionTypeSettingsView extends ConsumerWidget {
     final state = ref.watch(commissionTypeSettingsProvider);
     final notifier = ref.read(commissionTypeSettingsProvider.notifier);
 
-    return Scaffold(
+    return MyPageSubScreenScaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      body: Column(
-        children: [
-          CommissionTypeSettingsHeader(
-            onBack: () => Navigator.of(context).pop(),
-          ),
-          Expanded(
-            child: ListView(
+      header: CommissionTypeSettingsHeader(
+        onBack: () => Navigator.of(context).pop(),
+      ),
+      body: ListView(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
               children: [
                 const _InfoBanner(),
@@ -63,20 +58,10 @@ class CommissionTypeSettingsView extends ConsumerWidget {
                   ],
               ],
             ),
-          ),
-          _SaveAllButton(
-            enabled: state.hasChanges && !state.isSaving,
-            isSaving: state.isSaving,
-            onSave: () => _onSaveAll(context, ref),
-          ),
-        ],
-      ),
-      bottomNavigationBar: ArtPortBottomNav(
-        onTabSelected: (index) {
-          ref.read(showMyPageProvider.notifier).close();
-          ref.read(currentTabProvider.notifier).selectTab(index);
-          Navigator.of(context).popUntil((route) => route.isFirst);
-        },
+      footer: _SaveAllButton(
+        enabled: state.hasChanges && !state.isSaving,
+        isSaving: state.isSaving,
+        onSave: () => _onSaveAll(context, ref),
       ),
     );
   }

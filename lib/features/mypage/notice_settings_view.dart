@@ -1,12 +1,10 @@
 import 'package:art_port/core/constants/app_colors.dart';
-import 'package:art_port/features/common/widgets/art_port_bottom_nav.dart';
 import 'package:art_port/features/mypage/models/notice_settings_data.dart';
-import 'package:art_port/features/mypage/mypage_providers.dart';
 import 'package:art_port/features/mypage/notice_settings_providers.dart';
 import 'package:art_port/features/mypage/widgets/general_notice_card.dart';
+import 'package:art_port/features/mypage/widgets/mypage_sub_screen_scaffold.dart';
 import 'package:art_port/features/mypage/widgets/notice_form_dialog.dart';
 import 'package:art_port/features/mypage/widgets/notice_settings_header.dart';
-import 'package:art_port/providers/current_tab_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -36,15 +34,12 @@ class _NoticeSettingsViewState extends ConsumerState<NoticeSettingsView> {
       _statusMessageController.text = state.statusMessage;
     }
 
-    return Scaffold(
+    return MyPageSubScreenScaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      body: Column(
-        children: [
-          NoticeSettingsHeader(
-            onBack: () => Navigator.of(context).pop(),
-          ),
-          Expanded(
-            child: ListView(
+      header: NoticeSettingsHeader(
+        onBack: () => Navigator.of(context).pop(),
+      ),
+      body: ListView(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
               children: [
                 _WorkStatusSection(
@@ -74,19 +69,9 @@ class _NoticeSettingsViewState extends ConsumerState<NoticeSettingsView> {
                 ),
               ],
             ),
-          ),
-          _SaveSettingsButton(
-            isSaving: state.isSaving,
-            onSave: () => _onSave(context, ref),
-          ),
-        ],
-      ),
-      bottomNavigationBar: ArtPortBottomNav(
-        onTabSelected: (index) {
-          ref.read(showMyPageProvider.notifier).close();
-          ref.read(currentTabProvider.notifier).selectTab(index);
-          Navigator.of(context).popUntil((route) => route.isFirst);
-        },
+      footer: _SaveSettingsButton(
+        isSaving: state.isSaving,
+        onSave: () => _onSave(context, ref),
       ),
     );
   }

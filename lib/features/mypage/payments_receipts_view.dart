@@ -1,11 +1,10 @@
 import 'package:art_port/core/constants/app_colors.dart';
-import 'package:art_port/features/common/widgets/art_port_bottom_nav.dart';
+import 'package:art_port/core/formatters/currency_formatter.dart';
 import 'package:art_port/features/mypage/models/payment_history_item.dart';
-import 'package:art_port/features/mypage/mypage_providers.dart';
-import 'package:art_port/features/mypage/mypage_view.dart';
+import 'package:art_port/features/mypage/mypage_navigation.dart';
+import 'package:art_port/features/mypage/widgets/mypage_sub_screen_scaffold.dart';
 import 'package:art_port/features/mypage/widgets/payments_receipts_header.dart';
 import 'package:art_port/features/mypage/widgets/receipt_detail_bottom_sheet.dart';
-import 'package:art_port/providers/current_tab_provider.dart';
 import 'package:art_port/providers/payment_history_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,19 +19,17 @@ class PaymentsReceiptsView extends ConsumerWidget {
     final filteredItems = ref.watch(filteredPaymentHistoryProvider);
     final monthlySpending = ref.watch(monthlySpendingProvider);
     final activeFilter = ref.watch(paymentHistoryFilterProvider);
-    return Scaffold(
+    return MyPageSubScreenScaffold(
       backgroundColor: const Color(0xFFF9FAFB),
-      body: Column(
-        children: [
-          PaymentsReceiptsHeader(
-            onBack: () => Navigator.of(context).pop(),
-          ),
-          Expanded(
-            child: allItems.isEmpty
-                ? _PaymentsEmptyState(
-                    onExploreTap: () => _navigateToExplore(context, ref),
-                  )
-                : CustomScrollView(
+      header: PaymentsReceiptsHeader(
+        onBack: () => Navigator.of(context).pop(),
+      ),
+      body: allItems.isEmpty
+          ? _PaymentsEmptyState(
+              onExploreTap: () =>
+                  MyPageNavigation.navigateToExploreTab(context, ref),
+            )
+          : CustomScrollView(
                     slivers: [
                       SliverToBoxAdapter(
                         child: Padding(
@@ -76,23 +73,7 @@ class PaymentsReceiptsView extends ConsumerWidget {
                         ),
                     ],
                   ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: ArtPortBottomNav(
-        onTabSelected: (index) {
-          ref.read(currentTabProvider.notifier).selectTab(index);
-          ref.read(showMyPageProvider.notifier).close();
-          Navigator.of(context).popUntil((route) => route.isFirst);
-        },
-      ),
     );
-  }
-
-  void _navigateToExplore(BuildContext context, WidgetRef ref) {
-    ref.read(currentTabProvider.notifier).selectTab(0);
-    ref.read(showMyPageProvider.notifier).close();
-    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   void _openReceiptDetail(BuildContext context, PaymentHistoryItem item) {
@@ -143,7 +124,7 @@ class _MonthlySpendingCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  MyPageView.formatCurrency(amount),
+                  CurrencyFormatter.formatWonSymbol(amount),
                   style: const TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.w800,

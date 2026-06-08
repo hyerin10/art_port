@@ -1,5 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
-import 'package:art_port/features/commission/commission_detail_screen.dart';
+import 'package:art_port/features/commission/widgets/commission_grid_card.dart';
 import 'package:art_port/features/search/models/search_commission.dart';
 import 'package:art_port/features/search/search_providers.dart';
 import 'package:art_port/providers/liked_commissions_provider.dart';
@@ -255,7 +255,12 @@ class _SearchViewState extends ConsumerState<SearchView> {
                     ),
                     itemCount: results.length,
                     itemBuilder: (context, index) {
-                      return _SearchCommissionCard(item: results[index]);
+                      final item = results[index];
+                      final likedIds = ref.watch(likedCommissionIdsProvider);
+                      return CommissionGridCard(
+                        data: CommissionCardDisplayData.fromSearch(item),
+                        isLiked: likedIds.contains(item.id),
+                      );
                     },
                   ),
                 ),
@@ -1115,238 +1120,6 @@ class _ResultsSummaryBar extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-// ─── Commission Card ──────────────────────────────────────────────────────────
-
-class _SearchCommissionCard extends ConsumerWidget {
-  const _SearchCommissionCard({required this.item});
-
-  final SearchCommissionItem item;
-
-  static const int _maxVisibleTags = 2;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final likedIds = ref.watch(likedCommissionIdsProvider);
-    final isLiked = likedIds.contains(item.id);
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => CommissionDetailScreen.open(
-          context,
-          commissionId: item.id,
-        ),
-        borderRadius: BorderRadius.circular(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(14)),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Image.network(
-                      item.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => ColoredBox(
-                        color: AppColors.primarySoft,
-                        child: Icon(
-                          Icons.image_outlined,
-                          color: AppColors.primary.withValues(alpha: 0.4),
-                        ),
-                      ),
-                    ),
-                    if (item.hasSlot)
-                      Positioned(
-                        top: 8,
-                        left: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.onlineStatus,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            '슬롯 있음',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                              height: 1.1,
-                            ),
-                          ),
-                        ),
-                      ),
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: _LikeButton(
-                        isLiked: isLiked,
-                        onTap: () => ref
-                            .read(likedCommissionIdsProvider.notifier)
-                            .toggle(item.id),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(2, 8, 2, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 10,
-                        backgroundColor: AppColors.chipBackground,
-                        backgroundImage: NetworkImage(item.artistAvatarUrl),
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          item.artistName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    item.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                      height: 1.25,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  _TagRow(tags: item.tags),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Text(
-                        item.priceLabel,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        item.likeCountLabel,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TagRow extends StatelessWidget {
-  const _TagRow({required this.tags});
-
-  final List<String> tags;
-
-  @override
-  Widget build(BuildContext context) {
-    final visible = tags.take(_SearchCommissionCard._maxVisibleTags).toList();
-    final extra = tags.length - visible.length;
-
-    return Wrap(
-      spacing: 4,
-      runSpacing: 4,
-      children: [
-        for (final tag in visible) _TagChip(label: tag),
-        if (extra > 0) _TagChip(label: '+$extra'),
-      ],
-    );
-  }
-}
-
-class _TagChip extends StatelessWidget {
-  const _TagChip({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-      decoration: BoxDecoration(
-        color: AppColors.chipBackground,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textSecondary,
-          height: 1.1,
-        ),
-      ),
-    );
-  }
-}
-
-class _LikeButton extends StatelessWidget {
-  const _LikeButton({
-    required this.isLiked,
-    required this.onTap,
-  });
-
-  final bool isLiked;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.35),
-          shape: BoxShape.circle,
-        ),
-        alignment: Alignment.center,
-        child: Icon(
-          isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-          size: 18,
-          color: isLiked ? AppColors.primary : Colors.white,
-        ),
-      ),
     );
   }
 }
