@@ -1,4 +1,4 @@
-import 'package:art_port/features/commission/models/commission_detail.dart';
+import 'package:art_port/features/commission/data/commission_detail_dummy_data.dart';
 import 'package:art_port/features/explore/models/commission_sample.dart';
 import 'package:art_port/features/mypage/models/liked_commission_item.dart';
 import 'package:art_port/features/search/models/search_commission.dart';
@@ -44,7 +44,7 @@ final likedCommissionsProvider = Provider<List<LikedCommissionItem>>((ref) {
   final items = <LikedCommissionItem>[];
 
   for (final id in likedIds) {
-    final detail = CommissionDetailData.forId(id);
+    final detail = CommissionDetailDummyData.forId(id);
     if (detail != null) {
       items.add(LikedCommissionItem.fromDetail(detail));
     }

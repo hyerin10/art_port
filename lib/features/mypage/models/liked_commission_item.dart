@@ -1,3 +1,4 @@
+import 'package:art_port/core/formatters/currency_formatter.dart';
 import 'package:art_port/features/commission/models/commission_detail.dart';
 
 /// 찜한 작품 목록 카드용 데이터 모델
@@ -32,17 +33,7 @@ class LikedCommissionItem {
       artistAvatarUrl: detail.artistAvatarUrl,
       title: detail.title,
       tags: detail.tags,
-      priceLabel: _formatPriceLabel(priceWon),
+      priceLabel: CurrencyFormatter.formatWonKrw(priceWon),
     );
-  }
-
-  static String _formatPriceLabel(int won) {
-    final s = won.toString();
-    final buf = StringBuffer();
-    for (var i = 0; i < s.length; i++) {
-      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
-      buf.write(s[i]);
-    }
-    return '₩${buf.toString()}~';
   }
 }
