@@ -1,5 +1,15 @@
 /// 채팅 메시지 유형
-enum ChatMessageType { text, image, file }
+enum ChatMessageType {
+  text,
+  image,
+  file,
+
+  /// 커미션 신청서 도착 카드
+  commissionApplication,
+
+  /// 결제 요청 카드
+  paymentRequest,
+}
 
 /// 1:1 채팅 메시지
 class ChatMessage {

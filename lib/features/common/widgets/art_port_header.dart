@@ -7,7 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ArtPortHeader extends ConsumerWidget {
-  const ArtPortHeader({super.key});
+  const ArtPortHeader({super.key, this.onProfileTap});
+
+  /// 지정 시 프로필 탭 기본 동작(마이페이지 열기/닫기) 대신 호출됩니다.
+  final VoidCallback? onProfileTap;
 
   static const double _actionSize = 40;
 
@@ -62,7 +65,8 @@ class ArtPortHeader extends ConsumerWidget {
             if (isLoggedIn)
               _ProfileAvatar(
                 imageUrl: profileAvatarUrl,
-                onTap: () => ref.read(showMyPageProvider.notifier).open(),
+                onTap: onProfileTap ??
+                    () => ref.read(showMyPageProvider.notifier).toggle(),
               )
             else
               _GuestProfileIcon(

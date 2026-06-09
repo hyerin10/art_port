@@ -4,8 +4,10 @@ import 'package:art_port/features/commission/models/commission_apply_args.dart';
 import 'package:art_port/features/commission/models/commission_detail.dart';
 import 'package:art_port/features/commission/widgets/commission_apply_header.dart';
 import 'package:art_port/features/commission/widgets/commission_reference_upload_grid.dart';
+import 'package:art_port/features/auth/widgets/login_required_dialog.dart';
 import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/mypage/services/profile_image_picker.dart';
+import 'package:art_port/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -88,6 +90,12 @@ class _CommissionApplyViewState extends ConsumerState<CommissionApplyView> {
 
   Future<void> _onSubmit() async {
     if (!_canSubmit) return;
+
+    final isLoggedIn = ref.read(authProvider);
+    if (!isLoggedIn) {
+      await showLoginRequiredDialog(context);
+      return;
+    }
 
     FocusScope.of(context).unfocus();
     setState(() => _isSubmitting = true);

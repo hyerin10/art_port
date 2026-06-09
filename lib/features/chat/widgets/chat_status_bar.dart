@@ -1,18 +1,22 @@
-import 'package:art_port/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
 /// 커미션 진행 상태 바 — 헤더 바로 아래 고정
 class ChatStatusBar extends StatelessWidget {
-  const ChatStatusBar({super.key, required this.statusLabel});
+  const ChatStatusBar({
+    super.key,
+    required this.statusLabel,
+    this.backgroundColor = const Color(0xFF2F80ED),
+  });
 
   final String statusLabel;
+  final Color backgroundColor;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-      color: AppColors.commissionStatusBar,
+      color: backgroundColor,
       alignment: Alignment.center,
       child: Text(
         statusLabel,

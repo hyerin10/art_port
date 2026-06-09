@@ -1,3 +1,5 @@
+import 'package:art_port/features/commission/commission_transaction_providers.dart';
+import 'package:art_port/features/commission/data/commission_detail_dummy_data.dart';
 import 'package:art_port/features/commission/models/commission_apply_args.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,7 +14,17 @@ class CommissionApplySubmissionsNotifier
   @override
   List<CommissionApplySubmission> build() => [];
 
-  void submit(CommissionApplySubmission submission) {
+  String submit(CommissionApplySubmission submission) {
     state = [...state, submission];
+
+    final detail = CommissionDetailDummyData.forId(submission.commissionId);
+    final artistAvatarUrl = detail?.artistAvatarUrl ??
+        'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=80&h=80&fit=crop';
+
+    return ref.read(commissionTransactionRegistryProvider.notifier).registerFromSubmission(
+          submission: submission,
+          artistAvatarUrl: artistAvatarUrl,
+          artistId: null,
+        );
   }
 }

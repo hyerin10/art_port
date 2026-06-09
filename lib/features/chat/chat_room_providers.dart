@@ -1,11 +1,31 @@
 import 'package:art_port/features/chat/models/chat_dummy_data.dart';
 import 'package:art_port/features/chat/models/chat_message.dart';
 import 'package:art_port/features/chat/models/pending_attachment.dart';
+import 'package:art_port/features/commission/commission_transaction_providers.dart';
+import 'package:art_port/providers/app_mode_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final chatRoomDetailProvider =
     Provider.family<ChatRoomDetail?, String>((ref, roomId) {
-  return ChatDummyData.roomFor(roomId);
+  final base = ChatDummyData.roomFor(roomId);  if (base == null) return null;
+
+  final transaction = ref.watch(commissionTransactionProvider(roomId));
+  if (transaction == null) return base;
+
+  final isArtist = ref.watch(appModeProvider);
+  if (isArtist) {
+    return base.copyWith(
+      counterpartName: transaction.clientName,
+      avatarUrl: transaction.clientAvatarUrl,
+      statusLabel: transaction.status.statusBarLabel,
+    );
+  }
+
+  return base.copyWith(
+    counterpartName: transaction.artistName,
+    avatarUrl: transaction.artistAvatarUrl,
+    statusLabel: transaction.status.statusBarLabel,
+  );
 });
 
 final chatMessagesProvider =

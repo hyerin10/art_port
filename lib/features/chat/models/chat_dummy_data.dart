@@ -37,8 +37,45 @@ abstract final class ChatDummyData {
           statusLabel: 'Status: Rough Sketch / 러프 진행 중',
           artistId: 'mika-art',
         ),
+      'chat-commission-demo' => const ChatRoomDetail(
+          id: 'chat-commission-demo',
+          counterpartName: 'MikaArt',
+          avatarUrl: _mikaAvatar,
+          isOnline: true,
+          statusLabel: 'Status: Form Submitted / 신청서 제출됨',
+          artistId: 'mika-art',
+        ),
       _ => null,
     };
+  }
+
+  /// 커미션 신청으로 생성된 채팅방 등록
+  static void registerCommissionRoom({
+    required String roomId,
+    required String artistName,
+    required String artistAvatarUrl,
+    required String clientName,
+    required String clientAvatarUrl,
+    String? artistId,
+    required String statusLabel,
+    required List<ChatMessage> initialMessages,
+  }) {
+    _dynamicRooms[roomId] = ChatRoomDetail(
+      id: roomId,
+      counterpartName: artistName,
+      avatarUrl: artistAvatarUrl,
+      isOnline: true,
+      statusLabel: statusLabel,
+      artistId: artistId,
+    );
+    _dynamicMessages[roomId] = List<ChatMessage>.from(initialMessages);
+  }
+
+  static void updateRoomStatus(String roomId, String statusLabel) {
+    final room = _dynamicRooms[roomId] ?? roomFor(roomId);
+    if (room == null) return;
+
+    _dynamicRooms[roomId] = room.copyWith(statusLabel: statusLabel);
   }
 
   /// 새 1:1 문의 채팅방 등록
@@ -62,6 +99,10 @@ abstract final class ChatDummyData {
 
     if (roomId.startsWith('inquiry-')) {
       return List<ChatMessage>.from(_supportInquiryMessages[roomId] ?? const []);
+    }
+
+    if (roomId == 'chat-commission-demo') {
+      return List<ChatMessage>.from(_commissionDemoMessages);
     }
 
     if (roomId != 'chat-mika') {
@@ -115,6 +156,23 @@ abstract final class ChatDummyData {
     final m = now.minute.toString().padLeft(2, '0');
     return '$h:$m';
   }
+
+  static const _commissionDemoMessages = [
+    ChatMessage(
+      id: 'demo-m1',
+      isMine: false,
+      type: ChatMessageType.text,
+      timeLabel: '10:30',
+      text: '안녕하세요! 커미션 문의 감사합니다 :)',
+    ),
+    ChatMessage(
+      id: 'demo-m2',
+      isMine: true,
+      type: ChatMessageType.text,
+      timeLabel: '10:31',
+      text: '안녕하세요! 캐릭터 일러스트 의뢰하고 싶어서 신청서를 작성했어요.',
+    ),
+  ];
 
   static const _supportInquiryMessages = <String, List<ChatMessage>>{
     'inquiry-payment': [

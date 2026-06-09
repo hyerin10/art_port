@@ -2,6 +2,7 @@ import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/features/artist_profile/artist_profile_screen.dart';
 import 'package:art_port/features/chat/chat_pending_attachments_provider.dart';
 import 'package:art_port/features/chat/chat_room_providers.dart';
+import 'package:art_port/features/chat/models/chat_timeline.dart';
 import 'package:art_port/features/chat/models/pending_attachment.dart';
 import 'package:art_port/features/chat/services/chat_attachment_picker.dart';
 import 'package:art_port/features/chat/widgets/attachment_bottom_sheet.dart';
@@ -10,7 +11,11 @@ import 'package:art_port/features/chat/widgets/chat_message_bubble.dart';
 import 'package:art_port/features/chat/widgets/chat_pending_attachments_bar.dart';
 import 'package:art_port/features/chat/widgets/chat_room_header.dart';
 import 'package:art_port/features/chat/widgets/chat_status_bar.dart';
+import 'package:art_port/features/chat/widgets/commission_arrival_card.dart';
+import 'package:art_port/features/chat/widgets/payment_request_card.dart';
+import 'package:art_port/features/commission/commission_transaction_providers.dart';
 import 'package:art_port/features/common/widgets/art_port_header.dart';
+import 'package:art_port/features/mypage/mypage_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -93,19 +98,29 @@ class _ChatRoomViewState extends ConsumerState<ChatRoomView> {
         .removeAt(index);
   }
 
+  void _openMyPageFromChatRoom() {
+    ref.read(showMyPageProvider.notifier).open();
+    Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     final room = ref.watch(chatRoomDetailProvider(widget.roomId));
     final messages = ref.watch(chatMessagesProvider(widget.roomId));
+    final transaction = ref.watch(commissionTransactionProvider(widget.roomId));
     final pendingAttachments =
         ref.watch(chatPendingAttachmentsProvider(widget.roomId));
+    final timeline = buildChatTimeline(
+      messages: messages,
+      transaction: transaction,
+    );
 
     if (room == null) {
       return Scaffold(
         backgroundColor: AppColors.background,
         body: Column(
           children: [
-            const ArtPortHeader(),
+            ArtPortHeader(onProfileTap: _openMyPageFromChatRoom),
             Expanded(
               child: Center(
                 child: Column(
@@ -142,7 +157,7 @@ class _ChatRoomViewState extends ConsumerState<ChatRoomView> {
       backgroundColor: AppColors.chatBackground,
       body: Column(
         children: [
-          const ArtPortHeader(),
+          ArtPortHeader(onProfileTap: _openMyPageFromChatRoom),
           ChatRoomHeader(
             counterpartName: room.counterpartName,
             avatarUrl: room.avatarUrl,
@@ -161,9 +176,23 @@ class _ChatRoomViewState extends ConsumerState<ChatRoomView> {
             child: ListView.builder(
               controller: _scrollController,
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              itemCount: messages.length,
+              itemCount: timeline.length,
               itemBuilder: (context, index) {
-                return ChatMessageBubble(message: messages[index]);
+                final item = timeline[index];
+                return switch (item.type) {
+                  ChatTimelineItemType.message => ChatMessageBubble(
+                      message: item.message!,
+                    ),
+                  ChatTimelineItemType.commissionApplication =>
+                    CommissionArrivalCard(
+                      roomId: widget.roomId,
+                      transaction: transaction!,
+                    ),
+                  ChatTimelineItemType.paymentRequest => PaymentRequestCard(
+                      roomId: widget.roomId,
+                      transaction: transaction!,
+                    ),
+                };
               },
             ),
           ),

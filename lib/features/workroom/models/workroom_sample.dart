@@ -51,6 +51,7 @@ class WorkroomChatItem {
     required this.avatarUrl,
     required this.lastMessagePreview,
     required this.timeAgoLabel,
+    required this.lastMessageTimestamp,
     required this.isReceivedAsArtist,
     this.unreadCount = 0,
     this.isOnline = false,
@@ -61,6 +62,7 @@ class WorkroomChatItem {
   final String avatarUrl;
   final String lastMessagePreview;
   final String timeAgoLabel;
+  final DateTime lastMessageTimestamp;
   final int unreadCount;
   final bool isOnline;
   final bool isReceivedAsArtist;
@@ -115,78 +117,88 @@ abstract final class WorkroomDummyData {
   static const _avatar4 =
       'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop';
 
-  static const chatRooms = [
-    // 의뢰인 모드: 내가 신청한 채팅방
-    WorkroomChatItem(
-      id: 'chat-c1',
-      counterpartName: '초코쌤',
-      avatarUrl: _avatar1,
-      lastMessagePreview: '스케치 감사해요! 수정 사항 보내드릴게요.',
-      timeAgoLabel: '2분 전',
-      unreadCount: 2,
-      isOnline: true,
-      isReceivedAsArtist: false,
-    ),
-    WorkroomChatItem(
-      id: 'chat-c2',
-      counterpartName: '소라드로우',
-      avatarUrl: _avatar2,
-      lastMessagePreview: '최종 시안 확인 부탁드려요.',
-      timeAgoLabel: '1시간 전',
-      unreadCount: 1,
-      isOnline: true,
-      isReceivedAsArtist: false,
-    ),
-    WorkroomChatItem(
-      id: 'chat-c3',
-      counterpartName: '루나픽셀',
-      avatarUrl: _avatar3,
-      lastMessagePreview: '좋아요! 배경 작업 바로 시작할게요.',
-      timeAgoLabel: '3시간 전',
-      isOnline: false,
-      isReceivedAsArtist: false,
-    ),
-    // 작가 모드: 내가 접수한 채팅방
-    WorkroomChatItem(
-      id: 'chat-mika',
-      counterpartName: 'MikaArt',
-      avatarUrl: _avatar1,
-      lastMessagePreview: '이미지 잘 받았어요! 러프 스케치 작업 시작할게요.',
-      timeAgoLabel: '방금',
-      unreadCount: 1,
-      isOnline: true,
-      isReceivedAsArtist: true,
-    ),
-    WorkroomChatItem(
-      id: 'chat-a1',
-      counterpartName: '별하늘님',
-      avatarUrl: _avatar4,
-      lastMessagePreview: '레퍼런스 이미지 추가로 보냈어요!',
-      timeAgoLabel: '5분 전',
-      unreadCount: 3,
-      isOnline: true,
-      isReceivedAsArtist: true,
-    ),
-    WorkroomChatItem(
-      id: 'chat-a2',
-      counterpartName: '민트캣',
-      avatarUrl: _avatar1,
-      lastMessagePreview: '마감일 하루만 연장 가능할까요?',
-      timeAgoLabel: '30분 전',
-      unreadCount: 1,
-      isOnline: true,
-      isReceivedAsArtist: true,
-    ),
-    WorkroomChatItem(
-      id: 'chat-a3',
-      counterpartName: '하늘조각',
-      avatarUrl: _avatar2,
-      lastMessagePreview: '컨펌 완료했습니다. 감사합니다!',
-      timeAgoLabel: '2시간 전',
-      isOnline: false,
-      isReceivedAsArtist: true,
-    ),
-  ];
+  static List<WorkroomChatItem> chatRooms() {
+    final now = DateTime.now();
+    return [
+      // 의뢰인 모드: 내가 신청한 채팅방
+      WorkroomChatItem(
+        id: 'chat-c1',
+        counterpartName: '초코쌤',
+        avatarUrl: _avatar1,
+        lastMessagePreview: '스케치 감사해요! 수정 사항 보내드릴게요.',
+        timeAgoLabel: '2분 전',
+        lastMessageTimestamp: now.subtract(const Duration(minutes: 2)),
+        unreadCount: 2,
+        isOnline: true,
+        isReceivedAsArtist: false,
+      ),
+      WorkroomChatItem(
+        id: 'chat-c2',
+        counterpartName: '소라드로우',
+        avatarUrl: _avatar2,
+        lastMessagePreview: '최종 시안 확인 부탁드려요.',
+        timeAgoLabel: '1시간 전',
+        lastMessageTimestamp: now.subtract(const Duration(hours: 1)),
+        unreadCount: 1,
+        isOnline: true,
+        isReceivedAsArtist: false,
+      ),
+      WorkroomChatItem(
+        id: 'chat-c3',
+        counterpartName: '루나픽셀',
+        avatarUrl: _avatar3,
+        lastMessagePreview: '좋아요! 배경 작업 바로 시작할게요.',
+        timeAgoLabel: '3시간 전',
+        lastMessageTimestamp: now.subtract(const Duration(hours: 3)),
+        isOnline: false,
+        isReceivedAsArtist: false,
+      ),
+      // 작가 모드: 내가 접수한 채팅방
+      WorkroomChatItem(
+        id: 'chat-mika',
+        counterpartName: 'MikaArt',
+        avatarUrl: _avatar1,
+        lastMessagePreview: '이미지 잘 받았어요! 러프 스케치 작업 시작할게요.',
+        timeAgoLabel: '방금',
+        lastMessageTimestamp: now.subtract(const Duration(minutes: 1)),
+        unreadCount: 1,
+        isOnline: true,
+        isReceivedAsArtist: true,
+      ),
+      WorkroomChatItem(
+        id: 'chat-a1',
+        counterpartName: '별하늘님',
+        avatarUrl: _avatar4,
+        lastMessagePreview: '레퍼런스 이미지 추가로 보냈어요!',
+        timeAgoLabel: '5분 전',
+        lastMessageTimestamp: now.subtract(const Duration(minutes: 5)),
+        unreadCount: 3,
+        isOnline: true,
+        isReceivedAsArtist: true,
+      ),
+      WorkroomChatItem(
+        id: 'chat-a2',
+        counterpartName: '민트캣',
+        avatarUrl: _avatar1,
+        lastMessagePreview: '마감일 하루만 연장 가능할까요?',
+        timeAgoLabel: '30분 전',
+        lastMessageTimestamp: now.subtract(const Duration(minutes: 30)),
+        unreadCount: 1,
+        isOnline: true,
+        isReceivedAsArtist: true,
+      ),
+      WorkroomChatItem(
+        id: 'chat-a3',
+        counterpartName: '하늘조각',
+        avatarUrl: _avatar2,
+        lastMessagePreview: '컨펌 완료했습니다. 감사합니다!',
+        timeAgoLabel: '2시간 전',
+        lastMessageTimestamp: now.subtract(const Duration(hours: 2)),
+        isOnline: false,
+        isReceivedAsArtist: true,
+      ),
+    ];
+  }
 
   static const orders = [
     // 의뢰인 모드: 내가 신청한 주문

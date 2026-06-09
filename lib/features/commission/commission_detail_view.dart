@@ -1,5 +1,6 @@
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/features/artist_profile/artist_profile_screen.dart';
+import 'package:art_port/features/auth/widgets/login_required_dialog.dart';
 import 'package:art_port/features/commission/commission_apply_screen.dart';
 import 'package:art_port/features/commission/commission_detail_providers.dart';
 import 'package:art_port/features/commission/models/commission_apply_args.dart';
@@ -8,6 +9,7 @@ import 'package:art_port/features/commission/widgets/commission_detail_bottom_ba
 import 'package:art_port/features/commission/widgets/commission_detail_header.dart';
 import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/common/widgets/art_port_bottom_nav.dart';
+import 'package:art_port/providers/auth_provider.dart';
 import 'package:art_port/providers/current_tab_provider.dart';
 import 'package:art_port/features/mypage/models/followed_artist.dart';
 import 'package:art_port/providers/followed_artists_provider.dart';
@@ -38,7 +40,13 @@ class _CommissionDetailViewState extends ConsumerState<CommissionDetailView> {
     return popularIndex >= 0 ? popularIndex : 0;
   }
 
-  void _onApplyTap(CommissionDetail detail) {
+  Future<void> _onApplyTap(CommissionDetail detail) async {
+    final isLoggedIn = ref.read(authProvider);
+    if (!isLoggedIn) {
+      await showLoginRequiredDialog(context);
+      return;
+    }
+
     final index = _selectedOptionIndex ?? _defaultOptionIndex(detail);
     final selectedOption = detail.priceOptions[index];
 
