@@ -13,4 +13,10 @@ abstract final class AuthMessages {
   static const signUpPasswordInvalid =
       '영문, 숫자, 특수문자를 포함하여 8자 이상 입력해주세요.';
   static const signUpPasswordMismatch = '비밀번호가 일치하지 않습니다.';
+
+  // 비밀번호 찾기
+  static const forgotPasswordEmailInvalid = '올바른 이메일 형식을 입력해 주세요.';
+  static const forgotPasswordEmailNotFound = '존재하지 않는 이메일 주소입니다.';
+  static const forgotPasswordSuccessMessage =
+      '임시 비밀번호가 이메일로 발송되었습니다. 로그인 후 비밀번호를 반드시 변경해 주세요.';
 }

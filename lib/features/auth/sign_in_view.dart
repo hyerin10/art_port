@@ -1,5 +1,6 @@
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/features/auth/auth_providers.dart';
+import 'package:art_port/features/auth/forgot_password_screen.dart';
 import 'package:art_port/features/auth/sign_up_screen.dart';
 import 'package:art_port/features/auth/widgets/auth_footer_link.dart';
 import 'package:art_port/features/auth/widgets/auth_logo.dart';
@@ -59,6 +60,10 @@ class _SignInViewState extends ConsumerState<SignInView> {
 
   void _onSignUpTap() {
     SignUpScreen.open(context);
+  }
+
+  void _onForgotPasswordTap() {
+    ForgotPasswordScreen.open(context);
   }
 
   @override
@@ -159,7 +164,7 @@ class _SignInViewState extends ConsumerState<SignInView> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: _onForgotPasswordTap,
                         style: TextButton.styleFrom(
                           foregroundColor: AppColors.info,
                           padding: EdgeInsets.zero,
