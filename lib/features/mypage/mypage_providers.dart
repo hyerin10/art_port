@@ -5,6 +5,7 @@ import 'package:art_port/features/mypage/followed_artists_screen.dart';
 import 'package:art_port/features/mypage/inquiry_list_screen.dart';
 import 'package:art_port/features/mypage/liked_works_screen.dart';
 import 'package:art_port/features/mypage/payments_receipts_screen.dart';
+import 'package:art_port/features/mypage/settlement_account_screen.dart';
 import 'package:art_port/features/mypage/models/mypage_data.dart';
 import 'package:art_port/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
@@ -175,11 +176,15 @@ class ArtistMyPageActions {
     NoticeSettingsScreen.open(context);
   }
 
+  void onPaymentsAndReceipts(BuildContext context) {
+    PaymentsReceiptsScreen.open(context);
+  }
+
   void onRequestWithdrawal() {
     // TODO: 출금 신청 API 연동
   }
 
-  void onSettlementAccount() {
-    // TODO: 정산 계좌 관리 화면으로 이동
+  void onSettlementAccount(BuildContext context) {
+    SettlementAccountScreen.open(context);
   }
 }

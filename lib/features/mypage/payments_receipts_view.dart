@@ -4,6 +4,7 @@ import 'package:art_port/features/mypage/payments_receipts_actions.dart';
 import 'package:art_port/features/mypage/widgets/mypage_sub_screen_scaffold.dart';
 import 'package:art_port/features/mypage/widgets/payments_receipts_body.dart';
 import 'package:art_port/features/mypage/widgets/payments_receipts_header.dart';
+import 'package:art_port/providers/app_mode_provider.dart';
 import 'package:art_port/providers/payment_history_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,11 +19,17 @@ class PaymentsReceiptsView extends ConsumerWidget {
     final filteredItems = ref.watch(filteredPaymentHistoryProvider);
     final monthlySpending = ref.watch(monthlySpendingProvider);
     final activeFilter = ref.watch(paymentHistoryFilterProvider);
+    final isArtistMode = ref.watch(appModeProvider);
+    final screenTitle =
+        isArtistMode ? '결제 내역 관리' : '결제 및 영수증';
+    final summaryLabel =
+        isArtistMode ? '이번 달 수익 금액' : '이번 달 지출 금액';
 
     return MyPageSubScreenScaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       header: PaymentsReceiptsHeader(
         onBack: () => Navigator.of(context).pop(),
+        title: screenTitle,
       ),
       body: allItems.isEmpty
           ? EmptyStateView(
@@ -36,6 +43,7 @@ class PaymentsReceiptsView extends ConsumerWidget {
             )
           : PaymentsReceiptsBody(
               monthlySpending: monthlySpending,
+              summaryLabel: summaryLabel,
               activeFilter: activeFilter,
               filteredItems: filteredItems,
               onFilterSelected: (filter) => ref

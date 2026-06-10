@@ -2,11 +2,16 @@ import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/core/formatters/currency_formatter.dart';
 import 'package:flutter/material.dart';
 
-/// 이번 달 지출 금액 카드
+/// 월간 금액 요약 카드
 class MonthlySpendingCard extends StatelessWidget {
-  const MonthlySpendingCard({super.key, required this.amount});
+  const MonthlySpendingCard({
+    super.key,
+    required this.amount,
+    this.summaryLabel = '이번 달 지출 금액',
+  });
 
   final int amount;
+  final String summaryLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +28,9 @@ class MonthlySpendingCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '이번 달 지출 금액',
-                  style: TextStyle(
+                Text(
+                  summaryLabel,
+                  style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                     color: AppColors.textSecondary,

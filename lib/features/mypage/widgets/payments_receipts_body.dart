@@ -11,6 +11,7 @@ class PaymentsReceiptsBody extends StatelessWidget {
   const PaymentsReceiptsBody({
     super.key,
     required this.monthlySpending,
+    required this.summaryLabel,
     required this.activeFilter,
     required this.filteredItems,
     required this.onFilterSelected,
@@ -18,6 +19,7 @@ class PaymentsReceiptsBody extends StatelessWidget {
   });
 
   final int monthlySpending;
+  final String summaryLabel;
   final PaymentHistoryFilter activeFilter;
   final List<PaymentHistoryItem> filteredItems;
   final ValueChanged<PaymentHistoryFilter> onFilterSelected;
@@ -30,7 +32,10 @@ class PaymentsReceiptsBody extends StatelessWidget {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-            child: MonthlySpendingCard(amount: monthlySpending),
+            child: MonthlySpendingCard(
+              amount: monthlySpending,
+              summaryLabel: summaryLabel,
+            ),
           ),
         ),
         SliverToBoxAdapter(
