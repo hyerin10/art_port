@@ -80,7 +80,7 @@ class ArtistMyPageContent extends ConsumerWidget {
             children: [
               WithdrawableEarningsCard(
                 amount: earnings.withdrawableAmount,
-                onRequestWithdrawal: actions.onRequestWithdrawal,
+                onRequestWithdrawal: () => actions.onRequestWithdrawal(context),
               ),
               const SizedBox(height: 12),
               Container(

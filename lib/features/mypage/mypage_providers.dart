@@ -6,6 +6,7 @@ import 'package:art_port/features/mypage/inquiry_list_screen.dart';
 import 'package:art_port/features/mypage/liked_works_screen.dart';
 import 'package:art_port/features/mypage/payments_receipts_screen.dart';
 import 'package:art_port/features/mypage/settlement_account_screen.dart';
+import 'package:art_port/features/mypage/withdrawal_screen.dart';
 import 'package:art_port/features/mypage/models/mypage_data.dart';
 import 'package:art_port/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
@@ -180,8 +181,8 @@ class ArtistMyPageActions {
     PaymentsReceiptsScreen.open(context);
   }
 
-  void onRequestWithdrawal() {
-    // TODO: 출금 신청 API 연동
+  void onRequestWithdrawal(BuildContext context) {
+    WithdrawalScreen.open(context);
   }
 
   void onSettlementAccount(BuildContext context) {
