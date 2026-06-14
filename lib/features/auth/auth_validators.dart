@@ -22,6 +22,22 @@ abstract final class AuthValidators {
 
   static bool isValidPassword(String value) => _passwordRegex.hasMatch(value);
 
+  /// 인증번호에 숫자 이외 문자 포함 여부
+  static bool hasInvalidVerificationCodeCharacters(String value) {
+    if (value.isEmpty) return false;
+    return RegExp(r'[^0-9]').hasMatch(value);
+  }
+
+  static bool isValidVerificationCode(String value) {
+    if (hasInvalidVerificationCodeCharacters(value)) return false;
+    return RegExp(r'^\d{6}$').hasMatch(value);
+  }
+
+  static String normalizeVerificationCode(String raw) {
+    final digits = raw.replaceAll(RegExp(r'\D'), '');
+    return digits.length > 6 ? digits.substring(0, 6) : digits;
+  }
+
   static String formatPhone(String raw) {
     if (hasInvalidPhoneCharacters(raw)) return raw;
 

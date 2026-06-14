@@ -7,6 +7,9 @@ abstract final class AppColors {
   static const Color textSecondary = Color(0xFF6B7280);
   static const Color textMuted = Color(0xFF9CA3AF);
 
+  /// ArtPort 브랜드 네이비 (인증·CTA 버튼 등)
+  static const Color brandNavy = Color(0xFF1E3A5F);
+
   /// 메인 브랜드 컬러 (활성화 버튼 등)
   static const Color primary = Color(0xFF7D3CED);
   static const Color primaryLight = Color(0xFFEDE9FE);

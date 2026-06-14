@@ -1,11 +1,14 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/features/auth/email_verification/email_verification_pending_screen.dart';
 import 'package:art_port/features/mypage/mypage_navigation.dart';
 import 'package:art_port/features/mypage/mypage_providers.dart';
+import 'package:art_port/features/mypage/widgets/email_verification_banner.dart';
 import 'package:art_port/features/mypage/widgets/menu_list_item.dart';
 import 'package:art_port/features/mypage/widgets/mypage_logout_button.dart';
 import 'package:art_port/features/mypage/widgets/mypage_profile_section.dart';
 import 'package:art_port/features/mypage/widgets/mypage_scroll_view.dart';
 import 'package:art_port/features/mypage/widgets/section_card.dart';
+import 'package:art_port/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,6 +20,7 @@ class ClientMyPageContent extends ConsumerWidget {
     final profile = ref.watch(clientProfileProvider);
     final actions = ref.watch(clientMyPageActionsProvider);
     final profileNotifier = ref.read(clientProfileProvider.notifier);
+    final isEmailVerified = ref.watch(isEmailVerifiedProvider);
 
     return MyPageScrollView(
       child: Column(
@@ -32,6 +36,15 @@ class ClientMyPageContent extends ConsumerWidget {
               fontSize: 14,
               fontWeight: FontWeight.w500,
               color: AppColors.textSecondary,
+            ),
+          ),
+          Visibility(
+            visible: !isEmailVerified,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: EmailVerificationBanner(
+                onVerify: () => EmailVerificationPendingScreen.open(context),
+              ),
             ),
           ),
           const SizedBox(height: 28),

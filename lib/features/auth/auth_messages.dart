@@ -10,6 +10,8 @@ abstract final class AuthMessages {
       '하이픈(-) 없이 숫자만 입력해주세요.';
   static const signUpVerificationFailed =
       '인증번호가 일치하지 않습니다. 다시 시도해주세요.';
+  static const emailVerificationCodeDigitsOnly = '숫자만 입력해주세요.';
+  static const emailVerificationCodeLength = '인증번호 6자리를 입력해주세요.';
   static const signUpPasswordInvalid =
       '영문, 숫자, 특수문자를 포함하여 8자 이상 입력해주세요.';
   static const signUpPasswordMismatch = '비밀번호가 일치하지 않습니다.';

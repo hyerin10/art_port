@@ -13,5 +13,22 @@ class AuthNotifier extends Notifier<bool> {
 
   void signIn() => state = true;
 
-  void signOut() => state = false;
+  void signOut() {
+    state = false;
+    ref.read(isEmailVerifiedProvider.notifier).reset();
+  }
+}
+
+/// 이메일 인증 완료 여부. `true` = 인증됨.
+final isEmailVerifiedProvider = NotifierProvider<IsEmailVerifiedNotifier, bool>(
+  IsEmailVerifiedNotifier.new,
+);
+
+class IsEmailVerifiedNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void markVerified() => state = true;
+
+  void reset() => state = false;
 }

@@ -8,12 +8,14 @@ class AuthPrimaryButton extends StatelessWidget {
     required this.enabled,
     required this.onPressed,
     this.isLoading = false,
+    this.backgroundColor,
   });
 
   final String label;
   final bool enabled;
   final bool isLoading;
   final VoidCallback onPressed;
+  final Color? backgroundColor;
 
   static const Color _disabledColor = Color(0xFF9CA3AF);
 
@@ -25,7 +27,7 @@ class AuthPrimaryButton extends StatelessWidget {
       child: FilledButton(
         onPressed: enabled && !isLoading ? onPressed : null,
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: backgroundColor ?? AppColors.primary,
           disabledBackgroundColor: _disabledColor,
           foregroundColor: Colors.white,
           disabledForegroundColor: Colors.white,
