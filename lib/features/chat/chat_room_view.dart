@@ -3,6 +3,7 @@ import 'package:art_port/core/network/api_exception.dart';
 import 'package:art_port/core/widgets/api_async_body.dart';
 import 'package:art_port/features/artist_profile/artist_profile_screen.dart';
 import 'package:art_port/features/chat/chat_pending_attachments_provider.dart';
+import 'package:art_port/features/chat/chat_room_actions.dart';
 import 'package:art_port/features/chat/chat_room_providers.dart';
 import 'package:art_port/features/chat/models/chat_message.dart';
 import 'package:art_port/features/chat/models/chat_timeline.dart';
@@ -129,6 +130,66 @@ class _ChatRoomViewState extends ConsumerState<ChatRoomView> {
     Navigator.of(context).pop();
   }
 
+  bool _canDeleteMessage(ChatMessage message) {
+    return isApiChatRoom(widget.roomId) &&
+        message.isMine &&
+        !message.id.startsWith('local-');
+  }
+
+  Future<void> _deleteMessage(ChatMessage message) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('메시지 삭제'),
+        content: const Text('이 메시지를 삭제할까요?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('닫기'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('삭제'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    try {
+      await ref
+          .read(chatMessagesProvider(widget.roomId).notifier)
+          .deleteMessage(message.id);
+      ref.invalidate(workroomChatsProvider);
+      if (!mounted) return;
+      AppToast.show(
+        ScaffoldMessenger.of(context),
+        message: '메시지를 삭제했습니다.',
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      AppToast.show(ScaffoldMessenger.of(context), message: e.displayMessage);
+    } catch (_) {
+      if (!mounted) return;
+      AppToast.show(
+        ScaffoldMessenger.of(context),
+        message: '메시지 삭제에 실패했습니다. 다시 시도해 주세요.',
+      );
+    }
+  }
+
+  Future<void> _deleteRoom() async {
+    final deleted = await ChatRoomActions.confirmAndDeleteRoom(
+      context: context,
+      ref: ref,
+      roomId: widget.roomId,
+      showSuccessToast: false,
+    );
+    if (deleted && mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final roomAsync = ref.watch(chatRoomDetailProvider(widget.roomId));
@@ -194,6 +255,8 @@ class _ChatRoomViewState extends ConsumerState<ChatRoomView> {
                                 artistId: room.artistId!,
                               )
                           : null,
+                      onDeleteRoom:
+                          isApiChatRoom(widget.roomId) ? _deleteRoom : null,
                     ),
                     const Divider(
                       height: 1,
@@ -211,6 +274,9 @@ class _ChatRoomViewState extends ConsumerState<ChatRoomView> {
                           return switch (item.type) {
                             ChatTimelineItemType.message => ChatMessageBubble(
                                 message: item.message!,
+                                onDelete: _canDeleteMessage(item.message!)
+                                    ? () => _deleteMessage(item.message!)
+                                    : null,
                               ),
                             ChatTimelineItemType.commissionApplication =>
                               CommissionArrivalCard(

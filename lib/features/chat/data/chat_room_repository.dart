@@ -48,4 +48,14 @@ class ChatRoomRepository {
     );
     return ChatRoomDto.fromJson(json);
   }
+
+  Future<void> delete({
+    required String roomId,
+    required String userId,
+  }) async {
+    await _client.delete(
+      '/chat-rooms/$roomId',
+      queryParameters: {'userId': userId},
+    );
+  }
 }

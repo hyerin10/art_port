@@ -35,4 +35,14 @@ class ChatMessageRepository {
     );
     return ChatMessageDto.fromJson(json);
   }
+
+  Future<void> delete({
+    required String messageId,
+    required String userId,
+  }) async {
+    await _client.delete(
+      '/messages/$messageId',
+      queryParameters: {'userId': userId},
+    );
+  }
 }

@@ -10,6 +10,7 @@ class ChatRoomHeader extends StatelessWidget {
     required this.isOnline,
     required this.onBack,
     this.onProfileTap,
+    this.onDeleteRoom,
   });
 
   final String counterpartName;
@@ -17,6 +18,7 @@ class ChatRoomHeader extends StatelessWidget {
   final bool isOnline;
   final VoidCallback onBack;
   final VoidCallback? onProfileTap;
+  final VoidCallback? onDeleteRoom;
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +75,22 @@ class ChatRoomHeader extends StatelessWidget {
                 ),
               ),
             ),
+            if (onDeleteRoom != null)
+              PopupMenuButton<String>(
+                icon: const Icon(
+                  Icons.more_vert_rounded,
+                  color: AppColors.textPrimary,
+                ),
+                onSelected: (value) {
+                  if (value == 'delete') onDeleteRoom!();
+                },
+                itemBuilder: (context) => const [
+                  PopupMenuItem<String>(
+                    value: 'delete',
+                    child: Text('채팅방 삭제'),
+                  ),
+                ],
+              ),
           ],
         ),
       ),

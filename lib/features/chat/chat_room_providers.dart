@@ -16,6 +16,10 @@ export 'package:art_port/features/chat/data/chat_providers.dart';
 bool isLocalSupportRoom(String roomId) =>
     roomId == 'support' || roomId.startsWith('inquiry-');
 
+bool isApiChatRoom(String roomId) =>
+    SupportInquiryConstants.inquiryIdFromRoom(roomId) == null &&
+    !isLocalSupportRoom(roomId);
+
 final chatRoomDetailProvider =
     FutureProvider.family<ChatRoomDetail?, String>((ref, roomId) async {
   final inquiryId = SupportInquiryConstants.inquiryIdFromRoom(roomId);
@@ -265,5 +269,34 @@ class ChatMessagesNotifier
 
     final current = state.valueOrNull ?? const <ChatMessage>[];
     state = AsyncData([...current, ...outgoing]);
+  }
+
+  Future<void> deleteMessage(String messageId) async {
+    if (!isApiChatRoom(arg) || messageId.startsWith('local-')) return;
+
+    final userId = ref.read(currentUserIdProvider);
+    if (userId == null) {
+      throw const ApiException(
+        code: 'UNAUTHORIZED',
+        status: 401,
+        message: '로그인이 필요합니다.',
+      );
+    }
+
+    final previous = state.valueOrNull ?? const <ChatMessage>[];
+    state = AsyncData([
+      for (final message in previous)
+        if (message.id != messageId) message,
+    ]);
+
+    try {
+      await ref.read(chatMessageRepositoryProvider).delete(
+            messageId: messageId,
+            userId: userId,
+          );
+    } catch (_) {
+      state = AsyncData(previous);
+      rethrow;
+    }
   }
 }

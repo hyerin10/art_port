@@ -7,9 +7,14 @@ import 'package:art_port/features/chat/widgets/chat_message_image.dart';
 import 'package:flutter/material.dart';
 
 class ChatMessageBubble extends StatelessWidget {
-  const ChatMessageBubble({super.key, required this.message});
+  const ChatMessageBubble({
+    super.key,
+    required this.message,
+    this.onDelete,
+  });
 
   final ChatMessage message;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -33,13 +38,23 @@ class ChatMessageBubble extends StatelessWidget {
   }
 
   Widget _buildBubble(BuildContext context) {
-    if (message.type == ChatMessageType.image) {
-      return _ImageBubble(message: message);
+    final bubble = switch (message.type) {
+      ChatMessageType.image => _ImageBubble(
+          message: message,
+          onDelete: onDelete,
+        ),
+      ChatMessageType.file => _FileBubble(message: message),
+      _ => _TextBubble(message: message),
+    };
+
+    if (onDelete == null || message.type == ChatMessageType.image) {
+      return bubble;
     }
-    if (message.type == ChatMessageType.file) {
-      return _FileBubble(message: message);
-    }
-    return _TextBubble(message: message);
+
+    return GestureDetector(
+      onLongPress: onDelete,
+      child: bubble,
+    );
   }
 }
 
@@ -92,9 +107,13 @@ class _TextBubble extends StatelessWidget {
 }
 
 class _ImageBubble extends StatelessWidget {
-  const _ImageBubble({required this.message});
+  const _ImageBubble({
+    required this.message,
+    this.onDelete,
+  });
 
   final ChatMessage message;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -119,8 +138,11 @@ class _ImageBubble extends StatelessWidget {
               aspectRatio: 4 / 3,
               child: GestureDetector(
                 onTap: () => ChatImageViewer.open(context, attachment),
-                onLongPress: () =>
-                    ChatImageSaveSheet.show(context, attachment),
+                onLongPress: () => ChatImageSaveSheet.show(
+                  context,
+                  attachment,
+                  onDelete: onDelete,
+                ),
                 child: ChatMessageImage(
                   attachment: attachment,
                   fit: BoxFit.cover,

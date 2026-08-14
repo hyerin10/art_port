@@ -58,6 +58,8 @@ class ApiException implements Exception {
         return '팔로우 정보를 찾을 수 없습니다.';
       case 'CHAT_ROOM_NOT_FOUND':
         return '채팅방을 찾을 수 없습니다.';
+      case 'CHAT_MESSAGE_NOT_FOUND':
+        return '채팅 메시지를 찾을 수 없습니다.';
       case 'ORDER_NOT_FOUND':
         return '주문을 찾을 수 없습니다.';
       case 'REVIEW_NOT_FOUND':

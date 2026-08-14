@@ -6,18 +6,27 @@ import 'package:flutter/material.dart';
 
 /// 이미지 롱 프레스 시 저장 메뉴 바텀시트
 class ChatImageSaveSheet extends StatelessWidget {
-  const ChatImageSaveSheet({super.key, required this.attachment});
+  const ChatImageSaveSheet({
+    super.key,
+    required this.attachment,
+    this.onDelete,
+  });
 
   final ChatImageAttachment attachment;
+  final VoidCallback? onDelete;
 
   static Future<void> show(
     BuildContext context,
-    ChatImageAttachment attachment,
-  ) {
+    ChatImageAttachment attachment, {
+    VoidCallback? onDelete,
+  }) {
     return showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => ChatImageSaveSheet(attachment: attachment),
+      builder: (ctx) => ChatImageSaveSheet(
+        attachment: attachment,
+        onDelete: onDelete,
+      ),
     );
   }
 
@@ -104,6 +113,33 @@ class ChatImageSaveSheet extends StatelessWidget {
               ),
               onTap: () => _onSave(context),
             ),
+            if (onDelete != null)
+              ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.delete_outline_rounded,
+                    color: AppColors.error,
+                  ),
+                ),
+                title: const Text(
+                  '메시지 삭제',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.error,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  onDelete!();
+                },
+              ),
             const SizedBox(height: 8),
           ],
         ),
