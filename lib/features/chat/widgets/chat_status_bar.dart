@@ -6,27 +6,32 @@ class ChatStatusBar extends StatelessWidget {
     super.key,
     required this.statusLabel,
     this.backgroundColor = const Color(0xFF2F80ED),
+    this.onTap,
   });
 
   final String statusLabel;
   final Color backgroundColor;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-      color: backgroundColor,
-      alignment: Alignment.center,
-      child: Text(
-        statusLabel,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
-          color: Colors.white,
-          height: 1.25,
-          letterSpacing: -0.2,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+        color: backgroundColor,
+        alignment: Alignment.center,
+        child: Text(
+          statusLabel,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            height: 1.25,
+            letterSpacing: -0.2,
+          ),
         ),
       ),
     );

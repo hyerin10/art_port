@@ -9,6 +9,7 @@ import 'package:art_port/features/artist_profile/widgets/artist_profile_sub_head
 import 'package:art_port/features/artist_profile/widgets/artist_profile_tab.dart';
 import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
 import 'package:art_port/features/common/widgets/art_port_bottom_nav.dart';
+import 'package:art_port/features/follow/followers_screen.dart';
 import 'package:art_port/features/review/data/review_providers.dart';
 import 'package:art_port/providers/current_tab_provider.dart';
 import 'package:art_port/providers/followed_artists_provider.dart';
@@ -124,6 +125,11 @@ class _ArtistProfileViewState extends ConsumerState<ArtistProfileView>
                           followingUserId: profile.userId,
                           artistProfileId: profile.id,
                         ),
+                  onFollowersTap: () => FollowersScreen.open(
+                    context,
+                    userId: profile.userId,
+                    title: '${profile.displayName}의 팔로워',
+                  ),
                   onNotificationTap: () => setState(
                     () => _notificationsEnabled = !_notificationsEnabled,
                   ),

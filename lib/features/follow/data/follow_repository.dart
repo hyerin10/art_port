@@ -1,5 +1,6 @@
 import 'package:art_port/core/network/api_client.dart';
 import 'package:art_port/features/follow/data/dto/follow_dto.dart';
+import 'package:art_port/features/follow/data/dto/follower_dto.dart';
 
 class FollowRepository {
   FollowRepository(this._client);
@@ -9,6 +10,11 @@ class FollowRepository {
   Future<List<FollowDto>> getFollowings(String userId) async {
     final json = await _client.getList('/users/$userId/followings');
     return json.map(FollowDto.fromJson).toList();
+  }
+
+  Future<List<FollowerDto>> getFollowers(String userId) async {
+    final json = await _client.getList('/users/$userId/followers');
+    return json.map(FollowerDto.fromJson).toList();
   }
 
   Future<void> follow({

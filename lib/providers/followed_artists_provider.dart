@@ -6,7 +6,9 @@ import 'package:art_port/features/auth/widgets/login_required_dialog.dart';
 import 'package:art_port/features/commission/data/commission_catalog_providers.dart';
 import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/follow/data/follow_repository.dart';
+import 'package:art_port/features/follow/models/follower_list_item.dart';
 import 'package:art_port/features/mypage/models/followed_artist.dart';
+import 'package:art_port/features/order/data/order_mappers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -81,6 +83,8 @@ class FollowedArtistIdsNotifier extends Notifier<Set<String>> {
       } else {
         await repo.follow(followerId: followerId, followingId: followingUserId);
       }
+      ref.invalidate(followersProvider(followingUserId));
+      ref.invalidate(followersProvider(followerId));
     } on ApiException catch (e) {
       if (e.code == 'DUPLICATE_RESOURCE') {
         state = {...previous, followingUserId};
@@ -110,6 +114,27 @@ final followedArtistsProvider = Provider<List<FollowedArtistProfile>>((ref) {
 
   return [
     for (final userId in followedIds) ?catalog.followedProfileForUserId(userId),
+  ];
+});
+
+final followersProvider =
+    FutureProvider.family<List<FollowerListItem>, String>((ref, userId) async {
+  if (userId.isEmpty) return const [];
+
+  final follows = await ref.watch(followRepositoryProvider).getFollowers(userId);
+  final lookups = await ParticipantLookups.resolve(
+    ref,
+    userIds: [for (final item in follows) item.followerId],
+  );
+
+  return [
+    for (final item in follows)
+      FollowerListItem(
+        userId: item.followerId,
+        name: lookups.nameFor(item.followerId),
+        avatarUrl: lookups.avatarFor(item.followerId),
+        artistProfileId: lookups.artistProfileIdFor(item.followerId),
+      ),
   ];
 });
 

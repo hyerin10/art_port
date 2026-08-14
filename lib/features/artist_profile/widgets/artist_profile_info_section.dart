@@ -12,6 +12,7 @@ class ArtistProfileInfoSection extends StatelessWidget {
     required this.notificationsEnabled,
     required this.onFollowTap,
     required this.onNotificationTap,
+    this.onFollowersTap,
     this.reviewStats,
   });
 
@@ -20,6 +21,7 @@ class ArtistProfileInfoSection extends StatelessWidget {
   final bool notificationsEnabled;
   final VoidCallback? onFollowTap;
   final VoidCallback onNotificationTap;
+  final VoidCallback? onFollowersTap;
   final ReviewStats? reviewStats;
 
   @override
@@ -93,29 +95,33 @@ class ArtistProfileInfoSection extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const Text(
-                    '팔로워',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textMuted,
-                      height: 1.2,
+              GestureDetector(
+                onTap: onFollowersTap,
+                behavior: HitTestBehavior.opaque,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text(
+                      '팔로워',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textMuted,
+                        height: 1.2,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    profile.formattedFollowerCount,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
-                      height: 1.2,
+                    const SizedBox(height: 2),
+                    Text(
+                      profile.formattedFollowerCount,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                        height: 1.2,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),

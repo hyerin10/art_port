@@ -14,6 +14,33 @@ class SupportRepository {
     return json.map(SupportInquiryDto.fromJson).toList();
   }
 
+  Future<List<SupportInquiryDto>> getAllForAdmin({
+    required String adminUserId,
+    String? status,
+  }) async {
+    final json = await _client.getList(
+      '/support/inquiries',
+      queryParameters: {
+        'adminUserId': adminUserId,
+        if (status != null && status.isNotEmpty) 'status': status,
+      },
+    );
+    return json.map(SupportInquiryDto.fromJson).toList();
+  }
+
+  Future<SupportInquiryDto> updateStatus({
+    required String inquiryId,
+    required String adminUserId,
+    required String status,
+  }) async {
+    final json = await _client.patch(
+      '/support/inquiries/$inquiryId/status',
+      queryParameters: {'adminUserId': adminUserId},
+      body: {'status': status},
+    );
+    return SupportInquiryDto.fromJson(json);
+  }
+
   Future<SupportInquiryDto> getById({
     required String inquiryId,
     required String userId,

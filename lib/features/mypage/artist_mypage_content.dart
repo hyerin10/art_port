@@ -1,4 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/features/admin/widgets/admin_menu_section.dart';
 import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
 import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/mypage/data/mypage_write_providers.dart';
@@ -93,6 +94,13 @@ class ArtistMyPageContent extends ConsumerWidget {
                 onTap: () => actions.onReceivedReviews(context),
               ),
               MenuListItem(
+                label: '내 팔로워',
+                icon: Icons.groups_rounded,
+                iconBackgroundColor: const Color(0xFFE0E7FF),
+                iconColor: const Color(0xFF4F46E5),
+                onTap: () => actions.onFollowers(context),
+              ),
+              MenuListItem(
                 label: '결제 내역 관리',
                 icon: Icons.account_balance_wallet_outlined,
                 iconBackgroundColor: const Color(0xFFD1FAE5),
@@ -145,6 +153,7 @@ class ArtistMyPageContent extends ConsumerWidget {
               ),
             ],
           ),
+          const AdminMenuSection(),
           const SizedBox(height: 24),
           SectionCard(
             title: '상태 설정',

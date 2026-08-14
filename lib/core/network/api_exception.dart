@@ -66,8 +66,12 @@ class ApiException implements Exception {
         return '리뷰를 찾을 수 없습니다.';
       case 'SUPPORT_INQUIRY_NOT_FOUND':
         return '문의를 찾을 수 없습니다.';
+      case 'ARTIST_APPLICATION_NOT_FOUND':
+        return '아티스트 신청을 찾을 수 없습니다.';
       case 'FORBIDDEN':
         return '이 작업을 수행할 권한이 없습니다.';
+      case 'METHOD_NOT_ALLOWED':
+        return '지원하지 않는 요청입니다.';
       case 'DUPLICATE_RESOURCE':
         return '이미 처리된 요청입니다.';
       case 'BAD_REQUEST':

@@ -1,4 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/features/admin/widgets/admin_menu_section.dart';
 import 'package:art_port/features/auth/email_verification/email_verification_pending_screen.dart';
 import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/mypage/data/mypage_write_providers.dart';
@@ -71,6 +72,13 @@ class ClientMyPageContent extends ConsumerWidget {
                 onTap: () => actions.onFollowedArtists(context),
               ),
               MenuListItem(
+                label: '내 팔로워',
+                icon: Icons.groups_rounded,
+                iconBackgroundColor: const Color(0xFFE0E7FF),
+                iconColor: const Color(0xFF4F46E5),
+                onTap: () => actions.onFollowers(context),
+              ),
+              MenuListItem(
                 label: '내가 작성한 리뷰',
                 icon: Icons.star_rounded,
                 iconBackgroundColor: const Color(0xFFFEF3C7),
@@ -105,6 +113,7 @@ class ClientMyPageContent extends ConsumerWidget {
               ),
             ],
           ),
+          const AdminMenuSection(),
           MyPageLogoutButton(
             onTap: () => actions.confirmLogout(context),
           ),

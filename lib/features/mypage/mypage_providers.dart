@@ -2,6 +2,7 @@ import 'package:art_port/core/network/api_exception.dart';
 import 'package:art_port/features/artist_profile/artist_profile_providers.dart';
 import 'package:art_port/features/auth/domain/user.dart';
 import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
+import 'package:art_port/features/follow/followers_screen.dart';
 import 'package:art_port/features/commission/data/commission_catalog_providers.dart';
 import 'package:art_port/features/mypage/artist_portfolio_edit_screen.dart';
 import 'package:art_port/features/mypage/commission_type_settings_screen.dart';
@@ -166,6 +167,12 @@ class ClientMyPageActions {
     FollowedArtistsScreen.open(context);
   }
 
+  void onFollowers(BuildContext context) {
+    final userId = ref.read(currentUserIdProvider);
+    if (userId == null) return;
+    FollowersScreen.open(context, userId: userId, title: '내 팔로워');
+  }
+
   void onMyReviews(BuildContext context) {
     MyReviewsScreen.open(context, kind: ReviewListKind.mine);
   }
@@ -244,5 +251,11 @@ class ArtistMyPageActions {
 
   void onInquiry(BuildContext context) {
     InquiryListScreen.open(context);
+  }
+
+  void onFollowers(BuildContext context) {
+    final userId = ref.read(currentUserIdProvider);
+    if (userId == null) return;
+    FollowersScreen.open(context, userId: userId, title: '내 팔로워');
   }
 }

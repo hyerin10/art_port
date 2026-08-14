@@ -377,6 +377,8 @@ GET /artist-profiles/00000000-0000-0000-0002-000000000001
 | Method | Path | 설명 |
 |---|---|---|
 | `POST` | `/artist-applications` | 아티스트 신청 |
+| `GET` | `/artist-applications?adminUserId=` | 전체 신청 목록 (관리자) |
+| `GET` | `/artist-applications?adminUserId=&status=` | 상태별 필터 (관리자) |
 | `GET` | `/artist-applications/my?userId=` | 본인 신청 조회 |
 | `GET` | `/artist-applications/{id}` | 단건 조회 |
 | `PATCH` | `/artist-applications/{id}/review?reviewedBy=` | 승인/거절 (관리자) |

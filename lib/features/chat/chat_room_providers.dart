@@ -26,10 +26,22 @@ final chatRoomDetailProvider =
   if (inquiryId != null) {
     final inquiry = await ref.watch(supportInquiryDetailProvider(inquiryId).future);
     if (inquiry == null) return null;
+    final isAdmin = ref.watch(isAdminProvider);
+    var counterpartName = SupportInquiryConstants.centerName;
+    var avatarUrl = SupportInquiryConstants.centerAvatarAsset;
+    if (isAdmin) {
+      counterpartName = '문의 사용자';
+      try {
+        final user =
+            await ref.read(userRepositoryProvider).getUser(inquiry.userId);
+        counterpartName = user.name;
+      } catch (_) {}
+      avatarUrl = fallbackAvatarUrl;
+    }
     return ChatRoomDetail(
       id: roomId,
-      counterpartName: SupportInquiryConstants.centerName,
-      avatarUrl: SupportInquiryConstants.centerAvatarAsset,
+      counterpartName: counterpartName,
+      avatarUrl: avatarUrl,
       isOnline: true,
       statusLabel: SupportInquiryItem.statusLabelOf(inquiry.status),
     );

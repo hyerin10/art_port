@@ -39,7 +39,7 @@ class SupportMessageDto {
   ChatMessage toChatMessage(String currentUserId) {
     return ChatMessage(
       id: id,
-      isMine: !isAdmin && senderId == currentUserId,
+      isMine: senderId == currentUserId,
       type: ChatMessageType.text,
       timeLabel: formatChatTimeLabel(createdAt),
       text: content,

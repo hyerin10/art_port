@@ -1,7 +1,10 @@
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/core/network/api_exception.dart';
 import 'package:art_port/core/widgets/api_async_body.dart';
+import 'package:art_port/features/admin/admin_inquiries_view.dart';
+import 'package:art_port/features/admin/admin_providers.dart';
 import 'package:art_port/features/artist_profile/artist_profile_screen.dart';
+import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
 import 'package:art_port/features/chat/chat_pending_attachments_provider.dart';
 import 'package:art_port/features/chat/chat_room_actions.dart';
 import 'package:art_port/features/chat/chat_room_providers.dart';
@@ -20,6 +23,8 @@ import 'package:art_port/features/chat/widgets/payment_request_card.dart';
 import 'package:art_port/features/commission/commission_transaction_providers.dart';
 import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/common/widgets/art_port_header.dart';
+import 'package:art_port/features/mypage/inquiry_providers.dart';
+import 'package:art_port/features/mypage/models/support_inquiry_item.dart';
 import 'package:art_port/features/mypage/mypage_providers.dart';
 import 'package:art_port/features/workroom/workroom_providers.dart';
 import 'package:flutter/material.dart';
@@ -190,6 +195,33 @@ class _ChatRoomViewState extends ConsumerState<ChatRoomView> {
     }
   }
 
+  Future<void> _changeSupportStatus(String inquiryId, String currentStatus) async {
+    final next = await pickSupportInquiryStatus(
+      context,
+      currentStatus: currentStatus,
+    );
+    if (next == null || next == currentStatus || !mounted) return;
+
+    try {
+      await updateAdminInquiryStatus(ref, inquiryId: inquiryId, status: next);
+      ref.invalidate(chatRoomDetailProvider(widget.roomId));
+      if (!mounted) return;
+      AppToast.show(
+        ScaffoldMessenger.of(context),
+        message: '문의 상태를 변경했습니다.',
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      AppToast.show(ScaffoldMessenger.of(context), message: e.displayMessage);
+    } catch (_) {
+      if (!mounted) return;
+      AppToast.show(
+        ScaffoldMessenger.of(context),
+        message: '상태 변경에 실패했습니다. 다시 시도해 주세요.',
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final roomAsync = ref.watch(chatRoomDetailProvider(widget.roomId));
@@ -197,6 +229,11 @@ class _ChatRoomViewState extends ConsumerState<ChatRoomView> {
     final transaction = ref.watch(commissionTransactionProvider(widget.roomId));
     final pendingAttachments =
         ref.watch(chatPendingAttachmentsProvider(widget.roomId));
+    final isAdmin = ref.watch(isAdminProvider);
+    final inquiryId = SupportInquiryConstants.inquiryIdFromRoom(widget.roomId);
+    final inquiryStatus = inquiryId == null
+        ? null
+        : ref.watch(supportInquiryDetailProvider(inquiryId)).valueOrNull?.status;
 
     ref.listen(chatMessagesProvider(widget.roomId), (previous, next) {
       final prevLen = previous?.valueOrNull?.length ?? 0;
@@ -263,7 +300,14 @@ class _ChatRoomViewState extends ConsumerState<ChatRoomView> {
                       thickness: 1,
                       color: AppColors.borderLight,
                     ),
-                    ChatStatusBar(statusLabel: room.statusLabel),
+                    ChatStatusBar(
+                      statusLabel: room.statusLabel,
+                      onTap: isAdmin &&
+                              inquiryId != null &&
+                              inquiryStatus != null
+                          ? () => _changeSupportStatus(inquiryId, inquiryStatus)
+                          : null,
+                    ),
                     Expanded(
                       child: ListView.builder(
                         controller: _scrollController,

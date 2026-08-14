@@ -53,4 +53,35 @@ class ArtistApplicationRepository {
     );
     return ArtistApplicationDto.fromJson(json);
   }
+
+  Future<List<ArtistApplicationDto>> getAllForAdmin({
+    required String adminUserId,
+    String? status,
+  }) async {
+    final json = await _client.getList(
+      '/artist-applications',
+      queryParameters: {
+        'adminUserId': adminUserId,
+        if (status != null && status.isNotEmpty) 'status': status,
+      },
+    );
+    return json.map(ArtistApplicationDto.fromJson).toList();
+  }
+
+  Future<ArtistApplicationDto> review({
+    required String applicationId,
+    required String reviewedBy,
+    required String status,
+    String? rejectionReason,
+  }) async {
+    final json = await _client.patch(
+      '/artist-applications/$applicationId/review',
+      queryParameters: {'reviewedBy': reviewedBy},
+      body: {
+        'status': status,
+        'rejectionReason': ?rejectionReason,
+      },
+    );
+    return ArtistApplicationDto.fromJson(json);
+  }
 }
