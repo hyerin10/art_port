@@ -16,6 +16,7 @@ class ArtistRecentWork {
 class FollowedArtistProfile {
   const FollowedArtistProfile({
     required this.id,
+    required this.userId,
     required this.name,
     required this.displayName,
     required this.avatarUrl,
@@ -24,6 +25,7 @@ class FollowedArtistProfile {
   });
 
   final String id;
+  final String userId;
   final String name;
   final String displayName;
   final String avatarUrl;
@@ -125,6 +127,7 @@ abstract final class ArtistCatalog {
       for (final acc in grouped.values)
         acc.id: FollowedArtistProfile(
           id: acc.id,
+          userId: acc.id,
           name: acc.name,
           displayName: _displayNameOverrides[acc.name] ?? acc.name,
           avatarUrl: acc.avatarUrl!,

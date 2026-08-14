@@ -6,6 +6,7 @@ import 'package:art_port/features/artist_profile/widgets/artist_portfolio_tab.da
 import 'package:art_port/features/artist_profile/widgets/artist_profile_info_section.dart';
 import 'package:art_port/features/artist_profile/widgets/artist_profile_sub_header.dart';
 import 'package:art_port/features/artist_profile/widgets/artist_profile_tab.dart';
+import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
 import 'package:art_port/features/common/widgets/art_port_bottom_nav.dart';
 import 'package:art_port/providers/current_tab_provider.dart';
 import 'package:art_port/providers/followed_artists_provider.dart';
@@ -44,6 +45,7 @@ class _ArtistProfileViewState extends ConsumerState<ArtistProfileView>
       artistPublicProfileProvider(widget.artistId),
     );
     final followedIds = ref.watch(followedArtistIdsProvider);
+    final currentUserId = ref.watch(currentUserIdProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -87,7 +89,9 @@ class _ArtistProfileViewState extends ConsumerState<ArtistProfileView>
             );
           }
 
-          final isFollowing = followedIds.contains(profile.id);
+          final isFollowing = followedIds.contains(profile.userId);
+          final isSelf =
+              currentUserId != null && currentUserId == profile.userId;
 
           return Scaffold(
             backgroundColor: AppColors.background,
@@ -106,9 +110,14 @@ class _ArtistProfileViewState extends ConsumerState<ArtistProfileView>
                   profile: profile,
                   isFollowing: isFollowing,
                   notificationsEnabled: _notificationsEnabled,
-                  onFollowTap: () => ref
-                      .read(followedArtistIdsProvider.notifier)
-                      .toggle(profile.id),
+                  onFollowTap: isSelf
+                      ? null
+                      : () => toggleFollowedArtist(
+                          ref: ref,
+                          context: context,
+                          followingUserId: profile.userId,
+                          artistProfileId: profile.id,
+                        ),
                   onNotificationTap: () => setState(
                     () => _notificationsEnabled = !_notificationsEnabled,
                   ),

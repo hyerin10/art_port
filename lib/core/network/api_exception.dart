@@ -54,8 +54,12 @@ class ApiException implements Exception {
         return '이메일 또는 비밀번호가 올바르지 않습니다.';
       case 'USER_INACTIVE':
         return '비활성화된 계정입니다. 고객센터에 문의해주세요.';
-      case 'NETWORK_ERROR':
-        return message;
+      case 'FOLLOW_NOT_FOUND':
+        return '팔로우 정보를 찾을 수 없습니다.';
+      case 'DUPLICATE_RESOURCE':
+        return '이미 처리된 요청입니다.';
+      case 'BAD_REQUEST':
+        return message.isNotEmpty ? message : '잘못된 요청입니다.';
       case 'INVALID_INPUT':
         if (fieldErrors.isNotEmpty) {
           return fieldErrors.first.reason;

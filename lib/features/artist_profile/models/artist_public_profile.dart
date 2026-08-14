@@ -19,6 +19,7 @@ enum ArtistSocialLinkType { twitter, instagram, website, other }
 class ArtistPublicProfile {
   const ArtistPublicProfile({
     required this.id,
+    required this.userId,
     required this.displayName,
     required this.avatarUrl,
     required this.oneLineIntro,
@@ -40,6 +41,7 @@ class ArtistPublicProfile {
   });
 
   final String id;
+  final String userId;
   final String displayName;
   final String avatarUrl;
   final String oneLineIntro;

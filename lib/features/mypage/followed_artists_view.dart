@@ -1,4 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/features/artist_profile/artist_profile_screen.dart';
 import 'package:art_port/features/commission/commission_detail_screen.dart';
 import 'package:art_port/features/common/widgets/empty_state_view.dart';
 import 'package:art_port/features/mypage/models/followed_artist.dart';
@@ -18,9 +19,7 @@ class FollowedArtistsView extends ConsumerWidget {
 
     return MyPageSubScreenScaffold(
       backgroundColor: const Color(0xFFF9FAFB),
-      header: FollowedArtistsHeader(
-        onBack: () => Navigator.of(context).pop(),
-      ),
+      header: FollowedArtistsHeader(onBack: () => Navigator.of(context).pop()),
       body: artists.isEmpty
           ? const EmptyStateView(
               icon: Icons.people_outline_rounded,
@@ -109,7 +108,7 @@ class _ArtistInfoRow extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GestureDetector(
-          onTap: () => _openArtistCommission(context, artist),
+          onTap: () => ArtistProfileScreen.open(context, artistId: artist.id),
           child: CircleAvatar(
             radius: 24,
             backgroundColor: AppColors.chipBackground,
@@ -119,7 +118,7 @@ class _ArtistInfoRow extends ConsumerWidget {
         const SizedBox(width: 12),
         Expanded(
           child: GestureDetector(
-            onTap: () => _openArtistCommission(context, artist),
+            onTap: () => ArtistProfileScreen.open(context, artistId: artist.id),
             behavior: HitTestBehavior.opaque,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,27 +151,23 @@ class _ArtistInfoRow extends ConsumerWidget {
           ),
         ),
         const SizedBox(width: 8),
-        _FollowingButton(artistId: artist.id),
+        _FollowingButton(
+          artistUserId: artist.userId,
+          artistProfileId: artist.id,
+        ),
       ],
-    );
-  }
-
-  void _openArtistCommission(
-    BuildContext context,
-    FollowedArtistProfile artist,
-  ) {
-    if (artist.recentWorks.isEmpty) return;
-    CommissionDetailScreen.open(
-      context,
-      commissionId: artist.recentWorks.first.commissionId,
     );
   }
 }
 
 class _FollowingButton extends ConsumerWidget {
-  const _FollowingButton({required this.artistId});
+  const _FollowingButton({
+    required this.artistUserId,
+    required this.artistProfileId,
+  });
 
-  final String artistId;
+  final String artistUserId;
+  final String artistProfileId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -180,8 +175,12 @@ class _FollowingButton extends ConsumerWidget {
       color: AppColors.chipBackground,
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
-        onTap: () =>
-            ref.read(followedArtistIdsProvider.notifier).toggle(artistId),
+        onTap: () => toggleFollowedArtist(
+          ref: ref,
+          context: context,
+          followingUserId: artistUserId,
+          artistProfileId: artistProfileId,
+        ),
         borderRadius: BorderRadius.circular(20),
         child: const Padding(
           padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -210,9 +209,7 @@ class _RecentWorksRow extends StatelessWidget {
       children: [
         for (var i = 0; i < works.length; i++) ...[
           if (i > 0) const SizedBox(width: 8),
-          Expanded(
-            child: _RecentWorkThumbnail(work: works[i]),
-          ),
+          Expanded(child: _RecentWorkThumbnail(work: works[i])),
         ],
       ],
     );

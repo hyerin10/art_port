@@ -581,9 +581,11 @@ class _GalleryCard extends ConsumerWidget {
                           ),
                           GestureDetector(
                             behavior: HitTestBehavior.opaque,
-                            onTap: () => ref
-                                .read(likedCommissionIdsProvider.notifier)
-                                .toggle(sample.id),
+                            onTap: () => toggleLikedCommission(
+                              ref: ref,
+                              context: context,
+                              commissionTypeId: sample.id,
+                            ),
                             child: Icon(
                               isLiked
                                   ? Icons.favorite_rounded

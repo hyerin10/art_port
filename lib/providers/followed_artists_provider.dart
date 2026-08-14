@@ -1,54 +1,142 @@
+import 'package:art_port/core/network/api_exception.dart';
+import 'package:art_port/core/network/network_providers.dart';
+import 'package:art_port/features/artist_profile/artist_profile_providers.dart';
+import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
+import 'package:art_port/features/auth/widgets/login_required_dialog.dart';
+import 'package:art_port/features/commission/data/commission_catalog_providers.dart';
+import 'package:art_port/features/common/widgets/app_toast.dart';
+import 'package:art_port/features/follow/data/follow_repository.dart';
 import 'package:art_port/features/mypage/models/followed_artist.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// 앱 전역 팔로우한 작가 ID 집합
+final followRepositoryProvider = Provider<FollowRepository>((ref) {
+  return FollowRepository(ref.watch(apiClientProvider));
+});
+
+/// 팔로우한 작가의 **유저 ID** 집합 (`followingId`)
 final followedArtistIdsProvider =
     NotifierProvider<FollowedArtistIdsNotifier, Set<String>>(
-  FollowedArtistIdsNotifier.new,
-);
+      FollowedArtistIdsNotifier.new,
+    );
 
 class FollowedArtistIdsNotifier extends Notifier<Set<String>> {
+  var _loadId = 0;
+
   @override
-  Set<String> build() => _initialFollowedIds();
+  Set<String> build() {
+    final userId = ref.watch(currentUserIdProvider);
+    if (userId == null) return {};
+    _refresh(userId);
+    return {};
+  }
 
-  void toggle(String artistId) {
-    final next = Set<String>.from(state);
-    if (next.contains(artistId)) {
-      next.remove(artistId);
-    } else {
-      next.add(artistId);
+  Future<void> _refresh(String userId) async {
+    final loadId = ++_loadId;
+    try {
+      final items = await ref
+          .read(followRepositoryProvider)
+          .getFollowings(userId);
+      if (loadId != _loadId) return;
+      if (ref.read(currentUserIdProvider) != userId) return;
+      state = {for (final item in items) item.followingId};
+    } catch (_) {}
+  }
+
+  Future<void> toggle(String followingUserId) async {
+    final followerId = ref.read(currentUserIdProvider);
+    if (followerId == null) {
+      throw const ApiException(
+        code: 'UNAUTHORIZED',
+        status: 401,
+        message: '로그인이 필요합니다.',
+      );
     }
-    state = next;
+    if (followerId == followingUserId) {
+      throw const ApiException(
+        code: 'BAD_REQUEST',
+        status: 400,
+        message: '자기 자신은 팔로우할 수 없습니다.',
+      );
+    }
+
+    _loadId++;
+    final previous = state;
+    final isFollowing = previous.contains(followingUserId);
+    final optimistic = Set<String>.from(previous);
+    if (isFollowing) {
+      optimistic.remove(followingUserId);
+    } else {
+      optimistic.add(followingUserId);
+    }
+    state = optimistic;
+
+    try {
+      final repo = ref.read(followRepositoryProvider);
+      if (isFollowing) {
+        await repo.unfollow(
+          followerId: followerId,
+          followingId: followingUserId,
+        );
+      } else {
+        await repo.follow(followerId: followerId, followingId: followingUserId);
+      }
+    } on ApiException catch (e) {
+      if (e.code == 'DUPLICATE_RESOURCE') {
+        state = {...previous, followingUserId};
+        return;
+      }
+      if (e.code == 'FOLLOW_NOT_FOUND') {
+        final next = Set<String>.from(previous)..remove(followingUserId);
+        state = next;
+        return;
+      }
+      state = previous;
+      rethrow;
+    } catch (_) {
+      state = previous;
+      rethrow;
+    }
   }
 
-  void toggleByName(String artistName) {
-    toggle(ArtistCatalog.idForName(artistName));
-  }
-
-  bool isFollowing(String artistId) => state.contains(artistId);
-
-  bool isFollowingByName(String artistName) =>
-      state.contains(ArtistCatalog.idForName(artistName));
-}
-
-Set<String> _initialFollowedIds() {
-  return {
-    ArtistCatalog.idForName('초코쌤'),
-    ArtistCatalog.idForName('미유_Miyu'),
-  };
+  bool isFollowing(String followingUserId) => state.contains(followingUserId);
 }
 
 /// 팔로우한 작가 목록 (카드 표시용)
 final followedArtistsProvider = Provider<List<FollowedArtistProfile>>((ref) {
   final followedIds = ref.watch(followedArtistIdsProvider);
-  final artists = <FollowedArtistProfile>[];
+  final catalog = ref.watch(commissionCatalogProvider).valueOrNull;
+  if (catalog == null) return const [];
 
-  for (final id in followedIds) {
-    final profile = ArtistCatalog.forId(id);
-    if (profile != null) {
-      artists.add(profile);
-    }
+  return [
+    for (final userId in followedIds) ?catalog.followedProfileForUserId(userId),
+  ];
+});
+
+Future<void> toggleFollowedArtist({
+  required WidgetRef ref,
+  required BuildContext context,
+  required String followingUserId,
+  String? artistProfileId,
+}) async {
+  if (!ref.read(isLoggedInProvider)) {
+    await showLoginRequiredDialog(context);
+    return;
   }
 
-  return artists;
-});
+  try {
+    await ref.read(followedArtistIdsProvider.notifier).toggle(followingUserId);
+    if (artistProfileId != null) {
+      ref.invalidate(artistPublicProfileProvider(artistProfileId));
+    }
+  } on ApiException catch (e) {
+    if (!context.mounted) return;
+    AppToast.show(ScaffoldMessenger.of(context), message: e.displayMessage);
+  } catch (_) {
+    if (!context.mounted) return;
+    AppToast.show(
+      ScaffoldMessenger.of(context),
+      message: '팔로우 처리에 실패했습니다. 다시 시도해 주세요.',
+    );
+  }
+}

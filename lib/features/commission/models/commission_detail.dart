@@ -12,6 +12,7 @@ class CommissionDetail {
     required this.artistName,
     required this.artistAvatarUrl,
     required this.artistProfileId,
+    required this.artistUserId,
     required this.rating,
     required this.reviewCount,
     required this.tags,
@@ -32,6 +33,7 @@ class CommissionDetail {
   final String artistName;
   final String artistAvatarUrl;
   final String artistProfileId;
+  final String artistUserId;
   final double rating;
   final int reviewCount;
   final List<String> tags;
@@ -68,6 +70,7 @@ class CommissionDetail {
       artistName: artistName,
       artistAvatarUrl: artistAvatarUrl,
       artistProfileId: artistProfileId,
+      artistUserId: artistUserId,
       rating: rating,
       reviewCount: reviewCount,
       tags: tags,

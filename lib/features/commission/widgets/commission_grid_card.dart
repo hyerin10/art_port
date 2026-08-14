@@ -76,25 +76,25 @@ class CommissionGridCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final liked = isLiked ??
+    final liked =
+        isLiked ??
         (likeButtonStyle == CommissionLikeButtonStyle.saved ||
             ref.watch(likedCommissionIdsProvider).contains(data.id));
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => CommissionDetailScreen.open(
-          context,
-          commissionId: data.id,
-        ),
+        onTap: () =>
+            CommissionDetailScreen.open(context, commissionId: data.id),
         borderRadius: BorderRadius.circular(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(14)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(14),
+                ),
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -139,9 +139,11 @@ class CommissionGridCard extends ConsumerWidget {
                       child: CommissionLikeButton(
                         isLiked: liked,
                         style: likeButtonStyle,
-                        onTap: () => ref
-                            .read(likedCommissionIdsProvider.notifier)
-                            .toggle(data.id),
+                        onTap: () => toggleLikedCommission(
+                          ref: ref,
+                          context: context,
+                          commissionTypeId: data.id,
+                        ),
                       ),
                     ),
                   ],
@@ -292,8 +294,9 @@ class CommissionLikeButton extends StatelessWidget {
         height: 32,
         decoration: BoxDecoration(
           color: switch (style) {
-            CommissionLikeButtonStyle.overlay =>
-              Colors.black.withValues(alpha: 0.35),
+            CommissionLikeButtonStyle.overlay => Colors.black.withValues(
+              alpha: 0.35,
+            ),
             CommissionLikeButtonStyle.saved => Colors.white,
           },
           shape: BoxShape.circle,
@@ -310,9 +313,8 @@ class CommissionLikeButton extends StatelessWidget {
         alignment: Alignment.center,
         child: Icon(
           switch (style) {
-            CommissionLikeButtonStyle.overlay => isLiked
-                ? Icons.favorite_rounded
-                : Icons.favorite_border_rounded,
+            CommissionLikeButtonStyle.overlay =>
+              isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
             CommissionLikeButtonStyle.saved => Icons.favorite_rounded,
           },
           size: 18,

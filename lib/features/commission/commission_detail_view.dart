@@ -1,6 +1,7 @@
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/core/widgets/api_async_body.dart';
 import 'package:art_port/features/artist_profile/artist_profile_screen.dart';
+import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
 import 'package:art_port/features/auth/widgets/login_required_dialog.dart';
 import 'package:art_port/features/commission/commission_apply_screen.dart';
 import 'package:art_port/features/commission/commission_detail_providers.dart';
@@ -10,7 +11,6 @@ import 'package:art_port/features/commission/widgets/commission_detail_bottom_ba
 import 'package:art_port/features/commission/widgets/commission_detail_header.dart';
 import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/common/widgets/art_port_bottom_nav.dart';
-import 'package:art_port/providers/auth_provider.dart';
 import 'package:art_port/providers/current_tab_provider.dart';
 import 'package:art_port/features/mypage/models/followed_artist.dart';
 import 'package:art_port/providers/followed_artists_provider.dart';
@@ -131,9 +131,11 @@ class _CommissionDetailViewState extends ConsumerState<CommissionDetailView> {
                 CommissionDetailHeader(
                   onBack: () => Navigator.of(context).pop(),
                   isLiked: isLiked,
-                  onLikeTap: () => ref
-                      .read(likedCommissionIdsProvider.notifier)
-                      .toggle(widget.commissionId),
+                  onLikeTap: () => toggleLikedCommission(
+                    ref: ref,
+                    context: context,
+                    commissionTypeId: widget.commissionId,
+                  ),
                   onShareTap: () => AppToast.show(
                     ScaffoldMessenger.of(context),
                     message: '공유 링크를 준비 중입니다.',
@@ -370,7 +372,13 @@ class _ArtistProfileSection extends ConsumerWidget {
     final artistId = detail.artistProfileId.isNotEmpty
         ? detail.artistProfileId
         : ArtistCatalog.idForName(detail.artistName);
-    final isFollowing = ref.watch(followedArtistIdsProvider).contains(artistId);
+    final followUserId = detail.artistUserId;
+    final isSelf =
+        followUserId.isNotEmpty &&
+        ref.watch(currentUserIdProvider) == followUserId;
+    final isFollowing =
+        followUserId.isNotEmpty &&
+        ref.watch(followedArtistIdsProvider).contains(followUserId);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
@@ -435,31 +443,38 @@ class _ArtistProfileSection extends ConsumerWidget {
               ),
             ),
           ),
-          Material(
-            color: AppColors.chipBackground,
-            borderRadius: BorderRadius.circular(isFollowing ? 20 : 10),
-            child: InkWell(
-              onTap: () =>
-                  ref.read(followedArtistIdsProvider.notifier).toggle(artistId),
+          if (!isSelf)
+            Material(
+              color: AppColors.chipBackground,
               borderRadius: BorderRadius.circular(isFollowing ? 20 : 10),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: Text(
-                  isFollowing ? '팔로잉' : '팔로우',
-                  style: TextStyle(
-                    fontSize: isFollowing ? 12 : 13,
-                    fontWeight: FontWeight.w700,
-                    color: isFollowing
-                        ? AppColors.textSecondary
-                        : AppColors.textPrimary,
+              child: InkWell(
+                onTap: followUserId.isEmpty
+                    ? null
+                    : () => toggleFollowedArtist(
+                        ref: ref,
+                        context: context,
+                        followingUserId: followUserId,
+                        artistProfileId: detail.artistProfileId,
+                      ),
+                borderRadius: BorderRadius.circular(isFollowing ? 20 : 10),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Text(
+                    isFollowing ? '팔로잉' : '팔로우',
+                    style: TextStyle(
+                      fontSize: isFollowing ? 12 : 13,
+                      fontWeight: FontWeight.w700,
+                      color: isFollowing
+                          ? AppColors.textSecondary
+                          : AppColors.textPrimary,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

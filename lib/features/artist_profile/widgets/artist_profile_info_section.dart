@@ -16,7 +16,7 @@ class ArtistProfileInfoSection extends StatelessWidget {
   final ArtistPublicProfile profile;
   final bool isFollowing;
   final bool notificationsEnabled;
-  final VoidCallback onFollowTap;
+  final VoidCallback? onFollowTap;
   final VoidCallback onNotificationTap;
 
   @override
@@ -118,29 +118,35 @@ class ArtistProfileInfoSection extends StatelessWidget {
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(
-                child: Material(
-                  color: isFollowing ? AppColors.chipBackground : AppColors.primary,
-                  borderRadius: BorderRadius.circular(12),
-                  child: InkWell(
-                    onTap: onFollowTap,
+              if (onFollowTap != null) ...[
+                Expanded(
+                  child: Material(
+                    color: isFollowing
+                        ? AppColors.chipBackground
+                        : AppColors.primary,
                     borderRadius: BorderRadius.circular(12),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 13),
-                      child: Text(
-                        isFollowing ? '팔로잉' : '팔로우',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: isFollowing ? AppColors.textSecondary : Colors.white,
+                    child: InkWell(
+                      onTap: onFollowTap,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        child: Text(
+                          isFollowing ? '팔로잉' : '팔로우',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: isFollowing
+                                ? AppColors.textSecondary
+                                : Colors.white,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
+                const SizedBox(width: 10),
+              ],
               Material(
                 color: AppColors.chipBackground,
                 borderRadius: BorderRadius.circular(12),
@@ -197,10 +203,7 @@ class _ProfileAvatar extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(
-          color: AppColors.primaryLight,
-          width: 2,
-        ),
+        border: Border.all(color: AppColors.primaryLight, width: 2),
       ),
       child: CircleAvatar(
         radius: _size / 2,
@@ -208,8 +211,8 @@ class _ProfileAvatar extends StatelessWidget {
         backgroundImage: imageUrl.isEmpty
             ? null
             : (imageUrl.startsWith('assets/')
-                ? AssetImage(imageUrl)
-                : NetworkImage(imageUrl)),
+                  ? AssetImage(imageUrl)
+                  : NetworkImage(imageUrl)),
       ),
     );
   }
@@ -221,11 +224,11 @@ class _SocialLinkChip extends StatelessWidget {
   final ArtistSocialLink link;
 
   IconData get _icon => switch (link.type) {
-        ArtistSocialLinkType.twitter => Icons.alternate_email_rounded,
-        ArtistSocialLinkType.instagram => Icons.camera_alt_outlined,
-        ArtistSocialLinkType.website => Icons.link_rounded,
-        ArtistSocialLinkType.other => Icons.link_rounded,
-      };
+    ArtistSocialLinkType.twitter => Icons.alternate_email_rounded,
+    ArtistSocialLinkType.instagram => Icons.camera_alt_outlined,
+    ArtistSocialLinkType.website => Icons.link_rounded,
+    ArtistSocialLinkType.other => Icons.link_rounded,
+  };
 
   @override
   Widget build(BuildContext context) {

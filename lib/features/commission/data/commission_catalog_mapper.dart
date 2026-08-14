@@ -32,6 +32,7 @@ abstract final class CommissionCatalogMapper {
       artistName: artist?.displayName ?? '작가',
       artistAvatarUrl: artist?.avatarUrl ?? '',
       artistProfileId: type.artistProfileId,
+      artistUserId: artist?.userId ?? '',
       rating: artist?.rating ?? 0,
       reviewCount: artist?.reviewCount ?? 0,
       tags: hashedTags(type.tags),
@@ -126,6 +127,7 @@ abstract final class CommissionCatalogMapper {
 
     return ArtistPublicProfile(
       id: profile.id,
+      userId: profile.userId,
       displayName: profile.displayName,
       avatarUrl: profile.avatarUrl ?? '',
       oneLineIntro: profile.oneLineIntro ?? '',

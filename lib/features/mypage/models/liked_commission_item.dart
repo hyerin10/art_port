@@ -28,7 +28,7 @@ class LikedCommissionItem {
 
     return LikedCommissionItem(
       id: detail.id,
-      imageUrl: detail.imageUrls.first,
+      imageUrl: detail.imageUrls.isNotEmpty ? detail.imageUrls.first : '',
       artistName: detail.artistName,
       artistAvatarUrl: detail.artistAvatarUrl,
       title: detail.title,

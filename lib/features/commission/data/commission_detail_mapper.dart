@@ -92,6 +92,7 @@ abstract final class CommissionDetailMapper {
       artistName: artistName,
       artistAvatarUrl: artistAvatarUrl,
       artistProfileId: '',
+      artistUserId: '',
       rating: rating,
       reviewCount: reviewCount,
       tags: tags,

@@ -19,6 +19,7 @@ abstract final class CommissionDetailDummyData {
     artistAvatarUrl:
         'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop',
     artistProfileId: '',
+    artistUserId: '',
     rating: 4.9,
     reviewCount: 128,
     tags: ['#MD', '#세미리얼', '#감성'],
@@ -62,6 +63,7 @@ abstract final class CommissionDetailDummyData {
     artistAvatarUrl:
         'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop',
     artistProfileId: '',
+    artistUserId: '',
     rating: 4.9,
     reviewCount: 133,
     tags: ['#두상', '#애니풍'],
