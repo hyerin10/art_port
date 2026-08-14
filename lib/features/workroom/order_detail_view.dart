@@ -1,4 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/core/widgets/api_async_body.dart';
 import 'package:art_port/features/chat/chat_room_screen.dart';
 import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/common/widgets/art_port_bottom_nav.dart';
@@ -43,40 +44,7 @@ class OrderDetailView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final order = ref.watch(workroomOrderDetailProvider(orderId));
-
-    if (order == null) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        body: Column(
-          children: [
-            const ArtPortHeader(),
-            OrderDetailHeader(onBack: () => Navigator.of(context).pop()),
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      '주문을 찾을 수 없습니다.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('돌아가기'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+    final orderAsync = ref.watch(workroomOrderDetailProvider(orderId));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -85,64 +53,95 @@ class OrderDetailView extends ConsumerWidget {
           const ArtPortHeader(),
           OrderDetailHeader(onBack: () => Navigator.of(context).pop()),
           Expanded(
-            child: Stack(
-              children: [
-                SingleChildScrollView(
-                  padding: const EdgeInsets.only(bottom: 88),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _OrderSummarySection(order: order),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                        child: Text(
-                          '의뢰 정보',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.textPrimary,
-                            letterSpacing: -0.2,
-                            height: 1.2,
+            child: ApiAsyncBody<WorkroomOrderDetail?>(
+              value: orderAsync,
+              onRetry: () =>
+                  ref.invalidate(workroomOrderDetailProvider(orderId)),
+              errorMessage: '주문 정보를 불러오지 못했습니다.',
+              builder: (order) {
+                if (order == null) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          '주문을 찾을 수 없습니다.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textMuted,
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: OrderRequestInfoCard(order: order),
-                      ),
-                      const SizedBox(height: 24),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Text(
-                          '결제 정보',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.textPrimary,
-                            letterSpacing: -0.2,
-                            height: 1.2,
-                          ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('돌아가기'),
                         ),
+                      ],
+                    ),
+                  );
+                }
+
+                return Stack(
+                  children: [
+                    SingleChildScrollView(
+                      padding: const EdgeInsets.only(bottom: 88),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _OrderSummarySection(order: order),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                            child: Text(
+                              '의뢰 정보',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary,
+                                letterSpacing: -0.2,
+                                height: 1.2,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: OrderRequestInfoCard(order: order),
+                          ),
+                          const SizedBox(height: 24),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text(
+                              '결제 정보',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary,
+                                letterSpacing: -0.2,
+                                height: 1.2,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                            child: OrderPaymentInfoCard(payment: order.payment),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 12),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                        child: OrderPaymentInfoCard(payment: order.payment),
+                    ),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: OrderDetailActionBar(
+                        onGoToChat: () =>
+                            _onGoToChat(context, order.linkedChatRoomId),
+                        onViewDraft: () => _onViewDraft(context),
                       ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: OrderDetailActionBar(
-                    onGoToChat: () => _onGoToChat(context, order.linkedChatRoomId),
-                    onViewDraft: () => _onViewDraft(context),
-                  ),
-                ),
-              ],
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ],

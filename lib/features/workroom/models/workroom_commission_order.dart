@@ -5,6 +5,7 @@ import 'package:art_port/features/commission/models/commission_transaction.dart'
 /// 작업실 주문 현황 탭용 뷰 모델 — [CommissionTransaction]에서 파생
 class WorkroomCommissionOrder {
   const WorkroomCommissionOrder({
+    required this.id,
     required this.roomId,
     required this.title,
     required this.counterpartName,
@@ -16,6 +17,7 @@ class WorkroomCommissionOrder {
     this.deadlineLabel,
   });
 
+  final String id;
   final String roomId;
   final String title;
   final String counterpartName;
@@ -33,6 +35,7 @@ class WorkroomCommissionOrder {
   factory WorkroomCommissionOrder.fromTransaction(
     CommissionTransaction transaction, {
     required bool isArtistMode,
+    String? orderId,
   }) {
     final deadline = transaction.application.desiredDeadline;
     final deadlineLabel = deadline != null
@@ -40,6 +43,7 @@ class WorkroomCommissionOrder {
         : null;
 
     return WorkroomCommissionOrder(
+      id: orderId ?? transaction.orderId,
       roomId: transaction.roomId,
       title: transaction.commissionTitle,
       counterpartName:

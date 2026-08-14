@@ -23,7 +23,7 @@ class CommissionArrivalCard extends ConsumerWidget {
     final isArtist = ref.watch(commissionIsArtistProvider);
     final status = transaction.status;
     final isDeclined = transaction.isDeclined;
-    final isAccepted = status.index >= CommissionStatus.accepted.index;
+    final isAccepted = status.hasBeenAccepted;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -171,10 +171,16 @@ class CommissionArrivalCard extends ConsumerWidget {
                   width: double.infinity,
                   height: 44,
                   child: FilledButton(
-                    onPressed: () => ref
-                        .read(commissionTransactionNotifierProvider(roomId)
-                            .notifier)
-                        .requestPayment(),
+                    onPressed: () => runCommissionAction(
+                      ref: ref,
+                      context: context,
+                      action: () => ref
+                          .read(
+                            commissionTransactionNotifierProvider(roomId)
+                                .notifier,
+                          )
+                          .requestPayment(),
+                    ),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       shape: RoundedRectangleBorder(
@@ -200,10 +206,16 @@ class CommissionArrivalCard extends ConsumerWidget {
                     child: SizedBox(
                       height: 44,
                       child: FilledButton(
-                        onPressed: () => ref
-                            .read(commissionTransactionNotifierProvider(roomId)
-                                .notifier)
-                            .acceptApplication(),
+                        onPressed: () => runCommissionAction(
+                          ref: ref,
+                          context: context,
+                          action: () => ref
+                              .read(
+                                commissionTransactionNotifierProvider(roomId)
+                                    .notifier,
+                              )
+                              .acceptApplication(),
+                        ),
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           shape: RoundedRectangleBorder(
@@ -225,10 +237,16 @@ class CommissionArrivalCard extends ConsumerWidget {
                     child: SizedBox(
                       height: 44,
                       child: OutlinedButton(
-                        onPressed: () => ref
-                            .read(commissionTransactionNotifierProvider(roomId)
-                                .notifier)
-                            .rejectApplication(),
+                        onPressed: () => runCommissionAction(
+                          ref: ref,
+                          context: context,
+                          action: () => ref
+                              .read(
+                                commissionTransactionNotifierProvider(roomId)
+                                    .notifier,
+                              )
+                              .rejectApplication(),
+                        ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textSecondary,
                           side: const BorderSide(color: AppColors.borderLight),

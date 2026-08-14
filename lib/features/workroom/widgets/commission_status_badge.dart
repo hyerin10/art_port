@@ -49,6 +49,26 @@ class CommissionStatusBadge extends StatelessWidget {
           icon: Icons.verified_outlined,
           label: status.orderLabel,
         ),
+      CommissionStatus.working => (
+          background: const Color(0xFFEDE9FE),
+          foreground: AppColors.primary,
+          icon: Icons.brush_outlined,
+          label: status.orderLabel,
+        ),
+      CommissionStatus.completed => (
+          background: const Color(0xFFDCFCE7),
+          foreground: const Color(0xFF15803D),
+          icon: Icons.check_circle_outline_rounded,
+          label: status.orderLabel,
+        ),
+      CommissionStatus.rejected ||
+      CommissionStatus.cancelled ||
+      CommissionStatus.refunded => (
+          background: const Color(0xFFFEE2E2),
+          foreground: AppColors.error,
+          icon: Icons.cancel_outlined,
+          label: status.orderLabel,
+        ),
     };
   }
 

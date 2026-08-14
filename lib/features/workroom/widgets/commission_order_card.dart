@@ -16,7 +16,7 @@ class CommissionOrderCard extends StatelessWidget {
       color: Colors.white,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
-        onTap: () => WorkroomActions.openChat(context, order.roomId),
+        onTap: () => WorkroomActions.openOrderDetail(context, order.id),
         borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.all(14),
@@ -37,7 +37,9 @@ class CommissionOrderCard extends StatelessWidget {
               CircleAvatar(
                 radius: 24,
                 backgroundColor: AppColors.chipBackground,
-                backgroundImage: NetworkImage(order.avatarUrl),
+                backgroundImage: order.avatarUrl.startsWith('http')
+                    ? NetworkImage(order.avatarUrl)
+                    : null,
               ),
               const SizedBox(width: 12),
               Expanded(

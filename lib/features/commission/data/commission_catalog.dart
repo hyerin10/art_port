@@ -80,13 +80,17 @@ class CommissionCatalog {
     return featuredBannerFallback;
   }
 
-  CommissionDetail? detailFor(String commissionId) {
+  CommissionTypeDto? typeById(String commissionId) {
     for (final type in types) {
-      if (type.id == commissionId) {
-        return CommissionCatalogMapper.toDetail(type, artistOf(type));
-      }
+      if (type.id == commissionId) return type;
     }
     return null;
+  }
+
+  CommissionDetail? detailFor(String commissionId) {
+    final type = typeById(commissionId);
+    if (type == null) return null;
+    return CommissionCatalogMapper.toDetail(type, artistOf(type));
   }
 
   FollowedArtistProfile? followedProfileForUserId(String userId) {

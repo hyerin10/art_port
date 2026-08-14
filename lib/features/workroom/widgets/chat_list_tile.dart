@@ -101,6 +101,16 @@ class _OnlineAvatar extends StatelessWidget {
 
   static const double _size = 52;
 
+  static ImageProvider _avatarImage(String url) {
+    if (url.startsWith('assets/')) {
+      return AssetImage(url);
+    }
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return NetworkImage(url);
+    }
+    return const AssetImage('assets/branding/art_port_icon.png');
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -112,7 +122,7 @@ class _OnlineAvatar extends StatelessWidget {
           CircleAvatar(
             radius: _size / 2,
             backgroundColor: AppColors.chipBackground,
-            backgroundImage: NetworkImage(imageUrl),
+            backgroundImage: _avatarImage(imageUrl),
           ),
           if (isOnline)
             Positioned(

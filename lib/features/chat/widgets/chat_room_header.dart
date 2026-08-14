@@ -95,7 +95,10 @@ class _ChatAvatar extends StatelessWidget {
     if (url.startsWith('assets/')) {
       return AssetImage(url);
     }
-    return NetworkImage(url);
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return NetworkImage(url);
+    }
+    return const AssetImage('assets/branding/art_port_icon.png');
   }
 
   @override

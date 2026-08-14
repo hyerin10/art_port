@@ -56,6 +56,12 @@ class ApiException implements Exception {
         return '비활성화된 계정입니다. 고객센터에 문의해주세요.';
       case 'FOLLOW_NOT_FOUND':
         return '팔로우 정보를 찾을 수 없습니다.';
+      case 'CHAT_ROOM_NOT_FOUND':
+        return '채팅방을 찾을 수 없습니다.';
+      case 'ORDER_NOT_FOUND':
+        return '주문을 찾을 수 없습니다.';
+      case 'FORBIDDEN':
+        return '이 작업을 수행할 권한이 없습니다.';
       case 'DUPLICATE_RESOURCE':
         return '이미 처리된 요청입니다.';
       case 'BAD_REQUEST':

@@ -2,7 +2,6 @@ import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/core/formatters/currency_formatter.dart';
 import 'package:art_port/features/commission/commission_transaction_providers.dart';
 import 'package:art_port/features/commission/models/commission_transaction.dart';
-import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/payment/models/payment_method_type.dart';
 import 'package:art_port/features/payment/utils/card_expiry_input_formatter.dart';
 import 'package:art_port/features/payment/utils/payment_card_validators.dart';
@@ -50,20 +49,16 @@ class _PaymentViewState extends ConsumerState<PaymentView> {
 
     setState(() => _isProcessing = true);
 
-    await Future<void>.delayed(const Duration(milliseconds: 800));
-
-    ref
-        .read(commissionTransactionNotifierProvider(widget.roomId).notifier)
-        .completePayment();
+    await runCommissionAction(
+      ref: ref,
+      context: context,
+      action: () => ref
+          .read(commissionTransactionNotifierProvider(widget.roomId).notifier)
+          .completePayment(),
+    );
 
     if (!mounted) return;
     setState(() => _isProcessing = false);
-
-    AppToast.show(
-      ScaffoldMessenger.of(context),
-      message: '결제가 완료되었습니다.',
-    );
-    Navigator.of(context).pop();
   }
 
   @override

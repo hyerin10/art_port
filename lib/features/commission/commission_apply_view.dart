@@ -1,4 +1,6 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/core/network/api_exception.dart';
+import 'package:art_port/features/chat/chat_room_screen.dart';
 import 'package:art_port/features/commission/commission_apply_providers.dart';
 import 'package:art_port/features/commission/models/commission_apply_args.dart';
 import 'package:art_port/features/commission/models/commission_detail.dart';
@@ -112,16 +114,34 @@ class _CommissionApplyViewState extends ConsumerState<CommissionApplyView> {
       submittedAt: DateTime.now(),
     );
 
-    ref.read(commissionApplySubmissionsProvider.notifier).submit(submission);
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
 
-    if (!mounted) return;
-    setState(() => _isSubmitting = false);
-
-    AppToast.show(
-      ScaffoldMessenger.of(context),
-      message: '커미션 신청서가 제출되었습니다.',
-    );
-    Navigator.of(context).pop();
+    try {
+      final roomId = await ref
+          .read(commissionApplySubmissionsProvider.notifier)
+          .submit(submission);
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+      AppToast.show(messenger, message: '커미션 신청서가 제출되었습니다.');
+      navigator.pop();
+      navigator.push(
+        MaterialPageRoute<void>(
+          builder: (_) => ChatRoomScreen(roomId: roomId),
+        ),
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+      AppToast.show(messenger, message: e.displayMessage);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+      AppToast.show(
+        messenger,
+        message: '신청서 제출에 실패했습니다. 다시 시도해 주세요.',
+      );
+    }
   }
 
   @override
