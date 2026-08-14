@@ -84,12 +84,12 @@
 
 ## 개발 테스트 계정 (시드 데이터)
 
-| 이메일 | 비밀번호 | 이름 | 역할 | UUID |
-|---|---|---|---|---|
-| `client@example.com` | `password123` | 김혜린 | client | `00000000-0000-0000-0000-000000000001` |
-| `artist1@example.com` | `password123` | 박서아 | artist | `00000000-0000-0000-0000-000000000002` |
-| `artist2@example.com` | `password123` | 이주원 | artist | `00000000-0000-0000-0000-000000000003` |
-| `admin@example.com` | `password123` | 관리자 | admin | `00000000-0000-0000-0000-000000000099` |
+| 이메일 | 비밀번호 | 이름 | isAdmin | 의뢰자 프로필 | 작가 프로필 | UUID |
+|---|---|---|---|---|---|---|
+| `client@example.com` | `password123` | 김혜린 | false | O | | `00000000-0000-0000-0000-000000000001` |
+| `artist1@example.com` | `password123` | 박서아 | false | O | O | `00000000-0000-0000-0000-000000000002` |
+| `artist2@example.com` | `password123` | 이주원 | false | O | O | `00000000-0000-0000-0000-000000000003` |
+| `admin@example.com` | `password123` | 관리자 | true | O | | `00000000-0000-0000-0000-000000000099` |
 
 > UUID 규칙: `00000000-0000-0000-{테이블번호}-{순번}` — 외워두면 테스트에 편리
 
@@ -99,7 +99,6 @@
 
 | 타입 | 값 |
 |---|---|
-| `UserRole` | `client` `artist` `admin` |
 | `ApplicationStatus` | `pending` `approved` `rejected` |
 | `SlotStatus` | `open` `closed` `resting` |
 | `AgeRating` | `all` `15` `18` |
@@ -115,6 +114,14 @@
 ---
 
 ## 1. Users
+
+계정(`users`)은 한 사람이다. 의뢰자/작가는 `role` 컬럼이 아니라 프로필 존재로 구분한다.
+
+- 의뢰자: `client_profiles` 행이 있으면 의뢰 가능 (가입 시 자동 생성)
+- 작가: `artist_profiles` 행이 있으면 작가 (아티스트 신청 승인 시 생성)
+- 관리자: `users.is_admin = true`
+
+같은 사람이 의뢰자이면서 작가일 수 있다. UserResponse의 `clientProfileId` / `artistProfileId`가 `null`이면 해당 프로필이 없는 것이다.
 
 ### 엔드포인트
 
@@ -142,7 +149,9 @@ GET /users/00000000-0000-0000-0000-000000000001
     "email": "client@example.com",
     "name": "김혜린",
     "phone": "010-1111-0001",
-    "role": "client",
+    "isAdmin": false,
+    "clientProfileId": "00000000-0000-0000-0001-000000000001",
+    "artistProfileId": null,
     "isEmailVerified": true,
     "isActive": true,
     "lastLoginAt": null,
@@ -151,6 +160,8 @@ GET /users/00000000-0000-0000-0000-000000000001
   }
 }
 ```
+
+작가 계정(`artist1@example.com`)은 같은 형식에서 `clientProfileId`와 `artistProfileId`가 모두 채워진다.
 
 ### POST `/users/login`
 
@@ -175,7 +186,9 @@ GET /users/00000000-0000-0000-0000-000000000001
     "email": "client@example.com",
     "name": "김혜린",
     "phone": "010-1111-0001",
-    "role": "client",
+    "isAdmin": false,
+    "clientProfileId": "00000000-0000-0000-0001-000000000001",
+    "artistProfileId": null,
     "isEmailVerified": true,
     "isActive": true,
     "lastLoginAt": "2026-08-14T12:30:00Z",
@@ -210,7 +223,7 @@ GET /users/00000000-0000-0000-0000-000000000001
 | `name` | 필수, 2~100자 |
 | `phone` | 선택, `01X-XXXX-XXXX` 형식 (하이픈 생략 가능) |
 
-**Response 201** — `data`: UserResponse  
+**Response 201** — `data`: UserResponse. 가입 시 `client_profiles`가 함께 생성되어 `clientProfileId`가 채워진다.  
 **Error** `400 INVALID_INPUT` — 유효성 검사 실패  
 **Error** `409 DUPLICATE_EMAIL` — 이메일 중복
 
@@ -393,6 +406,8 @@ GET /artist-profiles/00000000-0000-0000-0002-000000000001
 }
 ```
 
+**Error** `409 DUPLICATE_RESOURCE` — 이미 아티스트 프로필이 있거나, 검토 중인 신청이 있을 때
+
 ### PATCH `/artist-applications/{id}/review?reviewedBy={adminId}`
 
 **Request Body**
@@ -404,9 +419,11 @@ GET /artist-profiles/00000000-0000-0000-0002-000000000001
 { "status": "rejected", "rejectionReason": "포트폴리오 이미지 품질 미달" }
 ```
 
+승인(`approved`) 시 해당 유저에 `artist_profiles`가 없으면 신청 정보로 생성한다. 같은 유저는 의뢰자 프로필을 유지한 채 작가가 된다.
+
 **Error**
 - `400 INVALID_INPUT` — rejected인데 rejectionReason 없을 때, status가 pending일 때
-- `403 FORBIDDEN` — reviewedBy가 관리자가 아닐 때
+- `403 FORBIDDEN` — reviewedBy가 관리자(`isAdmin`)가 아닐 때
 
 ---
 

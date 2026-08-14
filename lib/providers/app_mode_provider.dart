@@ -7,7 +7,7 @@ final appModeProvider = NotifierProvider<AppModeNotifier, bool>(
 
 class AppModeNotifier extends Notifier<bool> {
   @override
-  bool build() => true;
+  bool build() => false;
 
   bool get isArtistMode => state;
 

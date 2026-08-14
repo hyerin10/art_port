@@ -1,5 +1,4 @@
 import 'package:art_port/features/auth/domain/user.dart';
-import 'package:art_port/features/auth/domain/user_role.dart';
 
 class UserDto {
   const UserDto({
@@ -7,7 +6,9 @@ class UserDto {
     required this.email,
     required this.name,
     required this.phone,
-    required this.role,
+    required this.isAdmin,
+    this.clientProfileId,
+    this.artistProfileId,
     required this.isEmailVerified,
     required this.isActive,
     this.lastLoginAt,
@@ -19,7 +20,9 @@ class UserDto {
   final String email;
   final String name;
   final String phone;
-  final String role;
+  final bool isAdmin;
+  final String? clientProfileId;
+  final String? artistProfileId;
   final bool isEmailVerified;
   final bool isActive;
   final DateTime? lastLoginAt;
@@ -31,8 +34,10 @@ class UserDto {
       id: json['id'] as String,
       email: json['email'] as String,
       name: json['name'] as String,
-      phone: json['phone'] as String,
-      role: json['role'] as String,
+      phone: json['phone'] as String? ?? '',
+      isAdmin: json['isAdmin'] as bool? ?? false,
+      clientProfileId: json['clientProfileId'] as String?,
+      artistProfileId: json['artistProfileId'] as String?,
       isEmailVerified: json['isEmailVerified'] as bool? ?? false,
       isActive: json['isActive'] as bool? ?? true,
       lastLoginAt: _parseDateTime(json['lastLoginAt']),
@@ -47,7 +52,9 @@ class UserDto {
       email: email,
       name: name,
       phone: phone,
-      role: UserRole.fromString(role),
+      isAdmin: isAdmin,
+      clientProfileId: clientProfileId,
+      artistProfileId: artistProfileId,
       isEmailVerified: isEmailVerified,
       isActive: isActive,
       lastLoginAt: lastLoginAt,
@@ -85,14 +92,12 @@ class CreateUserRequest {
     required this.password,
     required this.name,
     required this.phone,
-    this.role = UserRole.client,
   });
 
   final String email;
   final String password;
   final String name;
   final String phone;
-  final UserRole role;
 
   Map<String, dynamic> toJson() {
     return {
@@ -100,7 +105,6 @@ class CreateUserRequest {
       'password': password,
       'name': name,
       'phone': phone,
-      'role': role.value,
     };
   }
 }

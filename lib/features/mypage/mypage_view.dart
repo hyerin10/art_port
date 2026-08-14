@@ -1,3 +1,5 @@
+import 'package:art_port/features/artist_application/artist_application_entry_view.dart';
+import 'package:art_port/features/artist_application/widgets/artist_approved_gate.dart';
 import 'package:art_port/features/auth/presentation/auth_session_effects.dart';
 import 'package:art_port/features/mypage/artist_mypage_content.dart';
 import 'package:art_port/features/mypage/client_mypage_content.dart';
@@ -31,7 +33,11 @@ class _MyPageViewState extends ConsumerState<MyPageView> {
       switchInCurve: Curves.easeOut,
       switchOutCurve: Curves.easeIn,
       child: isArtistMode
-          ? const ArtistMyPageContent(key: ValueKey('artist'))
+          ? ArtistApprovedGate(
+              key: const ValueKey('artist-mypage-gate'),
+              entryTab: ArtistApplicationEntryTab.mypage,
+              approvedChild: const ArtistMyPageContent(key: ValueKey('artist')),
+            )
           : const ClientMyPageContent(key: ValueKey('client')),
     );
   }

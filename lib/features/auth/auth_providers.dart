@@ -2,9 +2,9 @@ import 'package:art_port/core/network/api_exception.dart';
 import 'package:art_port/features/auth/auth_messages.dart';
 import 'package:art_port/features/auth/auth_validators.dart';
 import 'package:art_port/features/auth/data/dto/user_dto.dart';
-import 'package:art_port/features/auth/domain/user_role.dart';
 import 'package:art_port/features/auth/presentation/auth_session_effects.dart';
 import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
+import 'package:art_port/providers/artist_status_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final signInFormProvider =
@@ -117,6 +117,7 @@ class SignInFormNotifier extends AutoDisposeNotifier<SignInFormState> {
           );
       ref.read(authProvider.notifier).signIn(user);
       syncSessionSideEffectsFromRef(ref, user);
+      await refreshArtistApprovalStatus(ref.read);
       state = state.copyWith(isSubmitting: false);
       return true;
     } on ApiException catch (e) {
@@ -426,11 +427,11 @@ class SignUpFormNotifier extends AutoDisposeNotifier<SignUpFormState> {
               password: state.password,
               name: state.name.trim(),
               phone: state.phone,
-              role: UserRole.client,
             ),
           );
       ref.read(authProvider.notifier).signIn(user);
       syncSessionSideEffectsFromRef(ref, user);
+      await refreshArtistApprovalStatus(ref.read);
       state = state.copyWith(isSubmitting: false);
       return true;
     } on ApiException catch (e) {

@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 enum ArtistApplicationEntryTab {
   openSlot,
   workroom,
+  mypage,
 }
 
 class ArtistApplicationEntryView extends ConsumerWidget {
@@ -25,11 +26,13 @@ class ArtistApplicationEntryView extends ConsumerWidget {
   String get _titleKo => switch (tab) {
         ArtistApplicationEntryTab.openSlot => '오픈 슬롯',
         ArtistApplicationEntryTab.workroom => '작업실',
+        ArtistApplicationEntryTab.mypage => '작가 마이페이지',
       };
 
   String get _titleEn => switch (tab) {
         ArtistApplicationEntryTab.openSlot => 'Open Slot',
         ArtistApplicationEntryTab.workroom => 'Workroom',
+        ArtistApplicationEntryTab.mypage => 'Artist My Page',
       };
 
   @override

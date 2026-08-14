@@ -1,4 +1,5 @@
 import 'package:art_port/features/auth/domain/user.dart';
+import 'package:art_port/providers/artist_status_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// 로그인된 사용자. `null`이면 비로그인 상태.
@@ -29,6 +30,7 @@ class AuthNotifier extends Notifier<User?> {
   void signOut() {
     state = null;
     ref.read(isEmailVerifiedProvider.notifier).reset();
+    ref.read(artistApprovalStatusProvider.notifier).reset();
   }
 }
 
