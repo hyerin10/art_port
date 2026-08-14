@@ -205,9 +205,11 @@ class _ProfileAvatar extends StatelessWidget {
       child: CircleAvatar(
         radius: _size / 2,
         backgroundColor: AppColors.chipBackground,
-        backgroundImage: imageUrl.startsWith('assets/')
-            ? AssetImage(imageUrl)
-            : NetworkImage(imageUrl),
+        backgroundImage: imageUrl.isEmpty
+            ? null
+            : (imageUrl.startsWith('assets/')
+                ? AssetImage(imageUrl)
+                : NetworkImage(imageUrl)),
       ),
     );
   }
@@ -222,6 +224,7 @@ class _SocialLinkChip extends StatelessWidget {
         ArtistSocialLinkType.twitter => Icons.alternate_email_rounded,
         ArtistSocialLinkType.instagram => Icons.camera_alt_outlined,
         ArtistSocialLinkType.website => Icons.link_rounded,
+        ArtistSocialLinkType.other => Icons.link_rounded,
       };
 
   @override

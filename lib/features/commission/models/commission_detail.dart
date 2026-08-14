@@ -11,6 +11,7 @@ class CommissionDetail {
     required this.hasSlotOpen,
     required this.artistName,
     required this.artistAvatarUrl,
+    required this.artistProfileId,
     required this.rating,
     required this.reviewCount,
     required this.tags,
@@ -30,6 +31,7 @@ class CommissionDetail {
   final bool hasSlotOpen;
   final String artistName;
   final String artistAvatarUrl;
+  final String artistProfileId;
   final double rating;
   final int reviewCount;
   final List<String> tags;
@@ -65,6 +67,7 @@ class CommissionDetail {
       hasSlotOpen: hasSlotOpen,
       artistName: artistName,
       artistAvatarUrl: artistAvatarUrl,
+      artistProfileId: artistProfileId,
       rating: rating,
       reviewCount: reviewCount,
       tags: tags,

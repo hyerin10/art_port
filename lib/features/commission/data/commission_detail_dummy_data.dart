@@ -18,6 +18,7 @@ abstract final class CommissionDetailDummyData {
     artistName: 'PixelDreams',
     artistAvatarUrl:
         'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop',
+    artistProfileId: '',
     rating: 4.9,
     reviewCount: 128,
     tags: ['#MD', '#세미리얼', '#감성'],
@@ -42,8 +43,7 @@ abstract final class CommissionDetailDummyData {
         priceWon: 100000,
       ),
     ],
-    introText:
-        '안녕하세요! PixelDreams입니다. 제 스타일은 감성적이고 따뜻한 느낌의 일러스트를 지향합니다.',
+    introText: '안녕하세요! PixelDreams입니다. 제 스타일은 감성적이고 따뜻한 느낌의 일러스트를 지향합니다.',
     workScopeItems: CommissionDetailDefaults.workScopeItems,
     revisionPolicyItems: CommissionDetailDefaults.revisionPolicyItems,
     noticeText: CommissionDetailDefaults.noticeText,
@@ -61,6 +61,7 @@ abstract final class CommissionDetailDummyData {
     artistName: '네오네오',
     artistAvatarUrl:
         'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop',
+    artistProfileId: '',
     rating: 4.9,
     reviewCount: 133,
     tags: ['#두상', '#애니풍'],
@@ -85,8 +86,7 @@ abstract final class CommissionDetailDummyData {
         priceWon: 90000,
       ),
     ],
-    introText:
-        '안녕하세요! 네오네오입니다. 제 스타일은 감성적이고 따뜻한 느낌의 일러스트를 지향합니다.',
+    introText: '안녕하세요! 네오네오입니다. 제 스타일은 감성적이고 따뜻한 느낌의 일러스트를 지향합니다.',
     workScopeItems: CommissionDetailDefaults.workScopeItems,
     revisionPolicyItems: CommissionDetailDefaults.revisionPolicyItems,
     noticeText: CommissionDetailDefaults.noticeText,

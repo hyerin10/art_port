@@ -1,20 +1,16 @@
+import 'package:art_port/features/commission/data/commission_catalog_providers.dart';
 import 'package:art_port/features/search/models/search_commission.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-enum SearchSortOption {
-  latest,
-  popular,
-  priceLow,
-  priceHigh,
-}
+enum SearchSortOption { latest, popular, priceLow, priceHigh }
 
 extension SearchSortOptionLabel on SearchSortOption {
   String get label => switch (this) {
-        SearchSortOption.latest => '최신순',
-        SearchSortOption.popular => '인기순',
-        SearchSortOption.priceLow => '가격 낮은순',
-        SearchSortOption.priceHigh => '가격 높은순',
-      };
+    SearchSortOption.latest => '최신순',
+    SearchSortOption.popular => '인기순',
+    SearchSortOption.priceLow => '가격 낮은순',
+    SearchSortOption.priceHigh => '가격 높은순',
+  };
 }
 
 /// 가격 빠른 선택 프리셋 (`만` 단위)
@@ -30,31 +26,11 @@ class SearchPricePreset {
   final int maxMan;
 
   static const presets = [
-    SearchPricePreset(
-      label: '1천 이상 5천 이하',
-      minMan: 1,
-      maxMan: 5,
-    ),
-    SearchPricePreset(
-      label: '5천 이상 1만 이하',
-      minMan: 5,
-      maxMan: 10,
-    ),
-    SearchPricePreset(
-      label: '1만 이상 3만 이하',
-      minMan: 10,
-      maxMan: 30,
-    ),
-    SearchPricePreset(
-      label: '3만 이상 5만 이하',
-      minMan: 30,
-      maxMan: 50,
-    ),
-    SearchPricePreset(
-      label: '5만 이상 10만 이하',
-      minMan: 50,
-      maxMan: 100,
-    ),
+    SearchPricePreset(label: '1천 이상 5천 이하', minMan: 1, maxMan: 5),
+    SearchPricePreset(label: '5천 이상 1만 이하', minMan: 5, maxMan: 10),
+    SearchPricePreset(label: '1만 이상 3만 이하', minMan: 10, maxMan: 30),
+    SearchPricePreset(label: '3만 이상 5만 이하', minMan: 30, maxMan: 50),
+    SearchPricePreset(label: '5만 이상 10만 이하', minMan: 50, maxMan: 100),
   ];
 }
 
@@ -121,8 +97,8 @@ class SearchFilterState {
 
 final searchFilterProvider =
     NotifierProvider<SearchFilterNotifier, SearchFilterState>(
-  SearchFilterNotifier.new,
-);
+      SearchFilterNotifier.new,
+    );
 
 class SearchFilterNotifier extends Notifier<SearchFilterState> {
   @override
@@ -174,10 +150,15 @@ class SearchFilterNotifier extends Notifier<SearchFilterState> {
   void resetFilters() => state = const SearchFilterState();
 }
 
-/// 전체 커미션 목록 (추후 API 교체)
-final searchCommissionsProvider = Provider<List<SearchCommissionItem>>(
-  (ref) => SearchDummyData.commissions,
-);
+/// 전체 커미션 목록
+final searchCommissionsProvider = Provider<List<SearchCommissionItem>>((ref) {
+  return ref
+      .watch(commissionCatalogProvider)
+      .maybeWhen(
+        data: (catalog) => catalog.searchItems,
+        orElse: () => const [],
+      );
+});
 
 /// 연관 인기 태그 (추후 API·검색어 기반 동적 노출)
 final searchPopularTagsProvider = Provider<List<String>>(
@@ -185,8 +166,9 @@ final searchPopularTagsProvider = Provider<List<String>>(
 );
 
 /// 필터·검색어·정렬이 적용된 결과
-final filteredSearchResultsProvider =
-    Provider<List<SearchCommissionItem>>((ref) {
+final filteredSearchResultsProvider = Provider<List<SearchCommissionItem>>((
+  ref,
+) {
   final all = ref.watch(searchCommissionsProvider);
   final filter = ref.watch(searchFilterProvider);
 
@@ -201,8 +183,7 @@ final filteredSearchResultsProvider =
         )) {
       return false;
     }
-    if (filter.deadline != null &&
-        !item.matchesDeadline(filter.deadline!)) {
+    if (filter.deadline != null && !item.matchesDeadline(filter.deadline!)) {
       return false;
     }
     if (filter.ageRating != null && !item.matchesAge(filter.ageRating!)) {

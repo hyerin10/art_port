@@ -14,8 +14,7 @@ abstract final class CommissionDetailDefaults {
     '완성 후: 색감 조정만 가능',
   ];
 
-  static const noticeText =
-      '커미션 신청 전 작가의 약관을 꼭 확인해주세요. 결제는 작가와 협의 후 진행됩니다.';
+  static const noticeText = '커미션 신청 전 작가의 약관을 꼭 확인해주세요. 결제는 작가와 협의 후 진행됩니다.';
 
   static String introText(String artistName) =>
       '안녕하세요! $artistName입니다. 제 스타일은 감성적이고 따뜻한 느낌의 일러스트를 지향합니다.';

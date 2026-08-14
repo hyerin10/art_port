@@ -1,7 +1,5 @@
-import 'package:art_port/features/commission/data/commission_detail_dummy_data.dart';
-import 'package:art_port/features/explore/models/commission_sample.dart';
+import 'package:art_port/features/commission/data/commission_catalog_providers.dart';
 import 'package:art_port/features/mypage/models/liked_commission_item.dart';
-import 'package:art_port/features/search/models/search_commission.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// 앱 전역 찜(좋아요) 커미션 ID 집합
@@ -12,7 +10,7 @@ final likedCommissionIdsProvider =
 
 class LikedCommissionIdsNotifier extends Notifier<Set<String>> {
   @override
-  Set<String> build() => _initialLikedIds();
+  Set<String> build() => {};
 
   void toggle(String id) {
     final next = Set<String>.from(state);
@@ -27,28 +25,15 @@ class LikedCommissionIdsNotifier extends Notifier<Set<String>> {
   bool isLiked(String id) => state.contains(id);
 }
 
-Set<String> _initialLikedIds() {
-  final ids = <String>{};
-  for (final item in SearchDummyData.commissions) {
-    if (item.isLiked) ids.add(item.id);
-  }
-  for (final sample in ExploreDummyData.gallerySamples) {
-    if (sample.isLiked) ids.add(sample.id);
-  }
-  return ids;
-}
-
 /// 찜한 작품 목록 (카드 표시용)
 final likedCommissionsProvider = Provider<List<LikedCommissionItem>>((ref) {
   final likedIds = ref.watch(likedCommissionIdsProvider);
-  final items = <LikedCommissionItem>[];
+  final catalog = ref.watch(commissionCatalogProvider).valueOrNull;
+  if (catalog == null) return const [];
 
-  for (final id in likedIds) {
-    final detail = CommissionDetailDummyData.forId(id);
-    if (detail != null) {
-      items.add(LikedCommissionItem.fromDetail(detail));
-    }
-  }
-
-  return items;
+  return [
+    for (final id in likedIds)
+      if (catalog.detailFor(id) case final detail?)
+        LikedCommissionItem.fromDetail(detail),
+  ];
 });

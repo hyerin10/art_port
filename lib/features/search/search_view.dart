@@ -1,3 +1,6 @@
+import 'package:art_port/core/widgets/api_async_body.dart';
+import 'package:art_port/features/commission/data/commission_catalog.dart';
+import 'package:art_port/features/commission/data/commission_catalog_providers.dart';
 import 'package:art_port/features/search/search_filter_overlay.dart';
 import 'package:art_port/features/search/search_providers.dart';
 import 'package:art_port/features/search/widgets/search_empty_state.dart';
@@ -34,6 +37,7 @@ class _SearchViewState extends ConsumerState<SearchView> {
 
   @override
   Widget build(BuildContext context) {
+    final catalog = ref.watch(commissionCatalogProvider);
     final results = ref.watch(filteredSearchResultsProvider);
 
     return Column(
@@ -45,9 +49,17 @@ class _SearchViewState extends ConsumerState<SearchView> {
         ),
         const SizedBox(height: 8),
         Expanded(
-          child: results.isEmpty
-              ? const SearchEmptyState()
-              : SearchResultsGrid(results: results),
+          child: ApiAsyncBody<CommissionCatalog>(
+            value: catalog,
+            onRetry: () => ref.invalidate(commissionCatalogProvider),
+            errorMessage: '커미션 목록을 불러오지 못했습니다.',
+            builder: (_) {
+              if (results.isEmpty) {
+                return const SearchEmptyState();
+              }
+              return SearchResultsGrid(results: results);
+            },
+          ),
         ),
       ],
     );

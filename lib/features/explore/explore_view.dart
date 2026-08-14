@@ -1,35 +1,59 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/core/widgets/api_async_body.dart';
 import 'package:art_port/features/commission/commission_detail_screen.dart';
+import 'package:art_port/features/commission/data/commission_catalog.dart';
+import 'package:art_port/features/commission/data/commission_catalog_providers.dart';
 import 'package:art_port/features/explore/models/commission_sample.dart';
 import 'package:art_port/providers/liked_commissions_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// 탐색(Explore) 탭 내부 스크롤 콘텐츠
-class ExploreView extends StatelessWidget {
+class ExploreView extends ConsumerWidget {
   const ExploreView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ScrollConfiguration(
-      behavior: const _ArtPortScrollBehavior(),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const _FeaturedBanner(),
-            const SizedBox(height: 24),
-            const _LiveSlotsSection(),
-            const SizedBox(height: 28),
-            const _DiscoverHeader(),
-            const SizedBox(height: 16),
-            _TwoColumnGallery(
-              samples: ExploreDummyData.gallerySamples,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final catalog = ref.watch(commissionCatalogProvider);
+
+    return ApiAsyncBody<CommissionCatalog>(
+      value: catalog,
+      onRetry: () => ref.invalidate(commissionCatalogProvider),
+      errorMessage: '작품 목록을 불러오지 못했습니다.',
+      builder: (data) {
+        return ScrollConfiguration(
+          behavior: const _ArtPortScrollBehavior(),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _FeaturedBanner(imageUrl: data.featuredBannerImage),
+                const SizedBox(height: 24),
+                _LiveSlotsSection(slots: data.liveSlots),
+                const SizedBox(height: 28),
+                _DiscoverHeader(tags: data.categoryTags),
+                const SizedBox(height: 16),
+                if (data.gallerySamples.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: Center(
+                      child: Text(
+                        '등록된 커미션이 없습니다.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  _TwoColumnGallery(samples: data.gallerySamples),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -59,7 +83,9 @@ class _ArtPortScrollBehavior extends ScrollBehavior {
 // ─── Featured Banner ───────────────────────────────────────────────────────
 
 class _FeaturedBanner extends StatefulWidget {
-  const _FeaturedBanner();
+  const _FeaturedBanner({required this.imageUrl});
+
+  final String imageUrl;
 
   @override
   State<_FeaturedBanner> createState() => _FeaturedBannerState();
@@ -82,11 +108,10 @@ class _FeaturedBannerState extends State<_FeaturedBanner> {
               fit: StackFit.expand,
               children: [
                 Image.network(
-                  ExploreDummyData.featuredBannerImage,
+                  widget.imageUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => Container(
-                    color: AppColors.primarySoft,
-                  ),
+                  errorBuilder: (_, _, _) =>
+                      Container(color: AppColors.primarySoft),
                 ),
                 DecoratedBox(
                   decoration: BoxDecoration(
@@ -162,10 +187,14 @@ class _FeaturedBannerState extends State<_FeaturedBanner> {
 // ─── Live Slots ─────────────────────────────────────────────────────────────
 
 class _LiveSlotsSection extends StatelessWidget {
-  const _LiveSlotsSection();
+  const _LiveSlotsSection({required this.slots});
+
+  final List<LiveSlotSample> slots;
 
   @override
   Widget build(BuildContext context) {
+    if (slots.isEmpty) return const SizedBox.shrink();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -199,10 +228,10 @@ class _LiveSlotsSection extends StatelessWidget {
           height: 200,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            itemCount: ExploreDummyData.liveSlots.length,
+            itemCount: slots.length,
             separatorBuilder: (_, _) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
-              return _LiveSlotCard(slot: ExploreDummyData.liveSlots[index]);
+              return _LiveSlotCard(slot: slots[index]);
             },
           ),
         ),
@@ -238,7 +267,10 @@ class _LiveSlotCard extends StatelessWidget {
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) => ColoredBox(
                     color: AppColors.chipBackground,
-                    child: Icon(Icons.image_outlined, color: AppColors.textMuted),
+                    child: Icon(
+                      Icons.image_outlined,
+                      color: AppColors.textMuted,
+                    ),
                   ),
                 ),
                 DecoratedBox(
@@ -258,8 +290,10 @@ class _LiveSlotCard extends StatelessWidget {
                   top: 10,
                   right: 10,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
@@ -388,7 +422,9 @@ class _TwoColumnGallery extends StatelessWidget {
 }
 
 class _DiscoverHeader extends StatelessWidget {
-  const _DiscoverHeader();
+  const _DiscoverHeader({required this.tags});
+
+  final List<String> tags;
 
   @override
   Widget build(BuildContext context) {
@@ -404,14 +440,16 @@ class _DiscoverHeader extends StatelessWidget {
             letterSpacing: -0.3,
           ),
         ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: ExploreDummyData.categoryTags.map((tag) {
-            return _CategoryChip(label: tag);
-          }).toList(),
-        ),
+        if (tags.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: tags.map((tag) {
+              return _CategoryChip(label: tag);
+            }).toList(),
+          ),
+        ],
       ],
     );
   }
@@ -458,10 +496,8 @@ class _GalleryCard extends ConsumerWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => CommissionDetailScreen.open(
-          context,
-          commissionId: sample.id,
-        ),
+        onTap: () =>
+            CommissionDetailScreen.open(context, commissionId: sample.id),
         borderRadius: BorderRadius.circular(16),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
@@ -486,8 +522,10 @@ class _GalleryCard extends ConsumerWidget {
                   top: 10,
                   right: 10,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.55),
                       borderRadius: BorderRadius.circular(20),
@@ -524,8 +562,9 @@ class _GalleryCard extends ConsumerWidget {
                           CircleAvatar(
                             radius: 11,
                             backgroundColor: AppColors.chipBackground,
-                            backgroundImage:
-                                NetworkImage(sample.artistAvatarUrl),
+                            backgroundImage: NetworkImage(
+                              sample.artistAvatarUrl,
+                            ),
                           ),
                           const SizedBox(width: 6),
                           Expanded(

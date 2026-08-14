@@ -8,10 +8,7 @@ abstract final class CommissionDetailMapper {
   static CommissionDetail fromExploreSample(CommissionSample sample) {
     return _build(
       id: sample.id,
-      title: _titleFromTags(
-        sample.tags,
-        fallback: '${sample.artistName} 커미션',
-      ),
+      title: _titleFromTags(sample.tags, fallback: '${sample.artistName} 커미션'),
       primaryImageUrl: sample.imageUrl,
       hasSlotOpen: true,
       artistName: sample.artistName,
@@ -94,13 +91,15 @@ abstract final class CommissionDetailMapper {
       hasSlotOpen: hasSlotOpen,
       artistName: artistName,
       artistAvatarUrl: artistAvatarUrl,
+      artistProfileId: '',
       rating: rating,
       reviewCount: reviewCount,
       tags: tags,
       estimatedDays: estimatedDays,
       completedCount: completedCount,
       responseRatePercent: responseRatePercent,
-      priceOptions: priceOptions ?? CommissionDetailDefaults.priceOptions(startPriceWon),
+      priceOptions:
+          priceOptions ?? CommissionDetailDefaults.priceOptions(startPriceWon),
       introText: CommissionDetailDefaults.introText(artistName),
       workScopeItems: CommissionDetailDefaults.workScopeItems,
       revisionPolicyItems: CommissionDetailDefaults.revisionPolicyItems,

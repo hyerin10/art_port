@@ -13,7 +13,7 @@ class ArtistSocialLink {
   final String url;
 }
 
-enum ArtistSocialLinkType { twitter, instagram, website }
+enum ArtistSocialLinkType { twitter, instagram, website, other }
 
 /// 공개 작가 프로필 (상세 페이지용)
 class ArtistPublicProfile {

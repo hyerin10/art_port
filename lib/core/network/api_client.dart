@@ -7,11 +7,9 @@ import 'package:http/http.dart' as http;
 
 /// HTTP 클라이언트 — 공통 헤더·응답 파싱·에러 처리.
 class ApiClient {
-  ApiClient({
-    http.Client? httpClient,
-    String? baseUrl,
-  })  : _httpClient = httpClient ?? http.Client(),
-        _baseUrl = baseUrl ?? ApiConfig.baseUrl;
+  ApiClient({http.Client? httpClient, String? baseUrl})
+    : _httpClient = httpClient ?? http.Client(),
+      _baseUrl = baseUrl ?? ApiConfig.baseUrl;
 
   final http.Client _httpClient;
   final String _baseUrl;
@@ -25,7 +23,15 @@ class ApiClient {
     String path, {
     Map<String, String>? queryParameters,
   }) {
-    return _request('GET', path, queryParameters: queryParameters);
+    return _requestObject('GET', path, queryParameters: queryParameters);
+  }
+
+  /// `data`가 배열인 목록 API용.
+  Future<List<Map<String, dynamic>>> getList(
+    String path, {
+    Map<String, String>? queryParameters,
+  }) {
+    return _requestObjectList('GET', path, queryParameters: queryParameters);
   }
 
   Future<Map<String, dynamic>> post(
@@ -33,7 +39,7 @@ class ApiClient {
     Map<String, dynamic>? body,
     Map<String, String>? queryParameters,
   }) {
-    return _request(
+    return _requestObject(
       'POST',
       path,
       body: body,
@@ -46,7 +52,7 @@ class ApiClient {
     Map<String, dynamic>? body,
     Map<String, String>? queryParameters,
   }) {
-    return _request(
+    return _requestObject(
       'PATCH',
       path,
       body: body,
@@ -58,7 +64,7 @@ class ApiClient {
     String path, {
     Map<String, String>? queryParameters,
   }) async {
-    await _request(
+    await _requestData(
       'DELETE',
       path,
       queryParameters: queryParameters,
@@ -66,7 +72,60 @@ class ApiClient {
     );
   }
 
-  Future<Map<String, dynamic>> _request(
+  Future<Map<String, dynamic>> _requestObject(
+    String method,
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? queryParameters,
+    bool allowEmptyData = false,
+  }) async {
+    final data = await _requestData(
+      method,
+      path,
+      body: body,
+      queryParameters: queryParameters,
+      allowEmptyData: allowEmptyData,
+    );
+    if (data is Map<String, dynamic>) {
+      return data;
+    }
+    if (allowEmptyData && data == null) {
+      return {};
+    }
+    throw ApiException.unexpected('응답 데이터 형식이 올바르지 않습니다.');
+  }
+
+  Future<List<Map<String, dynamic>>> _requestObjectList(
+    String method,
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? queryParameters,
+  }) async {
+    final data = await _requestData(
+      method,
+      path,
+      body: body,
+      queryParameters: queryParameters,
+      allowEmptyData: true,
+    );
+    if (data == null) {
+      return const [];
+    }
+    if (data is! List) {
+      throw ApiException.unexpected('목록 응답 형식이 올바르지 않습니다.');
+    }
+
+    final items = <Map<String, dynamic>>[];
+    for (final item in data) {
+      if (item is! Map<String, dynamic>) {
+        throw ApiException.unexpected('목록 항목 형식이 올바르지 않습니다.');
+      }
+      items.add(item);
+    }
+    return items;
+  }
+
+  Future<Object?> _requestData(
     String method,
     String path, {
     Map<String, dynamic>? body,
@@ -108,9 +167,9 @@ class ApiClient {
     }
 
     if (response.statusCode == 204 || response.body.isEmpty) {
-      if (allowEmptyData) return {};
+      if (allowEmptyData) return null;
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        return {};
+        return null;
       }
     }
 
@@ -137,14 +196,7 @@ class ApiClient {
       );
     }
 
-    final data = decoded['data'];
-    if (data is Map<String, dynamic>) {
-      return data;
-    }
-    if (allowEmptyData) {
-      return {};
-    }
-    throw ApiException.unexpected('응답 데이터 형식이 올바르지 않습니다.');
+    return decoded['data'];
   }
 
   void close() => _httpClient.close();

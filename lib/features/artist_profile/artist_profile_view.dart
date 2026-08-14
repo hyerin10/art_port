@@ -1,4 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/core/widgets/api_async_body.dart';
 import 'package:art_port/features/artist_profile/artist_profile_providers.dart';
 import 'package:art_port/features/artist_profile/widgets/artist_notice_tab.dart';
 import 'package:art_port/features/artist_profile/widgets/artist_portfolio_tab.dart';
@@ -39,81 +40,99 @@ class _ArtistProfileViewState extends ConsumerState<ArtistProfileView>
 
   @override
   Widget build(BuildContext context) {
-    final profile = ref.watch(artistPublicProfileProvider(widget.artistId));
-
-    if (profile == null) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        body: Column(
-          children: [
-            ArtistProfileSubHeader(
-              onBack: () => Navigator.of(context).pop(),
-            ),
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      '작가 프로필을 찾을 수 없습니다.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('돌아가기'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final isFollowing =
-        ref.watch(followedArtistIdsProvider).contains(profile.id);
+    final profileAsync = ref.watch(
+      artistPublicProfileProvider(widget.artistId),
+    );
+    final followedIds = ref.watch(followedArtistIdsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          ArtistProfileSubHeader(
-            onBack: () => Navigator.of(context).pop(),
-          ),
-          const Divider(height: 1, thickness: 1, color: AppColors.borderLight),
-          const SizedBox(height: 8),
-          ArtistProfileInfoSection(
-            profile: profile,
-            isFollowing: isFollowing,
-            notificationsEnabled: _notificationsEnabled,
-            onFollowTap: () => ref
-                .read(followedArtistIdsProvider.notifier)
-                .toggle(profile.id),
-            onNotificationTap: () =>
-                setState(() => _notificationsEnabled = !_notificationsEnabled),
-          ),
-          _ProfileTabBar(controller: _tabController),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
+      body: ApiAsyncBody(
+        value: profileAsync,
+        onRetry: () =>
+            ref.invalidate(artistPublicProfileProvider(widget.artistId)),
+        errorMessage: '작가 프로필을 불러오지 못했습니다.',
+        builder: (profile) {
+          if (profile == null) {
+            return Scaffold(
+              backgroundColor: AppColors.background,
+              body: Column(
+                children: [
+                  ArtistProfileSubHeader(
+                    onBack: () => Navigator.of(context).pop(),
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            '작가 프로필을 찾을 수 없습니다.',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('돌아가기'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          final isFollowing = followedIds.contains(profile.id);
+
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            body: Column(
               children: [
-                ArtistNoticeTab(profile: profile),
-                ArtistProfileTabContent(profile: profile),
-                ArtistPortfolioTab(imageUrls: profile.portfolioImageUrls),
+                ArtistProfileSubHeader(
+                  onBack: () => Navigator.of(context).pop(),
+                ),
+                const Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: AppColors.borderLight,
+                ),
+                const SizedBox(height: 8),
+                ArtistProfileInfoSection(
+                  profile: profile,
+                  isFollowing: isFollowing,
+                  notificationsEnabled: _notificationsEnabled,
+                  onFollowTap: () => ref
+                      .read(followedArtistIdsProvider.notifier)
+                      .toggle(profile.id),
+                  onNotificationTap: () => setState(
+                    () => _notificationsEnabled = !_notificationsEnabled,
+                  ),
+                ),
+                _ProfileTabBar(controller: _tabController),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      ArtistNoticeTab(profile: profile),
+                      ArtistProfileTabContent(profile: profile),
+                      ArtistPortfolioTab(imageUrls: profile.portfolioImageUrls),
+                    ],
+                  ),
+                ),
               ],
             ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: ArtPortBottomNav(
-        onTabSelected: (index) {
-          ref.read(currentTabProvider.notifier).selectTab(index);
-          Navigator.of(context).pop();
+            bottomNavigationBar: ArtPortBottomNav(
+              onTabSelected: (index) {
+                ref.read(currentTabProvider.notifier).selectTab(index);
+                Navigator.of(context).pop();
+              },
+            ),
+          );
         },
       ),
     );
@@ -133,10 +152,7 @@ class _ProfileTabBar extends StatelessWidget {
         controller: controller,
         labelColor: AppColors.primary,
         unselectedLabelColor: AppColors.textMuted,
-        labelStyle: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-        ),
+        labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
         unselectedLabelStyle: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,

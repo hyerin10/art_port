@@ -1,4 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/core/widgets/api_async_body.dart';
 import 'package:art_port/features/artist_profile/artist_profile_screen.dart';
 import 'package:art_port/features/auth/widgets/login_required_dialog.dart';
 import 'package:art_port/features/commission/commission_apply_screen.dart';
@@ -35,8 +36,9 @@ class _CommissionDetailViewState extends ConsumerState<CommissionDetailView> {
   int? _selectedOptionIndex;
 
   int _defaultOptionIndex(CommissionDetail detail) {
-    final popularIndex =
-        detail.priceOptions.indexWhere((option) => option.isPopular);
+    final popularIndex = detail.priceOptions.indexWhere(
+      (option) => option.isPopular,
+    );
     return popularIndex >= 0 ? popularIndex : 0;
   }
 
@@ -48,6 +50,7 @@ class _CommissionDetailViewState extends ConsumerState<CommissionDetailView> {
     }
 
     final index = _selectedOptionIndex ?? _defaultOptionIndex(detail);
+    if (detail.priceOptions.isEmpty) return;
     final selectedOption = detail.priceOptions[index];
 
     CommissionApplyScreen.open(
@@ -63,118 +66,140 @@ class _CommissionDetailViewState extends ConsumerState<CommissionDetailView> {
 
   @override
   Widget build(BuildContext context) {
-    final detail = ref.watch(commissionDetailProvider(widget.commissionId));
-    final isLiked = ref.watch(likedCommissionIdsProvider)
+    final detailAsync = ref.watch(
+      commissionDetailProvider(widget.commissionId),
+    );
+    final isLiked = ref
+        .watch(likedCommissionIdsProvider)
         .contains(widget.commissionId);
-
-    if (detail == null) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        body: Column(
-          children: [
-            CommissionDetailHeader(
-              onBack: () => Navigator.of(context).pop(),
-              isLiked: false,
-              onLikeTap: () {},
-              onShareTap: () {},
-            ),
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      '커미션을 찾을 수 없습니다.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('돌아가기'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final selectedIndex =
-        _selectedOptionIndex ?? _defaultOptionIndex(detail);
-    final selectedOption = detail.priceOptions[selectedIndex];
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          CommissionDetailHeader(
-            onBack: () => Navigator.of(context).pop(),
-            isLiked: isLiked,
-            onLikeTap: () => ref
-                .read(likedCommissionIdsProvider.notifier)
-                .toggle(widget.commissionId),
-            onShareTap: () => AppToast.show(
-              ScaffoldMessenger.of(context),
-              message: '공유 링크를 준비 중입니다.',
-            ),
-          ),
-          Expanded(
-            child: Stack(
-              children: [
-                ScrollConfiguration(
-                  behavior: const _CommissionDetailScrollBehavior(),
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.only(bottom: 88),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _ImageCarousel(detail: detail),
-                        _ArtistProfileSection(detail: detail),
-                        const _SectionDivider(),
-                        _TitleAndTagsSection(detail: detail),
-                        const SizedBox(height: 20),
-                        _InfoGridSection(detail: detail),
-                        const _SectionDivider(),
-                        _PriceOptionsSection(
-                          options: detail.priceOptions,
-                          selectedIndex: selectedIndex,
-                          onOptionSelected: (index) =>
-                              setState(() => _selectedOptionIndex = index),
-                        ),
-                        const _SectionDivider(),
-                        _WorkDescriptionSection(detail: detail),
-                        const SizedBox(height: 20),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                          child: _NoticeBox(text: detail.noticeText),
-                        ),
-                      ],
+      body: ApiAsyncBody(
+        value: detailAsync,
+        onRetry: () =>
+            ref.invalidate(commissionDetailProvider(widget.commissionId)),
+        errorMessage: '커미션을 불러오지 못했습니다.',
+        builder: (detail) {
+          if (detail == null) {
+            return Scaffold(
+              backgroundColor: AppColors.background,
+              body: Column(
+                children: [
+                  CommissionDetailHeader(
+                    onBack: () => Navigator.of(context).pop(),
+                    isLiked: false,
+                    onLikeTap: () {},
+                    onShareTap: () {},
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            '커미션을 찾을 수 없습니다.',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('돌아가기'),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
+                ],
+              ),
+            );
+          }
+
+          final selectedIndex =
+              _selectedOptionIndex ?? _defaultOptionIndex(detail);
+          final selectedOption = detail.priceOptions.isEmpty
+              ? const CommissionPriceOption(label: '기본', priceWon: 0)
+              : detail.priceOptions[selectedIndex];
+
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            body: Column(
+              children: [
+                CommissionDetailHeader(
+                  onBack: () => Navigator.of(context).pop(),
+                  isLiked: isLiked,
+                  onLikeTap: () => ref
+                      .read(likedCommissionIdsProvider.notifier)
+                      .toggle(widget.commissionId),
+                  onShareTap: () => AppToast.show(
+                    ScaffoldMessenger.of(context),
+                    message: '공유 링크를 준비 중입니다.',
+                  ),
                 ),
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: CommissionDetailBottomBar(
-                    selectedOption: selectedOption,
-                    onApplyTap: () => _onApplyTap(detail),
+                Expanded(
+                  child: Stack(
+                    children: [
+                      ScrollConfiguration(
+                        behavior: const _CommissionDetailScrollBehavior(),
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.only(bottom: 88),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _ImageCarousel(detail: detail),
+                              _ArtistProfileSection(detail: detail),
+                              const _SectionDivider(),
+                              _TitleAndTagsSection(detail: detail),
+                              const SizedBox(height: 20),
+                              _InfoGridSection(detail: detail),
+                              const _SectionDivider(),
+                              _PriceOptionsSection(
+                                options: detail.priceOptions,
+                                selectedIndex: selectedIndex,
+                                onOptionSelected: (index) => setState(
+                                  () => _selectedOptionIndex = index,
+                                ),
+                              ),
+                              const _SectionDivider(),
+                              _WorkDescriptionSection(detail: detail),
+                              const SizedBox(height: 20),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  20,
+                                  0,
+                                  20,
+                                  24,
+                                ),
+                                child: _NoticeBox(text: detail.noticeText),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: CommissionDetailBottomBar(
+                          selectedOption: selectedOption,
+                          onApplyTap: () => _onApplyTap(detail),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: ArtPortBottomNav(
-        onTabSelected: (index) {
-          ref.read(currentTabProvider.notifier).selectTab(index);
-          Navigator.of(context).pop();
+            bottomNavigationBar: ArtPortBottomNav(
+              onTabSelected: (index) {
+                ref.read(currentTabProvider.notifier).selectTab(index);
+                Navigator.of(context).pop();
+              },
+            ),
+          );
         },
       ),
     );
@@ -210,11 +235,7 @@ class _SectionDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 20),
-      child: Divider(
-        height: 1,
-        thickness: 1,
-        color: AppColors.borderLight,
-      ),
+      child: Divider(height: 1, thickness: 1, color: AppColors.borderLight),
     );
   }
 }
@@ -255,32 +276,44 @@ class _ImageCarouselState extends State<_ImageCarousel> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          PageView.builder(
-            controller: _pageController,
-            itemCount: images.length,
-            onPageChanged: (index) => setState(() => _currentPage = index),
-            itemBuilder: (context, index) {
-              return Image.network(
-                images[index],
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => ColoredBox(
-                  color: AppColors.primarySoft,
-                  child: Icon(
-                    Icons.image_outlined,
-                    size: 48,
-                    color: AppColors.primary.withValues(alpha: 0.4),
+          if (images.isEmpty)
+            ColoredBox(
+              color: AppColors.primarySoft,
+              child: Icon(
+                Icons.image_outlined,
+                size: 48,
+                color: AppColors.primary.withValues(alpha: 0.4),
+              ),
+            )
+          else
+            PageView.builder(
+              controller: _pageController,
+              itemCount: images.length,
+              onPageChanged: (index) => setState(() => _currentPage = index),
+              itemBuilder: (context, index) {
+                return Image.network(
+                  images[index],
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => ColoredBox(
+                    color: AppColors.primarySoft,
+                    child: Icon(
+                      Icons.image_outlined,
+                      size: 48,
+                      color: AppColors.primary.withValues(alpha: 0.4),
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
+                );
+              },
+            ),
           if (widget.detail.hasSlotOpen)
             Positioned(
               top: 14,
               left: 14,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.onlineStatus,
                   borderRadius: BorderRadius.circular(20),
@@ -334,9 +367,10 @@ class _ArtistProfileSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final artistId = ArtistCatalog.idForName(detail.artistName);
-    final isFollowing =
-        ref.watch(followedArtistIdsProvider).contains(artistId);
+    final artistId = detail.artistProfileId.isNotEmpty
+        ? detail.artistProfileId
+        : ArtistCatalog.idForName(detail.artistName);
+    final isFollowing = ref.watch(followedArtistIdsProvider).contains(artistId);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
@@ -346,10 +380,8 @@ class _ArtistProfileSection extends ConsumerWidget {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: () => ArtistProfileScreen.open(
-                  context,
-                  artistId: artistId,
-                ),
+                onTap: () =>
+                    ArtistProfileScreen.open(context, artistId: artistId),
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
@@ -407,13 +439,14 @@ class _ArtistProfileSection extends ConsumerWidget {
             color: AppColors.chipBackground,
             borderRadius: BorderRadius.circular(isFollowing ? 20 : 10),
             child: InkWell(
-              onTap: () => ref
-                  .read(followedArtistIdsProvider.notifier)
-                  .toggle(artistId),
+              onTap: () =>
+                  ref.read(followedArtistIdsProvider.notifier).toggle(artistId),
               borderRadius: BorderRadius.circular(isFollowing ? 20 : 10),
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Text(
                   isFollowing ? '팔로잉' : '팔로우',
                   style: TextStyle(
@@ -463,8 +496,10 @@ class _TitleAndTagsSection extends StatelessWidget {
             runSpacing: 8,
             children: detail.tags.map((tag) {
               return Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.chipBackground,
                   borderRadius: BorderRadius.circular(8),
@@ -672,8 +707,10 @@ class _PriceOptionCard extends StatelessWidget {
               const SizedBox(width: 10),
               if (option.isPopular) ...[
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(6),

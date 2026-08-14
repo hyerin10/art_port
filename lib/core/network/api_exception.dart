@@ -46,6 +46,10 @@ class ApiException implements Exception {
         return '이미 사용 중인 이메일입니다.';
       case 'USER_NOT_FOUND':
         return '사용자를 찾을 수 없습니다.';
+      case 'ARTIST_PROFILE_NOT_FOUND':
+        return '작가 프로필을 찾을 수 없습니다.';
+      case 'COMMISSION_TYPE_NOT_FOUND':
+        return '커미션을 찾을 수 없습니다.';
       case 'INVALID_CREDENTIALS':
         return '이메일 또는 비밀번호가 올바르지 않습니다.';
       case 'USER_INACTIVE':
