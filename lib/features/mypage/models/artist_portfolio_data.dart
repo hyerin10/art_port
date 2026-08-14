@@ -46,6 +46,8 @@ class ArtistPortfolioEditState {
     required this.websiteUrl,
     this.activePortfolioIndex,
     this.isSaving = false,
+    this.isLoaded = false,
+    this.saveError,
   });
 
   static const int maxPortfolioCount = 12;
@@ -87,6 +89,8 @@ class ArtistPortfolioEditState {
   final String websiteUrl;
   final int? activePortfolioIndex;
   final bool isSaving;
+  final bool isLoaded;
+  final String? saveError;
 
   ArtistPortfolioEditState copyWith({
     String? backgroundLocalPath,
@@ -106,6 +110,9 @@ class ArtistPortfolioEditState {
     int? activePortfolioIndex,
     bool clearActivePortfolioIndex = false,
     bool? isSaving,
+    bool? isLoaded,
+    String? saveError,
+    bool clearSaveError = false,
     bool clearBackgroundLocalPath = false,
     bool clearBackgroundNetworkUrl = false,
     bool clearAvatarLocalPath = false,
@@ -137,6 +144,8 @@ class ArtistPortfolioEditState {
           ? null
           : (activePortfolioIndex ?? this.activePortfolioIndex),
       isSaving: isSaving ?? this.isSaving,
+      isLoaded: isLoaded ?? this.isLoaded,
+      saveError: clearSaveError ? null : (saveError ?? this.saveError),
     );
   }
 

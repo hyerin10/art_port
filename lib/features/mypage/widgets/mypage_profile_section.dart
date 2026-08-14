@@ -35,7 +35,7 @@ class MyPageProfileSection extends StatelessWidget {
               child: CircleAvatar(
                 radius: 52,
                 backgroundColor: AppColors.chipBackground,
-                backgroundImage: NetworkImage(avatarUrl),
+                backgroundImage: avatarUrl.isEmpty ? null : NetworkImage(avatarUrl),
               ),
             ),
             Positioned(

@@ -27,7 +27,7 @@ class _NoticeSettingsViewState extends ConsumerState<NoticeSettingsView> {
   }
 
   void _syncControllers(NoticeSettingsState state) {
-    if (!_initialized) {
+    if (state.isLoaded && !_initialized) {
       _statusMessageController.text = state.statusMessage;
       _initialized = true;
     }

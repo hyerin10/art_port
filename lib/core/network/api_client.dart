@@ -60,6 +60,20 @@ class ApiClient {
     );
   }
 
+  /// `data`가 배열인 PATCH 응답용.
+  Future<List<Map<String, dynamic>>> patchList(
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? queryParameters,
+  }) {
+    return _requestObjectList(
+      'PATCH',
+      path,
+      body: body,
+      queryParameters: queryParameters,
+    );
+  }
+
   Future<void> delete(
     String path, {
     Map<String, String>? queryParameters,

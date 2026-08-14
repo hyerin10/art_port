@@ -72,21 +72,29 @@ class _ArtistApplicationViewState extends ConsumerState<ArtistApplicationView> {
     );
   }
 
-  void _handleNext(BuildContext context, WidgetRef ref) {
+  Future<void> _handleNext(BuildContext context, WidgetRef ref) async {
     final formState = ref.read(artistApplicationFormProvider);
     final notifier = ref.read(artistApplicationFormProvider.notifier);
 
     if (!formState.canGoNext) return;
 
     if (formState.isLastStep) {
-      final success = notifier.submit();
-      if (success && context.mounted) {
+      final success =
+          await ref.read(artistApplicationFormProvider.notifier).submit();
+      if (!context.mounted) return;
+      if (success) {
         AppToast.show(
           ScaffoldMessenger.of(context),
           message: '작가 활동 신청이 완료되었습니다.',
           duration: const Duration(seconds: 3),
         );
         Navigator.of(context).pop();
+      } else {
+        final error = ref.read(artistApplicationFormProvider).submitError;
+        AppToast.show(
+          ScaffoldMessenger.of(context),
+          message: error ?? '신청에 실패했습니다. 다시 시도해 주세요.',
+        );
       }
       return;
     }

@@ -1,4 +1,8 @@
+import 'package:art_port/core/network/api_exception.dart';
+import 'package:art_port/features/artist_profile/artist_profile_providers.dart';
 import 'package:art_port/features/auth/domain/user.dart';
+import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
+import 'package:art_port/features/commission/data/commission_catalog_providers.dart';
 import 'package:art_port/features/mypage/artist_portfolio_edit_screen.dart';
 import 'package:art_port/features/mypage/commission_type_settings_screen.dart';
 import 'package:art_port/features/mypage/notice_settings_screen.dart';
@@ -11,7 +15,6 @@ import 'package:art_port/features/mypage/withdrawal_screen.dart';
 import 'package:art_port/features/mypage/models/mypage_data.dart';
 import 'package:art_port/features/review/my_reviews_screen.dart';
 import 'package:art_port/features/review/my_reviews_view.dart';
-import 'package:art_port/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -88,6 +91,10 @@ class ArtistProfileNotifier extends Notifier<ArtistProfileData> {
     state = state.copyWith(name: name);
   }
 
+  void updateAvatar(String avatarUrl) {
+    state = state.copyWith(avatarUrl: avatarUrl);
+  }
+
   void syncFromUser(User user) {
     state = state.copyWith(name: user.name);
   }
@@ -102,7 +109,6 @@ final artistEarningsProvider = Provider<ArtistEarningsData>((ref) {
   );
 });
 
-/// 휴식 모드 상태 (추후 API 연동)
 final restModeProvider = NotifierProvider<RestModeNotifier, bool>(
   RestModeNotifier.new,
 );
@@ -111,9 +117,34 @@ class RestModeNotifier extends Notifier<bool> {
   @override
   bool build() => false;
 
-  void toggle(bool value) {
+  void sync(bool value) {
+    if (state == value) return;
     state = value;
-    // TODO: 휴식 모드 API 연동
+  }
+
+  Future<bool> toggle(bool value) async {
+    final previous = state;
+    state = value;
+
+    final profileId = ref.read(currentArtistProfileIdProvider);
+    if (profileId == null) return false;
+
+    try {
+      await ref.read(artistProfileRepositoryProvider).update(
+            profileId,
+            isRestMode: value,
+            slotStatus: value ? 'resting' : 'open',
+          );
+      ref.invalidate(commissionCatalogProvider);
+      ref.invalidate(artistPublicProfileProvider(profileId));
+      return true;
+    } on ApiException {
+      state = previous;
+      return false;
+    } catch (_) {
+      state = previous;
+      return false;
+    }
   }
 }
 

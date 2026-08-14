@@ -14,7 +14,7 @@ class ArtistPortfolioEditControllers {
   var _initialized = false;
 
   void syncFrom(ArtistPortfolioEditState form) {
-    if (_initialized) return;
+    if (_initialized || !form.isLoaded) return;
 
     nickname.text = form.nickname;
     oneLineIntro.text = form.oneLineIntro;

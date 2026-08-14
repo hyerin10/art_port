@@ -1,5 +1,5 @@
+import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/mypage/commission_type_settings_providers.dart';
-import 'package:art_port/features/mypage/services/profile_image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,12 +11,10 @@ abstract final class CommissionTypeFormActions {
     String? editingTypeId,
     int index,
   ) async {
-    final path = await showImageSourceBottomSheet(context, galleryOnly: true);
-    if (path != null && context.mounted) {
-      ref
-          .read(commissionTypeFormProvider(editingTypeId).notifier)
-          .setSampleImage(index, path);
-    }
+    AppToast.show(
+      ScaffoldMessenger.of(context),
+      message: '이미지 업로드는 아직 지원되지 않습니다.',
+    );
   }
 
   static void submit(

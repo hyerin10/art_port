@@ -1,4 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/mypage/commission_type_settings_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,12 @@ abstract final class CommissionTypeSettingsActions {
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('커미션 타입 설정이 저장되었습니다.')),
+      );
+    } else {
+      final error = ref.read(commissionTypeSettingsProvider).saveError;
+      AppToast.show(
+        ScaffoldMessenger.of(context),
+        message: error ?? '저장에 실패했습니다. 다시 시도해 주세요.',
       );
     }
   }

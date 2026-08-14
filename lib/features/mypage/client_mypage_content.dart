@@ -1,5 +1,7 @@
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/features/auth/email_verification/email_verification_pending_screen.dart';
+import 'package:art_port/features/common/widgets/app_toast.dart';
+import 'package:art_port/features/mypage/data/mypage_write_providers.dart';
 import 'package:art_port/features/mypage/mypage_navigation.dart';
 import 'package:art_port/features/mypage/mypage_providers.dart';
 import 'package:art_port/features/mypage/widgets/email_verification_banner.dart';
@@ -18,8 +20,8 @@ class ClientMyPageContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(clientProfileProvider);
+    final liveProfile = ref.watch(myClientProfileProvider).valueOrNull;
     final actions = ref.watch(clientMyPageActionsProvider);
-    final profileNotifier = ref.read(clientProfileProvider.notifier);
     final isEmailVerified = ref.watch(isEmailVerifiedProvider);
 
     return MyPageScrollView(
@@ -27,8 +29,11 @@ class ClientMyPageContent extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           MyPageProfileSection(
-            avatarUrl: profile.avatarUrl,
-            onEditPhoto: profileNotifier.onEditProfilePhoto,
+            avatarUrl: liveProfile?.avatarUrl ?? profile.avatarUrl,
+            onEditPhoto: () => AppToast.show(
+              ScaffoldMessenger.of(context),
+              message: '이미지 업로드는 아직 지원되지 않습니다.',
+            ),
             name: profile.name,
             onOpenSettings: () => MyPageNavigation.openProfileSettings(context),
             subtitle: profile.email,

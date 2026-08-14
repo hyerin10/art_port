@@ -20,3 +20,8 @@ final currentUserProvider = Provider<User?>((ref) => ref.watch(authProvider));
 final currentUserIdProvider = Provider<String?>((ref) {
   return ref.watch(authProvider)?.id;
 });
+
+/// 로그인 사용자의 작가 프로필 UUID. 없으면 null.
+final currentArtistProfileIdProvider = Provider<String?>((ref) {
+  return ref.watch(authProvider)?.artistProfileId;
+});

@@ -1,4 +1,7 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
+import 'package:art_port/features/common/widgets/app_toast.dart';
+import 'package:art_port/features/mypage/data/mypage_write_providers.dart';
 import 'package:art_port/features/mypage/mypage_navigation.dart';
 import 'package:art_port/features/mypage/mypage_providers.dart';
 import 'package:art_port/features/mypage/widgets/menu_list_item.dart';
@@ -7,7 +10,6 @@ import 'package:art_port/features/mypage/widgets/mypage_scroll_view.dart';
 import 'package:art_port/features/mypage/widgets/sales_statistics_card.dart';
 import 'package:art_port/features/mypage/widgets/section_card.dart';
 import 'package:art_port/features/mypage/widgets/withdrawable_earnings_card.dart';
-import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
 import 'package:art_port/features/review/data/review_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,10 +22,10 @@ class ArtistMyPageContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(artistProfileProvider);
+    final liveProfile = ref.watch(myArtistProfileProvider).valueOrNull;
     final earnings = ref.watch(artistEarningsProvider);
     final isRestMode = ref.watch(restModeProvider);
     final actions = ref.watch(artistMyPageActionsProvider);
-    final profileNotifier = ref.read(artistProfileProvider.notifier);
     final userId = ref.watch(currentUserIdProvider);
     final reviewStats = userId == null
         ? null
@@ -32,14 +34,23 @@ class ArtistMyPageContent extends ConsumerWidget {
         ? null
         : '⭐ ${reviewStats.averageLabel} (리뷰 ${reviewStats.count}개)';
 
+    ref.listen(myArtistProfileProvider, (previous, next) {
+      final dto = next.value;
+      if (dto == null) return;
+      ref.read(restModeProvider.notifier).sync(dto.isRestMode);
+    });
+
     return MyPageScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           MyPageProfileSection(
-            avatarUrl: profile.avatarUrl,
-            onEditPhoto: profileNotifier.onEditProfilePhoto,
-            name: profile.name,
+            avatarUrl: liveProfile?.avatarUrl ?? profile.avatarUrl,
+            onEditPhoto: () => AppToast.show(
+              ScaffoldMessenger.of(context),
+              message: '이미지 업로드는 아직 지원되지 않습니다.',
+            ),
+            name: liveProfile?.displayName ?? profile.name,
             onOpenSettings: () => MyPageNavigation.openProfileSettings(context),
             subtitle: ratingLabel ??
                 '⭐ ${profile.rating.toStringAsFixed(2)}',
@@ -135,8 +146,17 @@ class ArtistMyPageContent extends ConsumerWidget {
                   value: isRestMode,
                   activeTrackColor: AppColors.primaryLight,
                   activeThumbColor: AppColors.primary,
-                  onChanged: (value) =>
-                      ref.read(restModeProvider.notifier).toggle(value),
+                  onChanged: (value) async {
+                    final ok = await ref
+                        .read(restModeProvider.notifier)
+                        .toggle(value);
+                    if (!ok && context.mounted) {
+                      AppToast.show(
+                        ScaffoldMessenger.of(context),
+                        message: '휴식 모드를 변경하지 못했습니다.',
+                      );
+                    }
+                  },
                 ),
               ),
             ],

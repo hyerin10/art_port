@@ -1,3 +1,4 @@
+import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/features/mypage/notice_settings_providers.dart';
 import 'package:art_port/features/mypage/widgets/notice_form_dialog.dart';
@@ -15,6 +16,12 @@ abstract final class NoticeSettingsActions {
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('공지사항 설정이 저장되었습니다.')),
+      );
+    } else {
+      final error = ref.read(noticeSettingsProvider).saveError;
+      AppToast.show(
+        ScaffoldMessenger.of(context),
+        message: error ?? '저장에 실패했습니다. 다시 시도해 주세요.',
       );
     }
   }

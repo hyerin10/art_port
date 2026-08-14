@@ -12,6 +12,7 @@ enum WorkSlotStatus {
 /// 상단 고정 공지
 class PinnedNotice {
   const PinnedNotice({
+    this.id,
     required this.title,
     required this.bulletPoints,
     required this.createdAt,
@@ -22,6 +23,7 @@ class PinnedNotice {
   static const int maxBulletPoints = 10;
   static const int maxBulletLength = 200;
 
+  final String? id;
   final String title;
   final List<String> bulletPoints;
   final DateTime createdAt;
@@ -32,12 +34,14 @@ class PinnedNotice {
   }
 
   PinnedNotice copyWith({
+    String? id,
     String? title,
     List<String>? bulletPoints,
     DateTime? createdAt,
     bool? isPublic,
   }) {
     return PinnedNotice(
+      id: id ?? this.id,
       title: title ?? this.title,
       bulletPoints: bulletPoints ?? this.bulletPoints,
       createdAt: createdAt ?? this.createdAt,
@@ -115,6 +119,8 @@ class NoticeSettingsState {
     required this.generalNotices,
     this.savedSnapshot,
     this.isSaving = false,
+    this.isLoaded = false,
+    this.saveError,
   });
 
   static const int maxStatusMessage = 100;
@@ -125,6 +131,8 @@ class NoticeSettingsState {
   final List<GeneralNotice> generalNotices;
   final NoticeSettingsSnapshot? savedSnapshot;
   final bool isSaving;
+  final bool isLoaded;
+  final String? saveError;
 
   bool get hasChanges {
     final snapshot = savedSnapshot;
@@ -144,6 +152,9 @@ class NoticeSettingsState {
     List<GeneralNotice>? generalNotices,
     NoticeSettingsSnapshot? savedSnapshot,
     bool? isSaving,
+    bool? isLoaded,
+    String? saveError,
+    bool clearSaveError = false,
   }) {
     return NoticeSettingsState(
       slotStatus: slotStatus ?? this.slotStatus,
@@ -152,6 +163,8 @@ class NoticeSettingsState {
       generalNotices: generalNotices ?? this.generalNotices,
       savedSnapshot: savedSnapshot ?? this.savedSnapshot,
       isSaving: isSaving ?? this.isSaving,
+      isLoaded: isLoaded ?? this.isLoaded,
+      saveError: clearSaveError ? null : (saveError ?? this.saveError),
     );
   }
 

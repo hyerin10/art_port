@@ -30,36 +30,43 @@ class CommissionTypeSettingsView extends ConsumerWidget {
         children: [
           const CommissionTypeSettingsInfoBanner(),
           const SizedBox(height: 16),
-          CommissionTypeAddButton(
-            onTap: () => CommissionTypeFormScreen.openAdd(context),
-          ),
-          const SizedBox(height: 16),
-          if (state.types.isEmpty)
-            const CommissionTypeEmptyState()
-          else
-            ...[
-              for (var i = 0; i < state.types.length; i++) ...[
-                if (i > 0) const SizedBox(height: 12),
-                CommissionTypeCard(
-                  type: state.types[i],
-                  onToggleActive: (value) {
-                    if (value != state.types[i].isActive) {
-                      notifier.toggleActive(state.types[i].id);
-                    }
-                  },
-                  onEdit: () => CommissionTypeFormScreen.openEdit(
-                    context,
-                    state.types[i].id,
+          if (state.isLoading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 48),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else ...[
+            CommissionTypeAddButton(
+              onTap: () => CommissionTypeFormScreen.openAdd(context),
+            ),
+            const SizedBox(height: 16),
+            if (state.types.isEmpty)
+              const CommissionTypeEmptyState()
+            else
+              ...[
+                for (var i = 0; i < state.types.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 12),
+                  CommissionTypeCard(
+                    type: state.types[i],
+                    onToggleActive: (value) {
+                      if (value != state.types[i].isActive) {
+                        notifier.toggleActive(state.types[i].id);
+                      }
+                    },
+                    onEdit: () => CommissionTypeFormScreen.openEdit(
+                      context,
+                      state.types[i].id,
+                    ),
+                    onDelete: () => CommissionTypeSettingsActions.confirmDelete(
+                      context,
+                      ref,
+                      state.types[i].id,
+                      state.types[i].name,
+                    ),
                   ),
-                  onDelete: () => CommissionTypeSettingsActions.confirmDelete(
-                    context,
-                    ref,
-                    state.types[i].id,
-                    state.types[i].name,
-                  ),
-                ),
+                ],
               ],
-            ],
+          ],
         ],
       ),
       footer: MyPageSaveFooterButton(

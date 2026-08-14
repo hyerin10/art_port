@@ -1,7 +1,11 @@
-import 'dart:developer' as developer;
-
-import 'package:art_port/features/mypage/mypage_providers.dart';
+import 'package:art_port/core/network/api_exception.dart';
+import 'package:art_port/core/network/resource_ids.dart';
+import 'package:art_port/features/artist_profile/data/dto/artist_profile_dto.dart';
+import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
+import 'package:art_port/features/commission/data/commission_catalog_providers.dart';
+import 'package:art_port/features/mypage/data/mypage_write_providers.dart';
 import 'package:art_port/features/mypage/models/artist_portfolio_data.dart';
+import 'package:art_port/features/mypage/mypage_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final artistPortfolioEditProvider =
@@ -10,57 +14,80 @@ final artistPortfolioEditProvider =
 );
 
 class ArtistPortfolioEditNotifier extends AutoDisposeNotifier<ArtistPortfolioEditState> {
+  List<String> _loadedPortfolioIds = const [];
+  String? _twitterLinkId;
+  String? _instagramLinkId;
+  String? _websiteLinkId;
+
   @override
   ArtistPortfolioEditState build() {
-    final profile = ref.read(artistProfileProvider);
-
-    return ArtistPortfolioEditState(
-      backgroundNetworkUrl:
-          'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&h=300&fit=crop',
-      avatarNetworkUrl: profile.avatarUrl,
-      nickname: profile.name,
-      oneLineIntro: 'Hi! I specialize in vibrant anime illustrat',
-      portfolioImages: const [
-        PortfolioImageItem(
-          id: 'p1',
-          networkUrl:
-              'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400&h=400&fit=crop',
-        ),
-        PortfolioImageItem(
-          id: 'p2',
-          networkUrl:
-              'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=400&fit=crop',
-        ),
-        PortfolioImageItem(
-          id: 'p3',
-          networkUrl:
-              'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=400&fit=crop',
-        ),
-        PortfolioImageItem(
-          id: 'p4',
-          networkUrl:
-              'https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=400&h=400&fit=crop',
-        ),
-        PortfolioImageItem(
-          id: 'p5',
-          networkUrl:
-              'https://images.unsplash.com/photo-1618172193626-ae7fd5fab9d2?w=400&h=400&fit=crop',
-        ),
-      ],
-      selectedStyles: {'애니메이션', '세미 리얼', 'SD 캐릭터'},
-      selectedTools: {'Clip Studio', 'Photoshop', 'iPad'},
-      detailedIntro:
-          '주로 애니메이션 스타일의 캐릭터 일러스트와 컨셉 아트를 작업하고 있습니다. 게임, 소설, VTuber 관련 작업 경험이 풍부합니다.\n\n정성을 다해 작업하며, 수정 요청에도 적극적으로 대응합니다.',
-      workNotice:
-          '• 작업 기간: 일반적으로 7-14일 소요\n• 수정 횟수: 스케치 2회, 컬러 1회 포함\n• 저작권: 개인 소장용은 기본 포함, 상업 이용 시 별도 협의\n• 그리지 않는 것: 고어, 실제 인물, 정치적 내용',
-      twitterHandle: '@haneul_art',
-      instagramHandle: 'haneul.artist',
-      websiteUrl: 'https://haneulart.com',
+    Future.microtask(_load);
+    return const ArtistPortfolioEditState(
+      nickname: '',
+      oneLineIntro: '',
+      portfolioImages: [],
+      selectedStyles: {},
+      selectedTools: {},
+      detailedIntro: '',
+      workNotice: '',
+      twitterHandle: '',
+      instagramHandle: '',
+      websiteUrl: '',
     );
   }
 
+  Future<void> _load() async {
+    final profileId = ref.read(currentArtistProfileIdProvider);
+    if (profileId == null) {
+      state = state.copyWith(isLoaded: true);
+      return;
+    }
+
+    try {
+      final repo = ref.read(artistProfileRepositoryProvider);
+      final (profile, portfolio, socialLinks) = await (
+        repo.getById(profileId),
+        repo.getPortfolioImages(profileId),
+        repo.getSocialLinks(profileId),
+      ).wait;
+
+      _loadedPortfolioIds = [for (final image in portfolio) image.id];
+      _twitterLinkId = _idForType(socialLinks, 'twitter');
+      _instagramLinkId = _idForType(socialLinks, 'instagram');
+      _websiteLinkId = _idForType(socialLinks, 'website');
+
+      state = ArtistPortfolioEditState(
+        backgroundNetworkUrl: profile.backgroundUrl,
+        avatarNetworkUrl: profile.avatarUrl,
+        nickname: profile.displayName,
+        oneLineIntro: profile.oneLineIntro ?? '',
+        portfolioImages: [
+          for (final image in portfolio)
+            PortfolioImageItem(id: image.id, networkUrl: image.imageUrl),
+        ],
+        selectedStyles: profile.specialties.toSet(),
+        selectedTools: const {},
+        detailedIntro: profile.detailedIntro ?? '',
+        workNotice: _workNoticeFrom(profile),
+        twitterHandle: _handleFrom(
+          socialLinks,
+          'twitter',
+          stripAt: true,
+        ),
+        instagramHandle: _handleFrom(socialLinks, 'instagram'),
+        websiteUrl: _urlFrom(socialLinks, 'website'),
+        isLoaded: true,
+      );
+    } catch (_) {
+      state = state.copyWith(
+        isLoaded: true,
+        saveError: '프로필을 불러오지 못했습니다.',
+      );
+    }
+  }
+
   void updateNickname(String value) {
-    state = state.copyWith(nickname: value);
+    state = state.copyWith(nickname: value, clearSaveError: true);
   }
 
   void updateOneLineIntro(String value) {
@@ -195,19 +222,231 @@ class ArtistPortfolioEditNotifier extends AutoDisposeNotifier<ArtistPortfolioEdi
   Future<bool> save() async {
     if (state.isSaving) return false;
 
-    state = state.copyWith(isSaving: true);
+    final profileId = ref.read(currentArtistProfileIdProvider);
+    final userId = ref.read(currentUserIdProvider);
+    if (profileId == null || userId == null) {
+      state = state.copyWith(saveError: '로그인이 필요합니다.');
+      return false;
+    }
 
-    await Future<void>.delayed(const Duration(milliseconds: 600));
+    state = state.copyWith(isSaving: true, clearSaveError: true);
 
-    final payload = state.toJson();
-    developer.log(
-      'Artist portfolio saved: $payload',
-      name: 'ArtistPortfolioEdit',
+    try {
+      final repo = ref.read(artistProfileRepositoryProvider);
+      final nickname = state.nickname.trim();
+      final updated = await repo.update(
+        profileId,
+        displayName: nickname.isEmpty ? null : nickname,
+        oneLineIntro: state.oneLineIntro.trim(),
+        detailedIntro: state.detailedIntro.trim(),
+        revisionPolicy: state.workNotice.trim(),
+        specialties: state.selectedStyles.toList(),
+        avatarUrl: ResourceIds.isRemoteUrl(state.avatarNetworkUrl)
+            ? state.avatarNetworkUrl
+            : null,
+        backgroundUrl: ResourceIds.isRemoteUrl(state.backgroundNetworkUrl)
+            ? state.backgroundNetworkUrl
+            : null,
+      );
+
+      await _syncSocialLinks(profileId: profileId, userId: userId);
+      await _syncPortfolioImages(profileId: profileId, userId: userId);
+
+      ref.read(artistProfileProvider.notifier).updateName(updated.displayName);
+      if (updated.avatarUrl != null && updated.avatarUrl!.isNotEmpty) {
+        ref.read(artistProfileProvider.notifier).updateAvatar(updated.avatarUrl!);
+      }
+      invalidateArtistWorkspaceQueries(ref, artistProfileId: profileId);
+
+      state = state.copyWith(isSaving: false);
+      return true;
+    } on ApiException catch (e) {
+      state = state.copyWith(isSaving: false, saveError: e.displayMessage);
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        isSaving: false,
+        saveError: '저장에 실패했습니다. 다시 시도해 주세요.',
+      );
+      return false;
+    }
+  }
+
+  Future<void> _syncSocialLinks({
+    required String profileId,
+    required String userId,
+  }) async {
+    await _upsertSocialLink(
+      profileId: profileId,
+      userId: userId,
+      type: 'twitter',
+      currentId: _twitterLinkId,
+      url: _twitterUrl(state.twitterHandle),
+      label: state.twitterHandle.trim().isEmpty
+          ? null
+          : state.twitterHandle.trim(),
+      onId: (id) => _twitterLinkId = id,
     );
+    await _upsertSocialLink(
+      profileId: profileId,
+      userId: userId,
+      type: 'instagram',
+      currentId: _instagramLinkId,
+      url: _instagramUrl(state.instagramHandle),
+      label: state.instagramHandle.trim().isEmpty
+          ? null
+          : state.instagramHandle.trim(),
+      onId: (id) => _instagramLinkId = id,
+    );
+    await _upsertSocialLink(
+      profileId: profileId,
+      userId: userId,
+      type: 'website',
+      currentId: _websiteLinkId,
+      url: _websiteUrl(state.websiteUrl),
+      label: '웹사이트',
+      onId: (id) => _websiteLinkId = id,
+    );
+  }
 
-    ref.read(artistProfileProvider.notifier).updateName(state.nickname);
+  Future<void> _upsertSocialLink({
+    required String profileId,
+    required String userId,
+    required String type,
+    required String? currentId,
+    required String? url,
+    required String? label,
+    required void Function(String? id) onId,
+  }) async {
+    final repo = ref.read(artistProfileRepositoryProvider);
+    if (url == null) {
+      if (currentId != null) {
+        await repo.deleteSocialLink(linkId: currentId, userId: userId);
+        onId(null);
+      }
+      return;
+    }
 
-    state = state.copyWith(isSaving: false);
-    return true;
+    if (currentId != null) {
+      await repo.updateSocialLink(
+        linkId: currentId,
+        userId: userId,
+        label: label,
+        url: url,
+      );
+      return;
+    }
+
+    final created = await repo.createSocialLink(
+      profileId: profileId,
+      type: type,
+      label: label,
+      url: url,
+    );
+    onId(created.id);
+  }
+
+  Future<void> _syncPortfolioImages({
+    required String profileId,
+    required String userId,
+  }) async {
+    final repo = ref.read(artistProfileRepositoryProvider);
+    final currentIds = [
+      for (final item in state.portfolioImages)
+        if (ResourceIds.isUuid(item.id)) item.id,
+    ];
+    for (final id in _loadedPortfolioIds) {
+      if (!currentIds.contains(id)) {
+        await repo.deletePortfolioImage(imageId: id, userId: userId);
+      }
+    }
+    if (currentIds.length >= 2) {
+      await repo.reorderPortfolioImages(
+        profileId: profileId,
+        userId: userId,
+        orderedIds: currentIds,
+      );
+    }
+    _loadedPortfolioIds = currentIds;
+  }
+
+  static String? _idForType(List<SocialLinkDto> links, String type) {
+    for (final link in links) {
+      if (link.type == type) return link.id;
+    }
+    return null;
+  }
+
+  static String _handleFrom(
+    List<SocialLinkDto> links,
+    String type, {
+    bool stripAt = false,
+  }) {
+    for (final link in links) {
+      if (link.type != type) continue;
+      final label = link.label?.trim();
+      if (label != null && label.isNotEmpty) {
+        return stripAt ? label.replaceFirst('@', '') : label;
+      }
+      return _handleFromUrl(link.url, type);
+    }
+    return '';
+  }
+
+  static String _urlFrom(List<SocialLinkDto> links, String type) {
+    for (final link in links) {
+      if (link.type == type) return link.url;
+    }
+    return '';
+  }
+
+  static String _handleFromUrl(String url, String type) {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return url;
+    final segments = uri.pathSegments.where((part) => part.isNotEmpty);
+    if (segments.isEmpty) return url;
+    final handle = segments.last;
+    if (type == 'twitter') return handle.startsWith('@') ? handle : '@$handle';
+    return handle;
+  }
+
+  static String _workNoticeFrom(ArtistProfileDto profile) {
+    if (profile.revisionPolicy != null && profile.revisionPolicy!.trim().isNotEmpty) {
+      return profile.revisionPolicy!;
+    }
+    final lines = <String>[
+      if (profile.workingHours != null && profile.workingHours!.isNotEmpty)
+        '• 작업 시간: ${profile.workingHours}',
+      if (profile.averageDeliveryDays != null)
+        '• 작업 기간: 일반적으로 ${profile.averageDeliveryDays}일 소요',
+      if (profile.paymentTerms != null && profile.paymentTerms!.isNotEmpty)
+        '• 결제: ${profile.paymentTerms}',
+      if (profile.restrictedItems.isNotEmpty)
+        '• 그리지 않는 것: ${profile.restrictedItems.join(', ')}',
+    ];
+    return lines.join('\n');
+  }
+
+  static String? _twitterUrl(String handle) {
+    final trimmed = handle.trim();
+    if (trimmed.isEmpty) return null;
+    if (ResourceIds.isRemoteUrl(trimmed)) return trimmed;
+    final user = trimmed.replaceAll('@', '');
+    return 'https://twitter.com/$user';
+  }
+
+  static String? _instagramUrl(String handle) {
+    final trimmed = handle.trim();
+    if (trimmed.isEmpty) return null;
+    if (ResourceIds.isRemoteUrl(trimmed)) return trimmed;
+    final user = trimmed.replaceAll('@', '');
+    return 'https://instagram.com/$user';
+  }
+
+  static String? _websiteUrl(String url) {
+    final trimmed = url.trim();
+    if (trimmed.isEmpty) return null;
+    if (ResourceIds.isRemoteUrl(trimmed)) return trimmed;
+    return 'https://$trimmed';
   }
 }

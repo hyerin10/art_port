@@ -124,11 +124,15 @@ class CommissionTypeSettingsState {
     required this.types,
     required this.savedSnapshot,
     this.isSaving = false,
+    this.isLoading = false,
+    this.saveError,
   });
 
   final List<ArtistCommissionType> types;
   final List<ArtistCommissionType> savedSnapshot;
   final bool isSaving;
+  final bool isLoading;
+  final String? saveError;
 
   bool get hasChanges => !_listsEqual(types, savedSnapshot);
 
@@ -168,11 +172,16 @@ class CommissionTypeSettingsState {
     List<ArtistCommissionType>? types,
     List<ArtistCommissionType>? savedSnapshot,
     bool? isSaving,
+    bool? isLoading,
+    String? saveError,
+    bool clearSaveError = false,
   }) {
     return CommissionTypeSettingsState(
       types: types ?? this.types,
       savedSnapshot: savedSnapshot ?? this.savedSnapshot,
       isSaving: isSaving ?? this.isSaving,
+      isLoading: isLoading ?? this.isLoading,
+      saveError: clearSaveError ? null : (saveError ?? this.saveError),
     );
   }
 }

@@ -1,5 +1,9 @@
-import 'dart:developer' as developer;
-
+import 'package:art_port/core/network/api_exception.dart';
+import 'package:art_port/core/network/resource_ids.dart';
+import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
+import 'package:art_port/features/commission/data/commission_catalog_providers.dart';
+import 'package:art_port/features/commission/data/dto/commission_type_dto.dart';
+import 'package:art_port/features/mypage/data/mypage_write_providers.dart';
 import 'package:art_port/features/mypage/models/commission_type_data.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,88 +14,41 @@ final commissionTypeSettingsProvider =
 
 class CommissionTypeSettingsNotifier
     extends Notifier<CommissionTypeSettingsState> {
-  static List<ArtistCommissionType> _initialTypes() {
-    return const [
-      ArtistCommissionType(
-        id: 'type-1',
-        name: 'SD/Chibi 캐릭터',
-        startingPriceWon: 30000,
-        workPeriod: '3-5일',
-        totalSlots: 5,
-        openSlots: 3,
-        description: '귀여운 SD 스타일의 캐릭터 일러스트 • 투명 배경 PNG • 1인 1캐릭터 기준',
-        thumbnailNetworkUrl:
-            'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&h=200&fit=crop',
-        sampleImages: [
-          CommissionSampleImage(
-            id: 's1-1',
-            networkUrl:
-                'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&h=200&fit=crop',
-          ),
-          CommissionSampleImage(
-            id: 's1-2',
-            networkUrl:
-                'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=200&h=200&fit=crop',
-          ),
-          CommissionSampleImage(
-            id: 's1-3',
-            networkUrl:
-                'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=200&h=200&fit=crop',
-          ),
-        ],
-      ),
-      ArtistCommissionType(
-        id: 'type-2',
-        name: 'Half Body / 반신',
-        startingPriceWon: 80000,
-        workPeriod: '7-10일',
-        totalSlots: 2,
-        openSlots: 1,
-        description: '허리 위 반신 일러스트 • 배경 포함 • 상세 컬러링',
-        thumbnailNetworkUrl:
-            'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=200&h=200&fit=crop',
-        sampleImages: [
-          CommissionSampleImage(
-            id: 's2-1',
-            networkUrl:
-                'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=200&h=200&fit=crop',
-          ),
-          CommissionSampleImage(
-            id: 's2-2',
-            networkUrl:
-                'https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=200&h=200&fit=crop',
-          ),
-        ],
-      ),
-      ArtistCommissionType(
-        id: 'type-3',
-        name: 'Full Body / 전신',
-        startingPriceWon: 150000,
-        workPeriod: '14-21일',
-        totalSlots: 2,
-        openSlots: 0,
-        description: '전신 캐릭터 일러스트 • 배경 포함 • 고해상도 PNG/JPG',
-        thumbnailNetworkUrl:
-            'https://images.unsplash.com/photo-1618172193626-ae7fd5fab9d2?w=200&h=200&fit=crop',
-        sampleImages: [
-          CommissionSampleImage(
-            id: 's3-1',
-            networkUrl:
-                'https://images.unsplash.com/photo-1618172193626-ae7fd5fab9d2?w=200&h=200&fit=crop',
-          ),
-        ],
-        isActive: false,
-      ),
-    ];
-  }
+  final _pendingDeleteIds = <String>{};
 
   @override
   CommissionTypeSettingsState build() {
-    final initial = _initialTypes();
-    return CommissionTypeSettingsState(
-      types: initial,
-      savedSnapshot: List.from(initial),
+    Future.microtask(_load);
+    return const CommissionTypeSettingsState(
+      types: [],
+      savedSnapshot: [],
+      isLoading: true,
     );
+  }
+
+  Future<void> _load() async {
+    final profileId = ref.read(currentArtistProfileIdProvider);
+    if (profileId == null) {
+      state = state.copyWith(isLoading: false);
+      return;
+    }
+
+    try {
+      final types = await ref
+          .read(commissionTypeRepositoryProvider)
+          .getByArtistProfileId(profileId);
+      final mapped = [for (final type in types) _fromDto(type)];
+      _pendingDeleteIds.clear();
+      state = CommissionTypeSettingsState(
+        types: mapped,
+        savedSnapshot: List.from(mapped),
+      );
+    } catch (_) {
+      state = state.copyWith(
+        isLoading: false,
+        saveError: '커미션 타입을 불러오지 못했습니다.',
+      );
+    }
   }
 
   void toggleActive(String id) {
@@ -100,6 +57,7 @@ class CommissionTypeSettingsNotifier
         for (final type in state.types)
           if (type.id == id) type.copyWith(isActive: !type.isActive) else type,
       ],
+      clearSaveError: true,
     );
   }
 
@@ -117,6 +75,9 @@ class CommissionTypeSettingsNotifier
   }
 
   void removeType(String id) {
+    if (ResourceIds.isUuid(id)) {
+      _pendingDeleteIds.add(id);
+    }
     state = state.copyWith(
       types: state.types.where((type) => type.id != id).toList(),
     );
@@ -132,19 +93,110 @@ class CommissionTypeSettingsNotifier
   Future<bool> saveAll() async {
     if (state.isSaving || !state.hasChanges) return false;
 
-    state = state.copyWith(isSaving: true);
-    await Future<void>.delayed(const Duration(milliseconds: 600));
+    final profileId = ref.read(currentArtistProfileIdProvider);
+    final userId = ref.read(currentUserIdProvider);
+    if (profileId == null || userId == null) {
+      state = state.copyWith(saveError: '로그인이 필요합니다.');
+      return false;
+    }
 
-    developer.log(
-      'Commission types saved: ${state.types.length} items',
-      name: 'CommissionTypeSettings',
-    );
+    state = state.copyWith(isSaving: true, clearSaveError: true);
 
-    state = state.copyWith(
-      savedSnapshot: List.from(state.types),
-      isSaving: false,
+    try {
+      final repo = ref.read(commissionTypeRepositoryProvider);
+      for (final id in [..._pendingDeleteIds]) {
+        await repo.delete(typeId: id, userId: userId);
+      }
+      _pendingDeleteIds.clear();
+
+      final next = <ArtistCommissionType>[];
+      for (final type in state.types) {
+        final sampleUrls = [
+          for (final sample in type.sampleImages)
+            if (ResourceIds.isRemoteUrl(sample.networkUrl)) sample.networkUrl!,
+        ];
+        final thumbnail = ResourceIds.isRemoteUrl(type.thumbnailNetworkUrl)
+            ? type.thumbnailNetworkUrl
+            : (sampleUrls.isEmpty ? null : sampleUrls.first);
+        final workPeriodDays = _workPeriodDays(type.workPeriod);
+
+        if (ResourceIds.isUuid(type.id)) {
+          await repo.update(
+            typeId: type.id,
+            userId: userId,
+            name: type.name,
+            description: type.description,
+            thumbnailUrl: thumbnail,
+            startingPriceWon: type.startingPriceWon,
+            workPeriodDays: workPeriodDays,
+            totalSlots: type.totalSlots,
+            openSlots: type.openSlots.clamp(0, type.totalSlots),
+            sampleImageUrls: sampleUrls,
+            isActive: type.isActive,
+          );
+          next.add(type);
+        } else {
+          final created = await repo.create(
+            artistProfileId: profileId,
+            name: type.name,
+            description: type.description,
+            thumbnailUrl: thumbnail,
+            startingPriceWon: type.startingPriceWon,
+            workPeriodDays: workPeriodDays,
+            totalSlots: type.totalSlots,
+            openSlots: type.totalSlots,
+            sampleImageUrls: sampleUrls,
+            isActive: type.isActive,
+          );
+          next.add(_fromDto(created));
+        }
+      }
+
+      invalidateArtistWorkspaceQueries(ref, artistProfileId: profileId);
+      state = state.copyWith(
+        types: next,
+        savedSnapshot: List.from(next),
+        isSaving: false,
+      );
+      return true;
+    } on ApiException catch (e) {
+      state = state.copyWith(isSaving: false, saveError: e.displayMessage);
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        isSaving: false,
+        saveError: '저장에 실패했습니다. 다시 시도해 주세요.',
+      );
+      return false;
+    }
+  }
+
+  static ArtistCommissionType _fromDto(CommissionTypeDto dto) {
+    return ArtistCommissionType(
+      id: dto.id,
+      name: dto.name,
+      startingPriceWon: dto.startingPriceWon,
+      workPeriod: '${dto.workPeriodDays}일',
+      totalSlots: dto.totalSlots,
+      openSlots: dto.openSlots,
+      description: dto.description ?? '',
+      thumbnailNetworkUrl: dto.thumbnailUrl,
+      isActive: dto.isActive,
+      sampleImages: [
+        for (var i = 0; i < dto.sampleImageUrls.length; i++)
+          CommissionSampleImage(
+            id: 'sample-${dto.id}-$i',
+            networkUrl: dto.sampleImageUrls[i],
+          ),
+      ],
     );
-    return true;
+  }
+
+  static int _workPeriodDays(String text) {
+    final match = RegExp(r'\d+').firstMatch(text);
+    final days = int.tryParse(match?.group(0) ?? '');
+    if (days == null || days < 1) return 7;
+    return days;
   }
 }
 

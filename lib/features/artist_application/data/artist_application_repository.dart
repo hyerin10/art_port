@@ -13,4 +13,44 @@ class ArtistApplicationRepository {
     );
     return ArtistApplicationDto.fromJson(json);
   }
+
+  Future<ArtistApplicationDto> apply({
+    required String userId,
+    required String artistName,
+    required String bankName,
+    required String accountNumber,
+    required String accountHolder,
+    List<String>? portfolioImageUrls,
+    List<String>? verificationFileUrls,
+    List<String>? styleTags,
+    int? maxWorkDays,
+    int? roughRevisionCount,
+    int? finalRevisionCount,
+    bool? allowNonCommercial,
+    bool? allowCommercialStreaming,
+    bool? allowCopyrightTransfer,
+    required DateTime termsAgreedAt,
+  }) async {
+    final json = await _client.post(
+      '/artist-applications',
+      body: {
+        'userId': userId,
+        'artistName': artistName,
+        'bankName': bankName,
+        'accountNumber': accountNumber,
+        'accountHolder': accountHolder,
+        'portfolioImageUrls': ?portfolioImageUrls,
+        'verificationFileUrls': ?verificationFileUrls,
+        'styleTags': ?styleTags,
+        'maxWorkDays': ?maxWorkDays,
+        'roughRevisionCount': ?roughRevisionCount,
+        'finalRevisionCount': ?finalRevisionCount,
+        'allowNonCommercial': ?allowNonCommercial,
+        'allowCommercialStreaming': ?allowCommercialStreaming,
+        'allowCopyrightTransfer': ?allowCopyrightTransfer,
+        'termsAgreedAt': termsAgreedAt.toUtc().toIso8601String(),
+      },
+    );
+    return ArtistApplicationDto.fromJson(json);
+  }
 }

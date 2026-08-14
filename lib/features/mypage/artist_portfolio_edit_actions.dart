@@ -1,5 +1,5 @@
+import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/mypage/artist_portfolio_edit_providers.dart';
-import 'package:art_port/features/mypage/services/profile_image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,30 +9,30 @@ abstract final class ArtistPortfolioEditActions {
     BuildContext context,
     WidgetRef ref,
   ) async {
-    final path = await showImageSourceBottomSheet(context);
-    if (path != null && context.mounted) {
-      ref.read(artistPortfolioEditProvider.notifier).setBackgroundImage(path);
-    }
+    AppToast.show(
+      ScaffoldMessenger.of(context),
+      message: '이미지 업로드는 아직 지원되지 않습니다.',
+    );
   }
 
   static Future<void> pickAvatar(
     BuildContext context,
     WidgetRef ref,
   ) async {
-    final path = await showImageSourceBottomSheet(context);
-    if (path != null && context.mounted) {
-      ref.read(artistPortfolioEditProvider.notifier).setAvatarImage(path);
-    }
+    AppToast.show(
+      ScaffoldMessenger.of(context),
+      message: '이미지 업로드는 아직 지원되지 않습니다.',
+    );
   }
 
   static Future<void> pickPortfolioImages(
     BuildContext context,
     WidgetRef ref,
   ) async {
-    final paths = await showPortfolioGalleryBottomSheet(context);
-    if (paths.isNotEmpty && context.mounted) {
-      ref.read(artistPortfolioEditProvider.notifier).addPortfolioImages(paths);
-    }
+    AppToast.show(
+      ScaffoldMessenger.of(context),
+      message: '이미지 업로드는 아직 지원되지 않습니다.',
+    );
   }
 
   static Future<void> save(BuildContext context, WidgetRef ref) async {
@@ -47,6 +47,12 @@ abstract final class ArtistPortfolioEditActions {
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('프로필/포트폴리오가 저장되었습니다.')),
+      );
+    } else {
+      final error = ref.read(artistPortfolioEditProvider).saveError;
+      AppToast.show(
+        ScaffoldMessenger.of(context),
+        message: error ?? '저장에 실패했습니다. 다시 시도해 주세요.',
       );
     }
   }

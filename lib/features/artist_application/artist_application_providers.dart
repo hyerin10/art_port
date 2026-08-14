@@ -1,4 +1,8 @@
+import 'package:art_port/core/network/api_exception.dart';
+import 'package:art_port/core/network/resource_ids.dart';
+import 'package:art_port/features/artist_application/data/artist_application_providers.dart';
 import 'package:art_port/features/artist_application/models/artist_application_data.dart';
+import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
 import 'package:art_port/providers/artist_status_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,14 +13,18 @@ class ArtistApplicationFormState {
     this.data = const ArtistApplicationData(),
     this.hasDraft = false,
     this.lastSavedAt,
+    this.isSubmitting = false,
+    this.submitError,
   });
 
   final ArtistApplicationStep currentStep;
   final ArtistApplicationData data;
   final bool hasDraft;
   final DateTime? lastSavedAt;
+  final bool isSubmitting;
+  final String? submitError;
 
-  bool get canGoNext => data.isStepValid(currentStep);
+  bool get canGoNext => data.isStepValid(currentStep) && !isSubmitting;
 
   bool get isFirstStep => currentStep == ArtistApplicationStep.basicInfo;
 
@@ -28,6 +36,9 @@ class ArtistApplicationFormState {
     bool? hasDraft,
     DateTime? lastSavedAt,
     bool clearLastSavedAt = false,
+    bool? isSubmitting,
+    String? submitError,
+    bool clearSubmitError = false,
   }) {
     return ArtistApplicationFormState(
       currentStep: currentStep ?? this.currentStep,
@@ -35,6 +46,8 @@ class ArtistApplicationFormState {
       hasDraft: hasDraft ?? this.hasDraft,
       lastSavedAt:
           clearLastSavedAt ? null : (lastSavedAt ?? this.lastSavedAt),
+      isSubmitting: isSubmitting ?? this.isSubmitting,
+      submitError: clearSubmitError ? null : (submitError ?? this.submitError),
     );
   }
 }
@@ -234,14 +247,60 @@ class ArtistApplicationFormNotifier
   }
 
   /// 최종 신청 제출
-  bool submit() {
-    if (!state.data.isStepValid(ArtistApplicationStep.terms)) {
+  Future<bool> submit() async {
+    if (!state.data.isStepValid(ArtistApplicationStep.terms) ||
+        state.isSubmitting) {
       return false;
     }
-    ref.read(artistApprovalStatusProvider.notifier).markPending();
-    ref.read(artistApplicationDraftProvider.notifier).clear();
-    reset();
-    return true;
+
+    final userId = ref.read(currentUserIdProvider);
+    if (userId == null) {
+      state = state.copyWith(submitError: '로그인이 필요합니다.');
+      return false;
+    }
+
+    state = state.copyWith(isSubmitting: true, clearSubmitError: true);
+
+    try {
+      final data = state.data;
+      await ref.read(artistApplicationRepositoryProvider).apply(
+            userId: userId,
+            artistName: data.artistName.trim(),
+            bankName: data.bankName!.trim(),
+            accountNumber: data.accountNumber.trim(),
+            accountHolder: data.accountHolder.trim(),
+            portfolioImageUrls: data.portfolioImagePaths
+                .where(ResourceIds.isRemoteUrl)
+                .toList(),
+            verificationFileUrls: data.verificationFilePaths
+                .where(ResourceIds.isRemoteUrl)
+                .toList(),
+            styleTags: data.styleTags.toList(),
+            maxWorkDays: data.maxWorkDays,
+            roughRevisionCount: data.roughRevisionCount,
+            finalRevisionCount: data.finalRevisionCount,
+            allowNonCommercial: data.nonCommercial,
+            allowCommercialStreaming: data.commercialStreaming,
+            allowCopyrightTransfer: data.copyrightTransfer,
+            termsAgreedAt: DateTime.now(),
+          );
+      await refreshArtistApprovalStatus(ref.read);
+      ref.read(artistApplicationDraftProvider.notifier).clear();
+      reset();
+      return true;
+    } on ApiException catch (e) {
+      state = state.copyWith(
+        isSubmitting: false,
+        submitError: e.displayMessage,
+      );
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        isSubmitting: false,
+        submitError: '신청에 실패했습니다. 다시 시도해 주세요.',
+      );
+      return false;
+    }
   }
 
   void reset() {
