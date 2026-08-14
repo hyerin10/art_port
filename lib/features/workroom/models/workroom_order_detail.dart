@@ -19,6 +19,20 @@ extension OrderProgressStepX on OrderProgressStep {
         OrderProgressStep.coloring => '채색',
         OrderProgressStep.completed => '완료',
       };
+
+  String get apiValue => switch (this) {
+        OrderProgressStep.deposit => 'deposit',
+        OrderProgressStep.sketch => 'sketch',
+        OrderProgressStep.lineArt => 'line_art',
+        OrderProgressStep.coloring => 'coloring',
+        OrderProgressStep.completed => 'completed',
+      };
+
+  OrderProgressStep? get next {
+    final nextIndex = index + 1;
+    if (nextIndex >= OrderProgressStep.values.length) return null;
+    return OrderProgressStep.values[nextIndex];
+  }
 }
 
 /// 결제 내역
@@ -54,6 +68,10 @@ class WorkroomOrderDetail {
     this.linkedChatRoomId,
     this.artistUserId,
     this.isCompleted = false,
+    this.canAdvanceStep = false,
+    this.canCancel = false,
+    this.nextStep,
+    this.cancelReason,
   });
 
   final WorkroomOrderItem summary;
@@ -71,6 +89,10 @@ class WorkroomOrderDetail {
   final String? linkedChatRoomId;
   final String? artistUserId;
   final bool isCompleted;
+  final bool canAdvanceStep;
+  final bool canCancel;
+  final OrderProgressStep? nextStep;
+  final String? cancelReason;
 
   int get currentStepIndex => currentStep.index;
 }

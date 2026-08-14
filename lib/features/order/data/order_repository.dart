@@ -93,4 +93,19 @@ class OrderRepository {
     );
     return OrderDto.fromJson(json);
   }
+
+  Future<void> cancel({
+    required String orderId,
+    required String userId,
+    String? reason,
+  }) async {
+    final trimmed = reason?.trim();
+    await _client.delete(
+      '/orders/$orderId',
+      queryParameters: {'userId': userId},
+      body: (trimmed == null || trimmed.isEmpty)
+          ? null
+          : {'reason': trimmed},
+    );
+  }
 }

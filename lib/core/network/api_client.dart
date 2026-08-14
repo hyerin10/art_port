@@ -76,11 +76,13 @@ class ApiClient {
 
   Future<void> delete(
     String path, {
+    Map<String, dynamic>? body,
     Map<String, String>? queryParameters,
   }) async {
     await _requestData(
       'DELETE',
       path,
+      body: body,
       queryParameters: queryParameters,
       allowEmptyData: true,
     );
@@ -170,7 +172,11 @@ class ApiClient {
             body: body != null ? jsonEncode(body) : null,
           );
         case 'DELETE':
-          response = await _httpClient.delete(uri, headers: _headers);
+          response = await _httpClient.delete(
+            uri,
+            headers: _headers,
+            body: body != null ? jsonEncode(body) : null,
+          );
         default:
           throw ApiException.unexpected('지원하지 않는 HTTP 메서드입니다.');
       }

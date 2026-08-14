@@ -243,8 +243,28 @@ abstract final class OrderMappers {
       linkedChatRoomId: order.chatRoomId,
       artistUserId: order.artistId,
       isCompleted: order.status == 'completed',
+      canAdvanceStep: isArtistMode &&
+          _stepUpdatableStatuses.contains(order.status) &&
+          step != OrderProgressStep.completed,
+      canCancel: !_terminalStatuses.contains(order.status),
+      nextStep: step.next,
+      cancelReason: order.cancelReason,
     );
   }
+
+  static const _stepUpdatableStatuses = {
+    'accepted',
+    'payment_requested',
+    'paid',
+    'working',
+  };
+
+  static const _terminalStatuses = {
+    'rejected',
+    'completed',
+    'cancelled',
+    'refunded',
+  };
 
   static WorkroomOrderStatus _workroomStatus(CommissionStatus status) {
     return switch (status) {

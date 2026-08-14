@@ -3,8 +3,22 @@ import 'package:art_port/features/auth/presentation/auth_session_providers.dart'
 import 'package:art_port/features/order/data/order_mappers.dart';
 import 'package:art_port/features/order/data/order_providers.dart';
 import 'package:art_port/features/workroom/models/workroom_order_detail.dart';
+import 'package:art_port/features/workroom/workroom_providers.dart';
 import 'package:art_port/providers/app_mode_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+void refreshOrderQueries({
+  required void Function(ProviderBase<Object?> provider) invalidate,
+  String? orderId,
+}) {
+  invalidate(myOrdersProvider);
+  invalidate(orderLookupsProvider);
+  invalidate(workroomChatsProvider);
+  invalidate(workroomOrdersProvider);
+  if (orderId != null) {
+    invalidate(workroomOrderDetailProvider(orderId));
+  }
+}
 
 final workroomOrderDetailProvider =
     FutureProvider.family<WorkroomOrderDetail?, String>((ref, orderId) async {

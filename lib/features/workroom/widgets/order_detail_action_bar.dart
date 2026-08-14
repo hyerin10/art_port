@@ -8,11 +8,15 @@ class OrderDetailActionBar extends StatelessWidget {
     required this.onGoToChat,
     required this.onPrimary,
     this.primaryLabel = '👁️ 현재 시안 보기',
+    this.enabled = true,
+    this.isBusy = false,
   });
 
   final VoidCallback onGoToChat;
   final VoidCallback onPrimary;
   final String primaryLabel;
+  final bool enabled;
+  final bool isBusy;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +40,7 @@ class OrderDetailActionBar extends StatelessWidget {
             Expanded(
               flex: 35,
               child: OutlinedButton(
-                onPressed: onGoToChat,
+                onPressed: enabled ? onGoToChat : null,
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.textPrimary,
                   backgroundColor: AppColors.background,
@@ -62,7 +66,7 @@ class OrderDetailActionBar extends StatelessWidget {
             Expanded(
               flex: 65,
               child: FilledButton(
-                onPressed: onPrimary,
+                onPressed: enabled ? onPrimary : null,
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
@@ -71,16 +75,25 @@ class OrderDetailActionBar extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(
-                  primaryLabel,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    height: 1.2,
-                  ),
-                ),
+                child: isBusy
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        primaryLabel,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          height: 1.2,
+                        ),
+                      ),
               ),
             ),
           ],

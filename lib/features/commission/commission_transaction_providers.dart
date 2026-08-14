@@ -5,7 +5,7 @@ import 'package:art_port/features/commission/models/commission_transaction.dart'
 import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/order/data/order_mappers.dart';
 import 'package:art_port/features/order/data/order_providers.dart';
-import 'package:art_port/features/workroom/workroom_providers.dart';
+import 'package:art_port/features/workroom/order_detail_providers.dart';
 import 'package:art_port/providers/app_mode_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -69,7 +69,7 @@ class CommissionTransactionNotifier
           orderId: current.orderId,
           artistId: userId,
         );
-    _refresh();
+    _refresh(current.orderId);
   }
 
   Future<void> rejectApplication({
@@ -89,7 +89,7 @@ class CommissionTransactionNotifier
           artistId: userId,
           reason: reason,
         );
-    _refresh();
+    _refresh(current.orderId);
   }
 
   Future<void> requestPayment() async {
@@ -108,11 +108,8 @@ class CommissionTransactionNotifier
     );
   }
 
-  void _refresh() {
-    ref.invalidate(myOrdersProvider);
-    ref.invalidate(orderLookupsProvider);
-    ref.invalidate(workroomChatsProvider);
-    ref.invalidate(workroomOrdersProvider);
+  void _refresh(String orderId) {
+    refreshOrderQueries(invalidate: ref.invalidate, orderId: orderId);
   }
 }
 
