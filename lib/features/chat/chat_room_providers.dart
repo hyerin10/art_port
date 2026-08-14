@@ -6,6 +6,8 @@ import 'package:art_port/features/chat/models/chat_dummy_data.dart';
 import 'package:art_port/features/chat/models/chat_message.dart';
 import 'package:art_port/features/chat/models/pending_attachment.dart';
 import 'package:art_port/features/commission/commission_transaction_providers.dart';
+import 'package:art_port/features/mypage/inquiry_providers.dart';
+import 'package:art_port/features/mypage/models/support_inquiry_item.dart';
 import 'package:art_port/features/order/data/order_mappers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -16,6 +18,19 @@ bool isLocalSupportRoom(String roomId) =>
 
 final chatRoomDetailProvider =
     FutureProvider.family<ChatRoomDetail?, String>((ref, roomId) async {
+  final inquiryId = SupportInquiryConstants.inquiryIdFromRoom(roomId);
+  if (inquiryId != null) {
+    final inquiry = await ref.watch(supportInquiryDetailProvider(inquiryId).future);
+    if (inquiry == null) return null;
+    return ChatRoomDetail(
+      id: roomId,
+      counterpartName: SupportInquiryConstants.centerName,
+      avatarUrl: SupportInquiryConstants.centerAvatarAsset,
+      isOnline: true,
+      statusLabel: SupportInquiryItem.statusLabelOf(inquiry.status),
+    );
+  }
+
   if (isLocalSupportRoom(roomId)) {
     return ChatDummyData.roomFor(roomId);
   }
@@ -68,6 +83,19 @@ class ChatMessagesNotifier
     extends FamilyAsyncNotifier<List<ChatMessage>, String> {
   @override
   Future<List<ChatMessage>> build(String roomId) async {
+    final inquiryId = SupportInquiryConstants.inquiryIdFromRoom(roomId);
+    if (inquiryId != null) {
+      final userId = ref.watch(currentUserIdProvider);
+      if (userId == null) return const [];
+      final inquiry =
+          await ref.watch(supportInquiryDetailProvider(inquiryId).future);
+      final messages = [...?inquiry?.messages]
+        ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      return [
+        for (final message in messages) message.toChatMessage(userId),
+      ];
+    }
+
     if (isLocalSupportRoom(roomId)) {
       return List<ChatMessage>.from(ChatDummyData.initialMessages(roomId));
     }
@@ -102,20 +130,18 @@ class ChatMessagesNotifier
       return;
     }
 
+    final inquiryId = SupportInquiryConstants.inquiryIdFromRoom(arg);
+    if (inquiryId != null) {
+      await _sendSupportMessage(inquiryId: inquiryId, text: trimmed);
+      return;
+    }
+
     final userId = ref.read(currentUserIdProvider);
     if (userId == null) {
       throw const ApiException(
         code: 'UNAUTHORIZED',
         status: 401,
         message: '로그인이 필요합니다.',
-      );
-    }
-
-    if (attachments.isNotEmpty && trimmed.isEmpty) {
-      throw const ApiException(
-        code: 'NOT_IMPLEMENTED',
-        status: 501,
-        message: '파일 업로드는 아직 지원되지 않습니다.',
       );
     }
 
@@ -144,6 +170,56 @@ class ChatMessagesNotifier
           if (message.id != optimistic.id) message,
         sent.toChatMessage(userId),
       ]);
+    } catch (_) {
+      state = AsyncData(previous);
+      rethrow;
+    }
+  }
+
+  Future<void> _sendSupportMessage({
+    required String inquiryId,
+    required String text,
+  }) async {
+    if (text.isEmpty) {
+      throw const ApiException(
+        code: 'NOT_IMPLEMENTED',
+        status: 501,
+        message: '파일 업로드는 아직 지원되지 않습니다.',
+      );
+    }
+
+    final userId = ref.read(currentUserIdProvider);
+    if (userId == null) {
+      throw const ApiException(
+        code: 'UNAUTHORIZED',
+        status: 401,
+        message: '로그인이 필요합니다.',
+      );
+    }
+
+    final previous = state.valueOrNull ?? const <ChatMessage>[];
+    final optimistic = ChatMessage(
+      id: 'local-${DateTime.now().millisecondsSinceEpoch}',
+      isMine: true,
+      type: ChatMessageType.text,
+      timeLabel: formatChatTimeLabel(DateTime.now()),
+      text: text,
+    );
+    state = AsyncData([...previous, optimistic]);
+
+    try {
+      final sent = await ref.read(supportRepositoryProvider).addMessage(
+            inquiryId: inquiryId,
+            userId: userId,
+            content: text,
+          );
+      final current = state.valueOrNull ?? previous;
+      state = AsyncData([
+        for (final message in current)
+          if (message.id != optimistic.id) message,
+        sent.toChatMessage(userId),
+      ]);
+      invalidateSupportQueries(ref);
     } catch (_) {
       state = AsyncData(previous);
       rethrow;

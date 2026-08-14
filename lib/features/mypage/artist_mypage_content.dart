@@ -134,6 +134,19 @@ class ArtistMyPageContent extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           SectionCard(
+            title: '고객 지원',
+            children: [
+              MenuListItem(
+                label: '1:1 문의',
+                icon: Icons.chat_bubble_rounded,
+                iconBackgroundColor: const Color(0xFFD1FAE5),
+                iconColor: const Color(0xFF10B981),
+                onTap: () => actions.onInquiry(context),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          SectionCard(
             title: '상태 설정',
             children: [
               MenuListItem(

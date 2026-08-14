@@ -241,4 +241,8 @@ class ArtistMyPageActions {
   void onSettlementAccount(BuildContext context) {
     SettlementAccountScreen.open(context);
   }
+
+  void onInquiry(BuildContext context) {
+    InquiryListScreen.open(context);
+  }
 }

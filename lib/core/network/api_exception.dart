@@ -62,6 +62,8 @@ class ApiException implements Exception {
         return '주문을 찾을 수 없습니다.';
       case 'REVIEW_NOT_FOUND':
         return '리뷰를 찾을 수 없습니다.';
+      case 'SUPPORT_INQUIRY_NOT_FOUND':
+        return '문의를 찾을 수 없습니다.';
       case 'FORBIDDEN':
         return '이 작업을 수행할 권한이 없습니다.';
       case 'DUPLICATE_RESOURCE':
