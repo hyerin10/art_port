@@ -18,7 +18,7 @@ class LoginRequiredGate extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isLoggedIn = ref.watch(authProvider);
+    final isLoggedIn = ref.watch(isLoggedInProvider);
 
     if (isLoggedIn) {
       return child;

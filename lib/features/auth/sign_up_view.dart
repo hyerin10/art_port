@@ -5,8 +5,6 @@ import 'package:art_port/features/auth/widgets/auth_primary_button.dart';
 import 'package:art_port/features/auth/widgets/auth_text_field.dart';
 import 'package:art_port/features/auth/widgets/password_visibility_toggle.dart';
 import 'package:art_port/features/auth/widgets/phone_verification_field.dart';
-import 'package:art_port/features/mypage/mypage_providers.dart';
-import 'package:art_port/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -46,12 +44,17 @@ class _SignUpViewState extends ConsumerState<SignUpView> {
 
   Future<void> _onSignUp() async {
     FocusScope.of(context).unfocus();
-    final form = ref.read(signUpFormProvider);
     final success = await ref.read(signUpFormProvider.notifier).submit();
-    if (!success || !mounted) return;
+    if (!mounted) return;
 
-    ref.read(clientProfileProvider.notifier).updateName(form.name.trim());
-    ref.read(authProvider.notifier).signIn();
+    final form = ref.read(signUpFormProvider);
+    if (form.submitError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(form.submitError!)),
+      );
+    }
+    if (!success) return;
+
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
 

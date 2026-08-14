@@ -14,4 +14,8 @@ class AppModeNotifier extends Notifier<bool> {
   void toggleMode() {
     state = !state;
   }
+
+  void setArtistMode(bool value) {
+    state = value;
+  }
 }

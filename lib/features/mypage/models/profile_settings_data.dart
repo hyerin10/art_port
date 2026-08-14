@@ -15,6 +15,7 @@ class ProfileSettingsFormState {
     this.currentPasswordError,
     this.newPasswordError,
     this.confirmPasswordError,
+    this.saveError,
   });
 
   final String nickname;
@@ -31,6 +32,7 @@ class ProfileSettingsFormState {
   final String? currentPasswordError;
   final String? newPasswordError;
   final String? confirmPasswordError;
+  final String? saveError;
 
   bool get hasPasswordInput =>
       currentPassword.isNotEmpty ||
@@ -52,10 +54,12 @@ class ProfileSettingsFormState {
     String? currentPasswordError,
     String? newPasswordError,
     String? confirmPasswordError,
+    String? saveError,
     bool clearNicknameError = false,
     bool clearCurrentPasswordError = false,
     bool clearNewPasswordError = false,
     bool clearConfirmPasswordError = false,
+    bool clearSaveError = false,
   }) {
     return ProfileSettingsFormState(
       nickname: nickname ?? this.nickname,
@@ -81,6 +85,7 @@ class ProfileSettingsFormState {
       confirmPasswordError: clearConfirmPasswordError
           ? null
           : (confirmPasswordError ?? this.confirmPasswordError),
+      saveError: clearSaveError ? null : (saveError ?? this.saveError),
     );
   }
 }

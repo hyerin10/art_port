@@ -8,7 +8,6 @@ import 'package:art_port/features/auth/widgets/auth_primary_button.dart';
 import 'package:art_port/features/auth/widgets/auth_text_field.dart';
 import 'package:art_port/features/auth/widgets/password_visibility_toggle.dart';
 import 'package:art_port/features/auth/widgets/social_login_button.dart';
-import 'package:art_port/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -52,9 +51,16 @@ class _SignInViewState extends ConsumerState<SignInView> {
   Future<void> _onSignIn() async {
     FocusScope.of(context).unfocus();
     final success = await ref.read(signInFormProvider.notifier).submit();
-    if (!success || !mounted) return;
+    if (!mounted) return;
 
-    ref.read(authProvider.notifier).signIn();
+    final form = ref.read(signInFormProvider);
+    if (form.submitError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(form.submitError!)),
+      );
+    }
+    if (!success) return;
+
     Navigator.of(context).pop();
   }
 

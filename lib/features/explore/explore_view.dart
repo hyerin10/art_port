@@ -4,7 +4,6 @@ import 'package:art_port/features/explore/models/commission_sample.dart';
 import 'package:art_port/providers/liked_commissions_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 /// 탐색(Explore) 탭 내부 스크롤 콘텐츠
 class ExploreView extends StatelessWidget {
@@ -23,7 +22,11 @@ class ExploreView extends StatelessWidget {
             const SizedBox(height: 24),
             const _LiveSlotsSection(),
             const SizedBox(height: 28),
-            const _DiscoverSection(),
+            const _DiscoverHeader(),
+            const SizedBox(height: 16),
+            _TwoColumnGallery(
+              samples: ExploreDummyData.gallerySamples,
+            ),
           ],
         ),
       ),
@@ -344,8 +347,48 @@ class _LiveSlotCard extends StatelessWidget {
 
 // ─── Discover Artworks ──────────────────────────────────────────────────────
 
-class _DiscoverSection extends StatelessWidget {
-  const _DiscoverSection();
+class _TwoColumnGallery extends StatelessWidget {
+  const _TwoColumnGallery({required this.samples});
+
+  final List<CommissionSample> samples;
+
+  @override
+  Widget build(BuildContext context) {
+    final leftColumn = <CommissionSample>[];
+    final rightColumn = <CommissionSample>[];
+
+    for (var i = 0; i < samples.length; i++) {
+      if (i.isEven) {
+        leftColumn.add(samples[i]);
+      } else {
+        rightColumn.add(samples[i]);
+      }
+    }
+
+    Widget buildColumn(List<CommissionSample> columnSamples) {
+      return Column(
+        children: [
+          for (var i = 0; i < columnSamples.length; i++) ...[
+            _GalleryCard(sample: columnSamples[i]),
+            if (i < columnSamples.length - 1) const SizedBox(height: 12),
+          ],
+        ],
+      );
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: buildColumn(leftColumn)),
+        const SizedBox(width: 12),
+        Expanded(child: buildColumn(rightColumn)),
+      ],
+    );
+  }
+}
+
+class _DiscoverHeader extends StatelessWidget {
+  const _DiscoverHeader();
 
   @override
   Widget build(BuildContext context) {
@@ -368,20 +411,6 @@ class _DiscoverSection extends StatelessWidget {
           children: ExploreDummyData.categoryTags.map((tag) {
             return _CategoryChip(label: tag);
           }).toList(),
-        ),
-        const SizedBox(height: 16),
-        MasonryGridView.count(
-          crossAxisCount: 2,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: ExploreDummyData.gallerySamples.length,
-          itemBuilder: (context, index) {
-            return _GalleryCard(
-              sample: ExploreDummyData.gallerySamples[index],
-            );
-          },
         ),
       ],
     );

@@ -51,9 +51,59 @@ class _ProfileSettingsViewState extends ConsumerState<ProfileSettingsView> {
         break;
       case ProfileSettingsSaveResult.failed:
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('저장에 실패했습니다. 다시 시도해 주세요.')),
+          SnackBar(
+            content: Text(
+              ref.read(profileSettingsProvider).saveError ??
+                  '저장에 실패했습니다. 다시 시도해 주세요.',
+            ),
+          ),
         );
     }
+  }
+
+  Future<void> _onDeactivate() async {
+    FocusScope.of(context).unfocus();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('회원 탈퇴'),
+        content: const Text('정말 탈퇴하시겠습니까? 탈퇴 후에는 계정을 사용할 수 없습니다.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('탈퇴'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final success =
+        await ref.read(profileSettingsProvider.notifier).deactivateAccount();
+    if (!mounted) return;
+
+    if (success) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('회원 탈퇴가 완료되었습니다.')),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          ref.read(profileSettingsProvider).saveError ??
+              '회원 탈퇴에 실패했습니다. 다시 시도해 주세요.',
+        ),
+      ),
+    );
   }
 
   void _onClose() {
@@ -203,6 +253,20 @@ class _ProfileSettingsViewState extends ConsumerState<ProfileSettingsView> {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 32),
+                  Center(
+                    child: TextButton(
+                      onPressed: form.isSaving ? null : _onDeactivate,
+                      child: const Text(
+                        '회원 탈퇴',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.error,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),

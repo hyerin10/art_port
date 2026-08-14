@@ -1,3 +1,4 @@
+import 'package:art_port/features/auth/domain/user.dart';
 import 'package:art_port/features/mypage/artist_portfolio_edit_screen.dart';
 import 'package:art_port/features/mypage/commission_type_settings_screen.dart';
 import 'package:art_port/features/mypage/notice_settings_screen.dart';
@@ -51,6 +52,13 @@ class ClientProfileNotifier extends Notifier<ClientProfileData> {
   void updateName(String name) {
     state = state.copyWith(name: name);
   }
+
+  void syncFromUser(User user) {
+    state = state.copyWith(
+      name: user.name,
+      email: user.email,
+    );
+  }
 }
 
 /// 작가 프로필 (추후 API 연동)
@@ -76,6 +84,10 @@ class ArtistProfileNotifier extends Notifier<ArtistProfileData> {
 
   void updateName(String name) {
     state = state.copyWith(name: name);
+  }
+
+  void syncFromUser(User user) {
+    state = state.copyWith(name: user.name);
   }
 }
 

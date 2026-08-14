@@ -17,7 +17,7 @@ class ArtPortHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isArtistMode = ref.watch(appModeProvider);
-    final isLoggedIn = ref.watch(authProvider);
+    final isLoggedIn = ref.watch(isLoggedInProvider);
     final showMyPage = ref.watch(showMyPageProvider);
 
     final profileAvatarUrl = isArtistMode

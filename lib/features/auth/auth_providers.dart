@@ -1,5 +1,10 @@
+import 'package:art_port/core/network/api_exception.dart';
 import 'package:art_port/features/auth/auth_messages.dart';
 import 'package:art_port/features/auth/auth_validators.dart';
+import 'package:art_port/features/auth/data/dto/user_dto.dart';
+import 'package:art_port/features/auth/domain/user_role.dart';
+import 'package:art_port/features/auth/presentation/auth_session_effects.dart';
+import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final signInFormProvider =
@@ -16,6 +21,7 @@ class SignInFormState {
     this.emailTouched = false,
     this.emailBlurred = false,
     this.submitAttempted = false,
+    this.submitError,
   });
 
   final String email;
@@ -25,6 +31,7 @@ class SignInFormState {
   final bool emailTouched;
   final bool emailBlurred;
   final bool submitAttempted;
+  final String? submitError;
 
   bool get canSubmit =>
       !isSubmitting &&
@@ -54,6 +61,8 @@ class SignInFormState {
     bool? emailTouched,
     bool? emailBlurred,
     bool? submitAttempted,
+    String? submitError,
+    bool clearSubmitError = false,
   }) {
     return SignInFormState(
       email: email ?? this.email,
@@ -63,6 +72,7 @@ class SignInFormState {
       emailTouched: emailTouched ?? this.emailTouched,
       emailBlurred: emailBlurred ?? this.emailBlurred,
       submitAttempted: submitAttempted ?? this.submitAttempted,
+      submitError: clearSubmitError ? null : submitError ?? this.submitError,
     );
   }
 }
@@ -95,13 +105,33 @@ class SignInFormNotifier extends AutoDisposeNotifier<SignInFormState> {
       emailTouched: true,
       emailBlurred: true,
       submitAttempted: true,
+      clearSubmitError: true,
     );
     if (!state.canSubmit) return false;
 
     state = state.copyWith(isSubmitting: true);
-    await Future<void>.delayed(const Duration(milliseconds: 400));
-    state = state.copyWith(isSubmitting: false);
-    return true;
+    try {
+      final user = await ref.read(userRepositoryProvider).login(
+            state.email,
+            state.password,
+          );
+      ref.read(authProvider.notifier).signIn(user);
+      syncSessionSideEffectsFromRef(ref, user);
+      state = state.copyWith(isSubmitting: false);
+      return true;
+    } on ApiException catch (e) {
+      state = state.copyWith(
+        isSubmitting: false,
+        submitError: e.displayMessage,
+      );
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        isSubmitting: false,
+        submitError: AuthMessages.signInNetworkError,
+      );
+      return false;
+    }
   }
 }
 
@@ -131,6 +161,7 @@ class SignUpFormState {
     this.passwordTouched = false,
     this.confirmPasswordTouched = false,
     this.phoneVerificationError,
+    this.submitError,
   });
 
   final String name;
@@ -152,6 +183,7 @@ class SignUpFormState {
   final bool passwordTouched;
   final bool confirmPasswordTouched;
   final String? phoneVerificationError;
+  final String? submitError;
 
   bool get isNameValid => name.trim().isNotEmpty;
 
@@ -244,7 +276,9 @@ class SignUpFormState {
     bool? passwordTouched,
     bool? confirmPasswordTouched,
     String? phoneVerificationError,
+    String? submitError,
     bool clearPhoneVerificationError = false,
+    bool clearSubmitError = false,
   }) {
     return SignUpFormState(
       name: name ?? this.name,
@@ -271,6 +305,7 @@ class SignUpFormState {
       phoneVerificationError: clearPhoneVerificationError
           ? null
           : phoneVerificationError ?? this.phoneVerificationError,
+      submitError: clearSubmitError ? null : submitError ?? this.submitError,
     );
   }
 }
@@ -379,12 +414,37 @@ class SignUpFormNotifier extends AutoDisposeNotifier<SignUpFormState> {
       phoneTouched: true,
       passwordTouched: true,
       confirmPasswordTouched: true,
+      clearSubmitError: true,
     );
     if (!state.canSubmit) return false;
 
     state = state.copyWith(isSubmitting: true);
-    await Future<void>.delayed(const Duration(milliseconds: 400));
-    state = state.copyWith(isSubmitting: false);
-    return true;
+    try {
+      final user = await ref.read(userRepositoryProvider).createUser(
+            CreateUserRequest(
+              email: state.email,
+              password: state.password,
+              name: state.name.trim(),
+              phone: state.phone,
+              role: UserRole.client,
+            ),
+          );
+      ref.read(authProvider.notifier).signIn(user);
+      syncSessionSideEffectsFromRef(ref, user);
+      state = state.copyWith(isSubmitting: false);
+      return true;
+    } on ApiException catch (e) {
+      state = state.copyWith(
+        isSubmitting: false,
+        submitError: e.displayMessage,
+      );
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        isSubmitting: false,
+        submitError: AuthMessages.signUpNetworkError,
+      );
+      return false;
+    }
   }
 }

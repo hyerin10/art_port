@@ -91,7 +91,7 @@ class _CommissionApplyViewState extends ConsumerState<CommissionApplyView> {
   Future<void> _onSubmit() async {
     if (!_canSubmit) return;
 
-    final isLoggedIn = ref.read(authProvider);
+    final isLoggedIn = ref.read(isLoggedInProvider);
     if (!isLoggedIn) {
       await showLoginRequiredDialog(context);
       return;

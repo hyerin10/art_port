@@ -1,25 +1,43 @@
+import 'package:art_port/features/auth/domain/user.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// 앱 전역 로그인 상태. `true` = 로그인됨.
-final authProvider = NotifierProvider<AuthNotifier, bool>(
+/// 로그인된 사용자. `null`이면 비로그인 상태.
+final authProvider = NotifierProvider<AuthNotifier, User?>(
   AuthNotifier.new,
 );
 
-class AuthNotifier extends Notifier<bool> {
+class AuthNotifier extends Notifier<User?> {
   @override
-  bool build() => false;
+  User? build() => null;
 
-  bool get isLoggedIn => state;
+  bool get isLoggedIn => state != null;
 
-  void signIn() => state = true;
+  void signIn(User user) {
+    state = user;
+    if (user.isEmailVerified) {
+      ref.read(isEmailVerifiedProvider.notifier).markVerified();
+    }
+  }
+
+  void update(User user) {
+    state = user;
+    if (user.isEmailVerified) {
+      ref.read(isEmailVerifiedProvider.notifier).markVerified();
+    }
+  }
 
   void signOut() {
-    state = false;
+    state = null;
     ref.read(isEmailVerifiedProvider.notifier).reset();
   }
 }
 
-/// 이메일 인증 완료 여부. `true` = 인증됨.
+/// 로그인 여부.
+final isLoggedInProvider = Provider<bool>((ref) {
+  return ref.watch(authProvider) != null;
+});
+
+/// 이메일 인증 완료 여부.
 final isEmailVerifiedProvider = NotifierProvider<IsEmailVerifiedNotifier, bool>(
   IsEmailVerifiedNotifier.new,
 );

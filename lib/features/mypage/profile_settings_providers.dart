@@ -1,3 +1,7 @@
+import 'package:art_port/core/network/api_exception.dart';
+import 'package:art_port/features/auth/data/dto/user_dto.dart';
+import 'package:art_port/features/auth/presentation/auth_session_effects.dart';
+import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
 import 'package:art_port/features/mypage/models/profile_settings_data.dart';
 import 'package:art_port/features/mypage/mypage_providers.dart';
 import 'package:art_port/providers/app_mode_provider.dart';
@@ -14,11 +18,13 @@ class ProfileSettingsNotifier extends AutoDisposeNotifier<ProfileSettingsFormSta
 
   @override
   ProfileSettingsFormState build() {
+    final user = ref.read(authProvider);
     final isArtistMode = ref.read(appModeProvider);
-    final nickname = isArtistMode
-        ? ref.read(artistProfileProvider).name
-        : ref.read(clientProfileProvider).name;
-    final email = ref.read(clientProfileProvider).email;
+    final nickname = user?.name ??
+        (isArtistMode
+            ? ref.read(artistProfileProvider).name
+            : ref.read(clientProfileProvider).name);
+    final email = user?.email ?? ref.read(clientProfileProvider).email;
 
     return ProfileSettingsFormState(
       nickname: nickname,
@@ -26,7 +32,7 @@ class ProfileSettingsNotifier extends AutoDisposeNotifier<ProfileSettingsFormSta
       currentPassword: '',
       newPassword: '',
       confirmPassword: '',
-      maskedPhone: '010-****-5678',
+      maskedPhone: _maskPhone(user?.phone ?? ''),
     );
   }
 
@@ -34,6 +40,7 @@ class ProfileSettingsNotifier extends AutoDisposeNotifier<ProfileSettingsFormSta
     state = state.copyWith(
       nickname: value,
       clearNicknameError: true,
+      clearSaveError: true,
     );
   }
 
@@ -135,23 +142,35 @@ class ProfileSettingsNotifier extends AutoDisposeNotifier<ProfileSettingsFormSta
       return ProfileSettingsSaveResult.validationFailed;
     }
 
-    state = state.copyWith(isSaving: true);
+    final user = ref.read(authProvider);
+    if (user == null) {
+      state = state.copyWith(saveError: '로그인이 필요합니다.');
+      return ProfileSettingsSaveResult.failed;
+    }
+
+    state = state.copyWith(isSaving: true, clearSaveError: true);
 
     try {
-      // TODO: 프로필 / 계정 설정 저장 API 연동
-      await Future<void>.delayed(const Duration(milliseconds: 400));
+      if (state.hasPasswordInput) {
+        state = state.copyWith(
+          isSaving: false,
+          saveError: '비밀번호 변경은 아직 지원되지 않습니다. 닉네임만 저장할 수 있습니다.',
+        );
+        return ProfileSettingsSaveResult.failed;
+      }
 
       final trimmedNickname = state.nickname.trim();
-      final isArtistMode = ref.read(appModeProvider);
-
-      if (isArtistMode) {
-        ref.read(artistProfileProvider.notifier).updateName(trimmedNickname);
-      } else {
-        ref.read(clientProfileProvider.notifier).updateName(trimmedNickname);
-      }
+      final updated = await ref.read(userRepositoryProvider).updateUser(
+            user.id,
+            UpdateUserRequest(name: trimmedNickname),
+          );
+      ref.read(authProvider.notifier).update(updated);
+      syncSessionSideEffectsFromRef(ref, updated);
 
       state = state.copyWith(
         nickname: trimmedNickname,
+        email: updated.email,
+        maskedPhone: _maskPhone(updated.phone),
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
@@ -159,9 +178,60 @@ class ProfileSettingsNotifier extends AutoDisposeNotifier<ProfileSettingsFormSta
       );
 
       return ProfileSettingsSaveResult.success;
+    } on ApiException catch (e) {
+      state = state.copyWith(
+        isSaving: false,
+        saveError: e.displayMessage,
+      );
+      return ProfileSettingsSaveResult.failed;
     } catch (_) {
-      state = state.copyWith(isSaving: false);
+      state = state.copyWith(
+        isSaving: false,
+        saveError: '저장에 실패했습니다. 다시 시도해 주세요.',
+      );
       return ProfileSettingsSaveResult.failed;
     }
+  }
+
+  Future<bool> deactivateAccount() async {
+    final user = ref.read(authProvider);
+    if (user == null) {
+      state = state.copyWith(saveError: '로그인이 필요합니다.');
+      return false;
+    }
+
+    state = state.copyWith(isSaving: true, clearSaveError: true);
+
+    try {
+      await ref.read(userRepositoryProvider).deactivateUser(user.id);
+      ref.read(authProvider.notifier).signOut();
+      ref.read(showMyPageProvider.notifier).close();
+      state = state.copyWith(isSaving: false);
+      return true;
+    } on ApiException catch (e) {
+      state = state.copyWith(
+        isSaving: false,
+        saveError: e.displayMessage,
+      );
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        isSaving: false,
+        saveError: '회원 탈퇴에 실패했습니다. 다시 시도해 주세요.',
+      );
+      return false;
+    }
+  }
+
+  static String _maskPhone(String phone) {
+    final digits = phone.replaceAll(RegExp(r'\D'), '');
+    if (digits.length >= 11) {
+      return '${digits.substring(0, 3)}-****-${digits.substring(7)}';
+    }
+    if (digits.length >= 7) {
+      return '${digits.substring(0, 3)}-****-${digits.substring(digits.length - 4)}';
+    }
+    if (phone.isEmpty) return '-';
+    return phone;
   }
 }

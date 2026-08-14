@@ -41,7 +41,7 @@ class _CommissionDetailViewState extends ConsumerState<CommissionDetailView> {
   }
 
   Future<void> _onApplyTap(CommissionDetail detail) async {
-    final isLoggedIn = ref.read(authProvider);
+    final isLoggedIn = ref.read(isLoggedInProvider);
     if (!isLoggedIn) {
       await showLoginRequiredDialog(context);
       return;

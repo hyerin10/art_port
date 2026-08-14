@@ -59,18 +59,9 @@ class MainScreen extends ConsumerWidget {
         children: [
           const ArtPortHeader(),
           Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              switchInCurve: Curves.easeOut,
-              switchOutCurve: Curves.easeIn,
-              child: showMyPage
-                  ? const MyPageScreen(key: ValueKey('mypage'))
-                  : IndexedStack(
-                      key: ValueKey('tabs-$isArtistMode'),
-                      index: safeIndex,
-                      children: screens,
-                    ),
-            ),
+            child: showMyPage
+                ? const MyPageScreen(key: ValueKey('mypage'))
+                : screens[safeIndex],
           ),
         ],
       ),
