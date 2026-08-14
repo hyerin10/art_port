@@ -7,6 +7,8 @@ import 'package:art_port/features/mypage/widgets/mypage_scroll_view.dart';
 import 'package:art_port/features/mypage/widgets/sales_statistics_card.dart';
 import 'package:art_port/features/mypage/widgets/section_card.dart';
 import 'package:art_port/features/mypage/widgets/withdrawable_earnings_card.dart';
+import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
+import 'package:art_port/features/review/data/review_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,6 +24,13 @@ class ArtistMyPageContent extends ConsumerWidget {
     final isRestMode = ref.watch(restModeProvider);
     final actions = ref.watch(artistMyPageActionsProvider);
     final profileNotifier = ref.read(artistProfileProvider.notifier);
+    final userId = ref.watch(currentUserIdProvider);
+    final reviewStats = userId == null
+        ? null
+        : ref.watch(artistReviewStatsProvider(userId)).valueOrNull;
+    final ratingLabel = reviewStats == null
+        ? null
+        : '⭐ ${reviewStats.averageLabel} (리뷰 ${reviewStats.count}개)';
 
     return MyPageScrollView(
       child: Column(
@@ -32,8 +41,8 @@ class ArtistMyPageContent extends ConsumerWidget {
             onEditPhoto: profileNotifier.onEditProfilePhoto,
             name: profile.name,
             onOpenSettings: () => MyPageNavigation.openProfileSettings(context),
-            subtitle:
-                '⭐ ${profile.rating.toStringAsFixed(2)} (리뷰 ${profile.reviewCount}개)',
+            subtitle: ratingLabel ??
+                '⭐ ${profile.rating.toStringAsFixed(2)}',
             subtitleStyle: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
@@ -64,6 +73,13 @@ class ArtistMyPageContent extends ConsumerWidget {
                 iconBackgroundColor: const Color(0xFFFFEDD5),
                 iconColor: const Color(0xFFF97316),
                 onTap: () => actions.onNoticeSettings(context),
+              ),
+              MenuListItem(
+                label: '받은 리뷰',
+                icon: Icons.star_rounded,
+                iconBackgroundColor: const Color(0xFFFEF3C7),
+                iconColor: const Color(0xFFF59E0B),
+                onTap: () => actions.onReceivedReviews(context),
               ),
               MenuListItem(
                 label: '결제 내역 관리',

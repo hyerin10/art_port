@@ -4,6 +4,8 @@ import 'package:art_port/features/chat/chat_room_screen.dart';
 import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/common/widgets/art_port_bottom_nav.dart';
 import 'package:art_port/features/common/widgets/art_port_header.dart';
+import 'package:art_port/features/review/data/review_providers.dart';
+import 'package:art_port/features/review/review_form_screen.dart';
 import 'package:art_port/features/workroom/models/workroom_order_detail.dart';
 import 'package:art_port/features/workroom/order_detail_providers.dart';
 import 'package:art_port/features/workroom/widgets/order_detail_action_bar.dart';
@@ -11,6 +13,7 @@ import 'package:art_port/features/workroom/widgets/order_detail_header.dart';
 import 'package:art_port/features/workroom/widgets/order_payment_info_card.dart';
 import 'package:art_port/features/workroom/widgets/order_progress_step_bar.dart';
 import 'package:art_port/features/workroom/widgets/order_request_info_card.dart';
+import 'package:art_port/providers/app_mode_provider.dart';
 import 'package:art_port/providers/current_tab_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,6 +48,8 @@ class OrderDetailView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final orderAsync = ref.watch(workroomOrderDetailProvider(orderId));
+    final isArtistMode = ref.watch(appModeProvider);
+    final existingReview = ref.watch(reviewForOrderProvider(orderId));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -136,7 +141,22 @@ class OrderDetailView extends ConsumerWidget {
                       child: OrderDetailActionBar(
                         onGoToChat: () =>
                             _onGoToChat(context, order.linkedChatRoomId),
-                        onViewDraft: () => _onViewDraft(context),
+                        primaryLabel: !isArtistMode && order.isCompleted
+                            ? (existingReview == null
+                                ? '⭐ 리뷰 작성하기'
+                                : '⭐ 리뷰 수정하기')
+                            : '👁️ 현재 시안 보기',
+                        onPrimary: !isArtistMode && order.isCompleted
+                            ? () => ReviewFormScreen.open(
+                                  context,
+                                  orderId: orderId,
+                                  commissionTitle: order.commissionTitle,
+                                  reviewId: existingReview?.id,
+                                  initialRating: existingReview?.rating ?? 5,
+                                  initialContent: existingReview?.content ?? '',
+                                  artistUserId: order.artistUserId,
+                                )
+                            : () => _onViewDraft(context),
                       ),
                     ),
                   ],

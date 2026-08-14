@@ -15,6 +15,7 @@ import 'package:art_port/providers/current_tab_provider.dart';
 import 'package:art_port/features/mypage/models/followed_artist.dart';
 import 'package:art_port/providers/followed_artists_provider.dart';
 import 'package:art_port/providers/liked_commissions_provider.dart';
+import 'package:art_port/features/review/data/review_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -372,6 +373,14 @@ class _ArtistProfileSection extends ConsumerWidget {
     final artistId = detail.artistProfileId.isNotEmpty
         ? detail.artistProfileId
         : ArtistCatalog.idForName(detail.artistName);
+    final reviewStats = detail.artistUserId.isEmpty
+        ? null
+        : ref.watch(artistReviewStatsProvider(detail.artistUserId)).valueOrNull;
+    // 프로필에 캐시된 reviewCount(시드 23 등) 대신 실제 리뷰 목록 개수를 쓴다.
+    final ratingLabel = reviewStats?.detailLabel ??
+        (detail.artistUserId.isEmpty
+            ? detail.ratingLabel
+            : detail.rating.toStringAsFixed(1));
     final followUserId = detail.artistUserId;
     final isSelf =
         followUserId.isNotEmpty &&
@@ -424,7 +433,7 @@ class _ArtistProfileSection extends ConsumerWidget {
                                 ),
                                 const SizedBox(width: 3),
                                 Text(
-                                  detail.ratingLabel,
+                                  ratingLabel,
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,

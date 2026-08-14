@@ -1,5 +1,6 @@
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/features/artist_profile/models/artist_public_profile.dart';
+import 'package:art_port/features/review/data/review_providers.dart';
 import 'package:flutter/material.dart';
 
 /// 작가 프로필 상단 기본 정보 + 팔로우/알림 + SNS 칩
@@ -11,6 +12,7 @@ class ArtistProfileInfoSection extends StatelessWidget {
     required this.notificationsEnabled,
     required this.onFollowTap,
     required this.onNotificationTap,
+    this.reviewStats,
   });
 
   final ArtistPublicProfile profile;
@@ -18,6 +20,7 @@ class ArtistProfileInfoSection extends StatelessWidget {
   final bool notificationsEnabled;
   final VoidCallback? onFollowTap;
   final VoidCallback onNotificationTap;
+  final ReviewStats? reviewStats;
 
   @override
   Widget build(BuildContext context) {
@@ -68,21 +71,22 @@ class ArtistProfileInfoSection extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          profile.formattedRating,
+                          reviewStats?.averageLabel ?? profile.formattedRating,
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        Text(
-                          ' (${profile.reviewCount})',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textMuted,
+                        if (reviewStats != null)
+                          Text(
+                            ' ${reviewStats!.countLabel}',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textMuted,
+                            ),
                           ),
-                        ),
                       ],
                     ),
                   ],

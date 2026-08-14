@@ -65,6 +65,13 @@ class ClientMyPageContent extends ConsumerWidget {
                 iconColor: AppColors.primary,
                 onTap: () => actions.onFollowedArtists(context),
               ),
+              MenuListItem(
+                label: '내가 작성한 리뷰',
+                icon: Icons.star_rounded,
+                iconBackgroundColor: const Color(0xFFFEF3C7),
+                iconColor: const Color(0xFFF59E0B),
+                onTap: () => actions.onMyReviews(context),
+              ),
             ],
           ),
           const SizedBox(height: 24),

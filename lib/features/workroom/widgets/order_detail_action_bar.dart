@@ -6,11 +6,13 @@ class OrderDetailActionBar extends StatelessWidget {
   const OrderDetailActionBar({
     super.key,
     required this.onGoToChat,
-    required this.onViewDraft,
+    required this.onPrimary,
+    this.primaryLabel = '👁️ 현재 시안 보기',
   });
 
   final VoidCallback onGoToChat;
-  final VoidCallback onViewDraft;
+  final VoidCallback onPrimary;
+  final String primaryLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +62,7 @@ class OrderDetailActionBar extends StatelessWidget {
             Expanded(
               flex: 65,
               child: FilledButton(
-                onPressed: onViewDraft,
+                onPressed: onPrimary,
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
@@ -69,8 +71,8 @@ class OrderDetailActionBar extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
-                  '👁️ 현재 시안 보기',
+                child: Text(
+                  primaryLabel,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

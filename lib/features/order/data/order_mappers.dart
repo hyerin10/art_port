@@ -241,6 +241,8 @@ abstract final class OrderMappers {
         totalLabel: CurrencyFormatter.formatWon(order.totalAmountWon),
       ),
       linkedChatRoomId: order.chatRoomId,
+      artistUserId: order.artistId,
+      isCompleted: order.status == 'completed',
     );
   }
 

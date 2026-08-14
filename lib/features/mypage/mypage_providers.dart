@@ -9,6 +9,8 @@ import 'package:art_port/features/mypage/payments_receipts_screen.dart';
 import 'package:art_port/features/mypage/settlement_account_screen.dart';
 import 'package:art_port/features/mypage/withdrawal_screen.dart';
 import 'package:art_port/features/mypage/models/mypage_data.dart';
+import 'package:art_port/features/review/my_reviews_screen.dart';
+import 'package:art_port/features/review/my_reviews_view.dart';
 import 'package:art_port/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -133,6 +135,10 @@ class ClientMyPageActions {
     FollowedArtistsScreen.open(context);
   }
 
+  void onMyReviews(BuildContext context) {
+    MyReviewsScreen.open(context, kind: ReviewListKind.mine);
+  }
+
   void onPaymentsAndReceipts(BuildContext context) {
     PaymentsReceiptsScreen.open(context);
   }
@@ -187,6 +193,10 @@ class ArtistMyPageActions {
 
   void onNoticeSettings(BuildContext context) {
     NoticeSettingsScreen.open(context);
+  }
+
+  void onReceivedReviews(BuildContext context) {
+    MyReviewsScreen.open(context, kind: ReviewListKind.received);
   }
 
   void onPaymentsAndReceipts(BuildContext context) {

@@ -52,6 +52,8 @@ class WorkroomOrderDetail {
     required this.payment,
     this.hiddenReferenceImageCount = 0,
     this.linkedChatRoomId,
+    this.artistUserId,
+    this.isCompleted = false,
   });
 
   final WorkroomOrderItem summary;
@@ -67,6 +69,8 @@ class WorkroomOrderDetail {
   final int hiddenReferenceImageCount;
   final WorkroomOrderPayment payment;
   final String? linkedChatRoomId;
+  final String? artistUserId;
+  final bool isCompleted;
 
   int get currentStepIndex => currentStep.index;
 }

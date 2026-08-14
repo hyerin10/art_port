@@ -3,11 +3,13 @@ import 'package:art_port/core/widgets/api_async_body.dart';
 import 'package:art_port/features/artist_profile/artist_profile_providers.dart';
 import 'package:art_port/features/artist_profile/widgets/artist_notice_tab.dart';
 import 'package:art_port/features/artist_profile/widgets/artist_portfolio_tab.dart';
+import 'package:art_port/features/artist_profile/widgets/artist_reviews_tab.dart';
 import 'package:art_port/features/artist_profile/widgets/artist_profile_info_section.dart';
 import 'package:art_port/features/artist_profile/widgets/artist_profile_sub_header.dart';
 import 'package:art_port/features/artist_profile/widgets/artist_profile_tab.dart';
 import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
 import 'package:art_port/features/common/widgets/art_port_bottom_nav.dart';
+import 'package:art_port/features/review/data/review_providers.dart';
 import 'package:art_port/providers/current_tab_provider.dart';
 import 'package:art_port/providers/followed_artists_provider.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +32,7 @@ class _ArtistProfileViewState extends ConsumerState<ArtistProfileView>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -92,6 +94,9 @@ class _ArtistProfileViewState extends ConsumerState<ArtistProfileView>
           final isFollowing = followedIds.contains(profile.userId);
           final isSelf =
               currentUserId != null && currentUserId == profile.userId;
+          final reviewStats = ref
+              .watch(artistReviewStatsProvider(profile.userId))
+              .valueOrNull;
 
           return Scaffold(
             backgroundColor: AppColors.background,
@@ -110,6 +115,7 @@ class _ArtistProfileViewState extends ConsumerState<ArtistProfileView>
                   profile: profile,
                   isFollowing: isFollowing,
                   notificationsEnabled: _notificationsEnabled,
+                  reviewStats: reviewStats,
                   onFollowTap: isSelf
                       ? null
                       : () => toggleFollowedArtist(
@@ -130,6 +136,7 @@ class _ArtistProfileViewState extends ConsumerState<ArtistProfileView>
                       ArtistNoticeTab(profile: profile),
                       ArtistProfileTabContent(profile: profile),
                       ArtistPortfolioTab(imageUrls: profile.portfolioImageUrls),
+                      ArtistReviewsTab(artistUserId: profile.userId),
                     ],
                   ),
                 ),
@@ -174,6 +181,7 @@ class _ProfileTabBar extends StatelessWidget {
           Tab(text: '공지사항'),
           Tab(text: '프로필'),
           Tab(text: '포트폴리오'),
+          Tab(text: '리뷰'),
         ],
       ),
     );
