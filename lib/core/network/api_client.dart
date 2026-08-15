@@ -5,45 +5,93 @@ import 'package:art_port/core/network/api_exception.dart';
 import 'package:art_port/core/network/api_response.dart';
 import 'package:http/http.dart' as http;
 
-/// HTTP 클라이언트 — 공통 헤더·응답 파싱·에러 처리.
+/// 액세스 토큰 조회 콜백.
+typedef AccessTokenProvider = Future<String?> Function();
+
+/// 토큰 갱신 콜백. 성공 시 `true`.
+typedef TokenRefresher = Future<bool> Function();
+
+/// HTTP 클라이언트 — 공통 헤더·JWT·응답 파싱·에러 처리.
 class ApiClient {
-  ApiClient({http.Client? httpClient, String? baseUrl})
-    : _httpClient = httpClient ?? http.Client(),
-      _baseUrl = baseUrl ?? ApiConfig.baseUrl;
+  ApiClient({
+    http.Client? httpClient,
+    String? baseUrl,
+    AccessTokenProvider? accessTokenProvider,
+    TokenRefresher? tokenRefresher,
+  }) : _httpClient = httpClient ?? http.Client(),
+       _baseUrl = baseUrl ?? ApiConfig.baseUrl,
+       _accessTokenProvider = accessTokenProvider,
+       _tokenRefresher = tokenRefresher;
 
   final http.Client _httpClient;
   final String _baseUrl;
+  final AccessTokenProvider? _accessTokenProvider;
+  final TokenRefresher? _tokenRefresher;
 
-  static const _headers = {
+  static const _jsonHeaders = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   };
 
+  /// 갱신 요청이 동시에 여러 번 나가지 않도록 공유 Future.
+  Future<bool>? _refreshInFlight;
+
   Future<Map<String, dynamic>> get(
     String path, {
     Map<String, String>? queryParameters,
+    bool authenticated = true,
   }) {
-    return _requestObject('GET', path, queryParameters: queryParameters);
+    return _requestObject(
+      'GET',
+      path,
+      queryParameters: queryParameters,
+      authenticated: authenticated,
+    );
   }
 
   /// `data`가 배열인 목록 API용.
   Future<List<Map<String, dynamic>>> getList(
     String path, {
     Map<String, String>? queryParameters,
+    bool authenticated = true,
   }) {
-    return _requestObjectList('GET', path, queryParameters: queryParameters);
+    return _requestObjectList(
+      'GET',
+      path,
+      queryParameters: queryParameters,
+      authenticated: authenticated,
+    );
   }
 
   Future<Map<String, dynamic>> post(
     String path, {
     Map<String, dynamic>? body,
     Map<String, String>? queryParameters,
+    bool authenticated = true,
   }) {
     return _requestObject(
       'POST',
       path,
       body: body,
       queryParameters: queryParameters,
+      authenticated: authenticated,
+    );
+  }
+
+  /// 본문 없는 성공(204 등)용 POST.
+  Future<void> postEmpty(
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? queryParameters,
+    bool authenticated = true,
+  }) async {
+    await _requestData(
+      'POST',
+      path,
+      body: body,
+      queryParameters: queryParameters,
+      allowEmptyData: true,
+      authenticated: authenticated,
     );
   }
 
@@ -51,12 +99,31 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? body,
     Map<String, String>? queryParameters,
+    bool authenticated = true,
   }) {
     return _requestObject(
       'PATCH',
       path,
       body: body,
       queryParameters: queryParameters,
+      authenticated: authenticated,
+    );
+  }
+
+  /// 본문 없는 성공(204 등)용 PATCH.
+  Future<void> patchEmpty(
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? queryParameters,
+    bool authenticated = true,
+  }) async {
+    await _requestData(
+      'PATCH',
+      path,
+      body: body,
+      queryParameters: queryParameters,
+      allowEmptyData: true,
+      authenticated: authenticated,
     );
   }
 
@@ -65,12 +132,14 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? body,
     Map<String, String>? queryParameters,
+    bool authenticated = true,
   }) {
     return _requestObjectList(
       'PATCH',
       path,
       body: body,
       queryParameters: queryParameters,
+      authenticated: authenticated,
     );
   }
 
@@ -78,6 +147,7 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? body,
     Map<String, String>? queryParameters,
+    bool authenticated = true,
   }) async {
     await _requestData(
       'DELETE',
@@ -85,6 +155,7 @@ class ApiClient {
       body: body,
       queryParameters: queryParameters,
       allowEmptyData: true,
+      authenticated: authenticated,
     );
   }
 
@@ -94,6 +165,7 @@ class ApiClient {
     Map<String, dynamic>? body,
     Map<String, String>? queryParameters,
     bool allowEmptyData = false,
+    bool authenticated = true,
   }) async {
     final data = await _requestData(
       method,
@@ -101,6 +173,7 @@ class ApiClient {
       body: body,
       queryParameters: queryParameters,
       allowEmptyData: allowEmptyData,
+      authenticated: authenticated,
     );
     if (data is Map<String, dynamic>) {
       return data;
@@ -116,6 +189,7 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? body,
     Map<String, String>? queryParameters,
+    bool authenticated = true,
   }) async {
     final data = await _requestData(
       method,
@@ -123,6 +197,7 @@ class ApiClient {
       body: body,
       queryParameters: queryParameters,
       allowEmptyData: true,
+      authenticated: authenticated,
     );
     if (data == null) {
       return const [];
@@ -147,6 +222,64 @@ class ApiClient {
     Map<String, dynamic>? body,
     Map<String, String>? queryParameters,
     bool allowEmptyData = false,
+    bool authenticated = true,
+    bool allowRefreshRetry = true,
+  }) async {
+    final response = await _send(
+      method,
+      path,
+      body: body,
+      queryParameters: queryParameters,
+      authenticated: authenticated,
+    );
+
+    final shouldRetry = authenticated &&
+        allowRefreshRetry &&
+        _tokenRefresher != null &&
+        _isUnauthorizedTokenError(response);
+
+    if (shouldRetry) {
+      final refreshed = await _refreshOnce();
+      if (refreshed) {
+        return _requestData(
+          method,
+          path,
+          body: body,
+          queryParameters: queryParameters,
+          allowEmptyData: allowEmptyData,
+          authenticated: authenticated,
+          allowRefreshRetry: false,
+        );
+      }
+    }
+
+    return _parseResponse(response, allowEmptyData: allowEmptyData);
+  }
+
+  Future<bool> _refreshOnce() {
+    final inFlight = _refreshInFlight;
+    if (inFlight != null) return inFlight;
+
+    final refresher = _tokenRefresher;
+    if (refresher == null) return Future.value(false);
+
+    final future = () async {
+      try {
+        return await refresher();
+      } finally {
+        _refreshInFlight = null;
+      }
+    }();
+    _refreshInFlight = future;
+    return future;
+  }
+
+  Future<http.Response> _send(
+    String method,
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? queryParameters,
+    bool authenticated = true,
   }) async {
     final uri = Uri.parse('$_baseUrl$path').replace(
       queryParameters: queryParameters?.isNotEmpty == true
@@ -154,27 +287,35 @@ class ApiClient {
           : null,
     );
 
-    late http.Response response;
+    final headers = Map<String, String>.from(_jsonHeaders);
+    final accessTokenProvider = _accessTokenProvider;
+    if (authenticated && accessTokenProvider != null) {
+      final token = await accessTokenProvider();
+      if (token != null && token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+    }
+
     try {
       switch (method) {
         case 'GET':
-          response = await _httpClient.get(uri, headers: _headers);
+          return await _httpClient.get(uri, headers: headers);
         case 'POST':
-          response = await _httpClient.post(
+          return await _httpClient.post(
             uri,
-            headers: _headers,
+            headers: headers,
             body: body != null ? jsonEncode(body) : null,
           );
         case 'PATCH':
-          response = await _httpClient.patch(
+          return await _httpClient.patch(
             uri,
-            headers: _headers,
+            headers: headers,
             body: body != null ? jsonEncode(body) : null,
           );
         case 'DELETE':
-          response = await _httpClient.delete(
+          return await _httpClient.delete(
             uri,
-            headers: _headers,
+            headers: headers,
             body: body != null ? jsonEncode(body) : null,
           );
         default:
@@ -185,7 +326,31 @@ class ApiClient {
     } catch (_) {
       throw ApiException.network();
     }
+  }
 
+  bool _isUnauthorizedTokenError(http.Response response) {
+    if (response.statusCode != 401) return false;
+    if (response.body.isEmpty) return true;
+
+    try {
+      final decoded = jsonDecode(response.body);
+      if (decoded is! Map<String, dynamic>) return true;
+      if (decoded['success'] != false) return true;
+      final error = decoded['error'];
+      if (error is! Map<String, dynamic>) return true;
+      final code = error['code'] as String?;
+      return code == 'EXPIRED_TOKEN' ||
+          code == 'INVALID_TOKEN' ||
+          code == 'UNAUTHORIZED';
+    } catch (_) {
+      return true;
+    }
+  }
+
+  Object? _parseResponse(
+    http.Response response, {
+    required bool allowEmptyData,
+  }) {
     if (response.statusCode == 204 || response.body.isEmpty) {
       if (allowEmptyData) return null;
       if (response.statusCode >= 200 && response.statusCode < 300) {

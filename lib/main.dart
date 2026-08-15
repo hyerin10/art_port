@@ -1,4 +1,5 @@
 import 'package:art_port/core/theme/app_theme.dart';
+import 'package:art_port/features/auth/presentation/auth_bootstrap_provider.dart';
 import 'package:art_port/features/common/presentation/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,11 +21,13 @@ void main() {
   );
 }
 
-class ArtPortApp extends StatelessWidget {
+class ArtPortApp extends ConsumerWidget {
   const ArtPortApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(authBootstrapProvider);
+
     return MaterialApp(
       title: 'ArtPort',
       theme: AppTheme.light,

@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 class EmailVerificationPendingScreen extends StatelessWidget {
   const EmailVerificationPendingScreen({super.key});
 
-  static void open(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
+  static Future<T?> open<T>(BuildContext context) {
+    return Navigator.of(context).push<T>(
+      MaterialPageRoute<T>(
         builder: (_) => const EmailVerificationPendingScreen(),
       ),
     );

@@ -5,12 +5,12 @@ import 'package:art_port/providers/auth_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 export 'package:art_port/providers/auth_provider.dart'
-    show authProvider, isLoggedInProvider;
+    show authProvider, isLoggedInProvider, isEmailVerifiedProvider;
 export 'package:art_port/providers/artist_status_provider.dart'
     show hasArtistProfileProvider, hasClientProfileProvider;
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
-  return UserRepository(ref.watch(apiClientProvider));
+  return ref.watch(authRepositoryProvider);
 });
 
 /// 로그인된 사용자 정보.

@@ -1,10 +1,12 @@
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/features/auth/auth_providers.dart';
+import 'package:art_port/features/auth/email_verification/email_verification_pending_screen.dart';
 import 'package:art_port/features/auth/widgets/auth_footer_link.dart';
 import 'package:art_port/features/auth/widgets/auth_primary_button.dart';
 import 'package:art_port/features/auth/widgets/auth_text_field.dart';
 import 'package:art_port/features/auth/widgets/password_visibility_toggle.dart';
 import 'package:art_port/features/auth/widgets/phone_verification_field.dart';
+import 'package:art_port/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -54,6 +56,14 @@ class _SignUpViewState extends ConsumerState<SignUpView> {
       );
     }
     if (!success) return;
+
+    final user = ref.read(authProvider);
+    if (user != null && !user.isEmailVerified) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      if (!mounted) return;
+      await EmailVerificationPendingScreen.open(context);
+      return;
+    }
 
     Navigator.of(context).popUntil((route) => route.isFirst);
   }

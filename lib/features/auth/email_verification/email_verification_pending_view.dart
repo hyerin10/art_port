@@ -1,10 +1,10 @@
-import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/features/auth/email_verification/email_verification_providers.dart';
 import 'package:art_port/features/auth/email_verification/verification_failure_screen.dart';
 import 'package:art_port/features/auth/email_verification/verification_success_screen.dart';
 import 'package:art_port/features/auth/widgets/auth_primary_button.dart';
 import 'package:art_port/features/auth/widgets/auth_text_field.dart';
-import 'package:art_port/features/mypage/mypage_providers.dart';
+import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -91,7 +91,7 @@ class _EmailVerificationPendingViewState
   @override
   Widget build(BuildContext context) {
     final flow = ref.watch(emailVerificationFlowProvider);
-    final email = ref.watch(clientProfileProvider).email;
+    final email = ref.watch(authProvider)?.email ?? '';
 
     return Scaffold(
       backgroundColor: AppColors.background,

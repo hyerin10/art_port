@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 
 /// API 서버 설정.
 abstract final class ApiConfig {
-  static const int defaultPort = 8080;
+  static const int defaultPort = 5000;
 
   /// Android 에뮬레이터는 `localhost` 대신 `10.0.2.2`를 사용합니다.
   /// 실기기 테스트 시 PC IP로 교체하세요.

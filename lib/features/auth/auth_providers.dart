@@ -111,12 +111,12 @@ class SignInFormNotifier extends AutoDisposeNotifier<SignInFormState> {
 
     state = state.copyWith(isSubmitting: true);
     try {
-      final user = await ref.read(userRepositoryProvider).login(
+      final session = await ref.read(userRepositoryProvider).login(
             state.email,
             state.password,
           );
-      ref.read(authProvider.notifier).signIn(user);
-      syncSessionSideEffectsFromRef(ref, user);
+      await ref.read(authProvider.notifier).applySession(session);
+      syncSessionSideEffectsFromRef(ref, session.user);
       await refreshArtistApprovalStatus(ref.read);
       state = state.copyWith(isSubmitting: false);
       return true;
@@ -421,17 +421,29 @@ class SignUpFormNotifier extends AutoDisposeNotifier<SignUpFormState> {
 
     state = state.copyWith(isSubmitting: true);
     try {
-      final user = await ref.read(userRepositoryProvider).createUser(
-            CreateUserRequest(
-              email: state.email,
-              password: state.password,
-              name: state.name.trim(),
-              phone: state.phone,
-            ),
-          );
-      ref.read(authProvider.notifier).signIn(user);
-      syncSessionSideEffectsFromRef(ref, user);
+      final repository = ref.read(userRepositoryProvider);
+      await repository.createUser(
+        CreateUserRequest(
+          email: state.email,
+          password: state.password,
+          name: state.name.trim(),
+          phone: state.phone,
+        ),
+      );
+
+      final session = await repository.login(state.email, state.password);
+      await ref.read(authProvider.notifier).applySession(session);
+      syncSessionSideEffectsFromRef(ref, session.user);
       await refreshArtistApprovalStatus(ref.read);
+
+      if (!session.user.isEmailVerified) {
+        try {
+          await repository.sendVerificationEmail(state.email);
+        } catch (_) {
+          // 인증 메일 발송 실패해도 가입·로그인은 유지합니다.
+        }
+      }
+
       state = state.copyWith(isSubmitting: false);
       return true;
     } on ApiException catch (e) {

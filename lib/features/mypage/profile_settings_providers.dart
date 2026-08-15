@@ -1,4 +1,5 @@
 import 'package:art_port/core/network/api_exception.dart';
+import 'package:art_port/features/auth/data/dto/auth_response_dto.dart';
 import 'package:art_port/features/auth/data/dto/user_dto.dart';
 import 'package:art_port/features/auth/presentation/auth_session_effects.dart';
 import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
@@ -151,26 +152,37 @@ class ProfileSettingsNotifier extends AutoDisposeNotifier<ProfileSettingsFormSta
     state = state.copyWith(isSaving: true, clearSaveError: true);
 
     try {
-      if (state.hasPasswordInput) {
-        state = state.copyWith(
-          isSaving: false,
-          saveError: '비밀번호 변경은 아직 지원되지 않습니다. 닉네임만 저장할 수 있습니다.',
+      final repository = ref.read(userRepositoryProvider);
+      final trimmedNickname = state.nickname.trim();
+      var updatedUser = user;
+
+      if (trimmedNickname != user.name) {
+        updatedUser = await repository.updateMe(
+          UpdateUserRequest(name: trimmedNickname),
         );
-        return ProfileSettingsSaveResult.failed;
       }
 
-      final trimmedNickname = state.nickname.trim();
-      final updated = await ref.read(userRepositoryProvider).updateUser(
-            user.id,
-            UpdateUserRequest(name: trimmedNickname),
-          );
-      ref.read(authProvider.notifier).update(updated);
-      syncSessionSideEffectsFromRef(ref, updated);
+      if (state.hasPasswordInput) {
+        await repository.changePassword(
+          ChangePasswordRequest(
+            currentPassword: state.currentPassword,
+            newPassword: state.newPassword,
+          ),
+        );
+        // 비밀번호 변경 시 리프레시 토큰이 전부 폐기되므로 새 비밀번호로 재로그인합니다.
+        final session = await repository.login(user.email, state.newPassword);
+        await ref.read(authProvider.notifier).applySession(session);
+        updatedUser = session.user;
+      } else {
+        ref.read(authProvider.notifier).update(updatedUser);
+      }
+
+      syncSessionSideEffectsFromRef(ref, updatedUser);
 
       state = state.copyWith(
-        nickname: trimmedNickname,
-        email: updated.email,
-        maskedPhone: _maskPhone(updated.phone),
+        nickname: updatedUser.name,
+        email: updatedUser.email,
+        maskedPhone: _maskPhone(updatedUser.phone),
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
@@ -179,6 +191,13 @@ class ProfileSettingsNotifier extends AutoDisposeNotifier<ProfileSettingsFormSta
 
       return ProfileSettingsSaveResult.success;
     } on ApiException catch (e) {
+      if (e.code == 'INVALID_CREDENTIALS' && state.hasPasswordInput) {
+        state = state.copyWith(
+          isSaving: false,
+          currentPasswordError: '현재 비밀번호가 올바르지 않습니다.',
+        );
+        return ProfileSettingsSaveResult.validationFailed;
+      }
       state = state.copyWith(
         isSaving: false,
         saveError: e.displayMessage,
@@ -203,8 +222,8 @@ class ProfileSettingsNotifier extends AutoDisposeNotifier<ProfileSettingsFormSta
     state = state.copyWith(isSaving: true, clearSaveError: true);
 
     try {
-      await ref.read(userRepositoryProvider).deactivateUser(user.id);
-      ref.read(authProvider.notifier).signOut();
+      await ref.read(userRepositoryProvider).deactivateMe();
+      await ref.read(authProvider.notifier).signOut();
       ref.read(showMyPageProvider.notifier).close();
       state = state.copyWith(isSaving: false);
       return true;

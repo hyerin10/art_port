@@ -26,14 +26,16 @@ class LikedCommissionIdsNotifier extends Notifier<Set<String>> {
   Set<String> build() {
     final userId = ref.watch(currentUserIdProvider);
     if (userId == null) return {};
-    _refresh(userId);
+    _refresh();
     return {};
   }
 
-  Future<void> _refresh(String userId) async {
+  Future<void> _refresh() async {
     final loadId = ++_loadId;
+    final userId = ref.read(currentUserIdProvider);
+    if (userId == null) return;
     try {
-      final items = await ref.read(wishlistRepositoryProvider).getAll(userId);
+      final items = await ref.read(wishlistRepositoryProvider).getMine();
       if (loadId != _loadId) return;
       if (ref.read(currentUserIdProvider) != userId) return;
       state = {for (final item in items) item.commissionTypeId};
@@ -63,7 +65,7 @@ class LikedCommissionIdsNotifier extends Notifier<Set<String>> {
     try {
       final result = await ref
           .read(wishlistRepositoryProvider)
-          .toggle(userId: userId, commissionTypeId: commissionTypeId);
+          .toggle(commissionTypeId: commissionTypeId);
       final next = Set<String>.from(state);
       if (result.wishlisted) {
         next.add(commissionTypeId);

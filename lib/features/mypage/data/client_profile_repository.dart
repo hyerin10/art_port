@@ -6,17 +6,14 @@ class ClientProfileRepository {
 
   final ApiClient _client;
 
-  Future<ClientProfileDto> get(String userId) async {
-    final json = await _client.get('/users/$userId/client-profile');
+  Future<ClientProfileDto> getMe() async {
+    final json = await _client.get('/users/me/client-profile');
     return ClientProfileDto.fromJson(json);
   }
 
-  Future<ClientProfileDto> upsert({
-    required String userId,
-    required String avatarUrl,
-  }) async {
+  Future<ClientProfileDto> upsert({required String avatarUrl}) async {
     final json = await _client.patch(
-      '/users/$userId/client-profile',
+      '/users/me/client-profile',
       body: {'avatarUrl': avatarUrl},
     );
     return ClientProfileDto.fromJson(json);

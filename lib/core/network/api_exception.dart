@@ -54,6 +54,17 @@ class ApiException implements Exception {
         return '이메일 또는 비밀번호가 올바르지 않습니다.';
       case 'USER_INACTIVE':
         return '비활성화된 계정입니다. 고객센터에 문의해주세요.';
+      case 'EXPIRED_TOKEN':
+      case 'INVALID_TOKEN':
+        return '로그인이 만료되었습니다. 다시 로그인해 주세요.';
+      case 'INVALID_REFRESH_TOKEN':
+        return '세션이 만료되었습니다. 다시 로그인해 주세요.';
+      case 'EMAIL_ALREADY_VERIFIED':
+        return '이미 이메일 인증이 완료된 계정입니다.';
+      case 'INVALID_OR_EXPIRED_VERIFICATION_TOKEN':
+        return '인증번호가 올바르지 않거나 만료되었습니다.';
+      case 'UNAUTHORIZED':
+        return '로그인이 필요합니다.';
       case 'FOLLOW_NOT_FOUND':
         return '팔로우 정보를 찾을 수 없습니다.';
       case 'CHAT_ROOM_NOT_FOUND':

@@ -30,4 +30,34 @@ class User {
   bool get hasClientProfile => clientProfileId != null;
 
   bool get hasArtistProfile => artistProfileId != null;
+
+  User copyWith({
+    String? id,
+    String? email,
+    String? name,
+    String? phone,
+    bool? isAdmin,
+    String? clientProfileId,
+    String? artistProfileId,
+    bool? isEmailVerified,
+    bool? isActive,
+    DateTime? lastLoginAt,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return User(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      name: name ?? this.name,
+      phone: phone ?? this.phone,
+      isAdmin: isAdmin ?? this.isAdmin,
+      clientProfileId: clientProfileId ?? this.clientProfileId,
+      artistProfileId: artistProfileId ?? this.artistProfileId,
+      isEmailVerified: isEmailVerified ?? this.isEmailVerified,
+      isActive: isActive ?? this.isActive,
+      lastLoginAt: lastLoginAt ?? this.lastLoginAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }

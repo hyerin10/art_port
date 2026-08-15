@@ -6,18 +6,16 @@ class WishlistRepository {
 
   final ApiClient _client;
 
-  Future<List<WishlistDto>> getAll(String userId) async {
-    final json = await _client.getList('/users/$userId/wishlists');
+  Future<List<WishlistDto>> getMine() async {
+    final json = await _client.getList('/users/me/wishlists');
     return json.map(WishlistDto.fromJson).toList();
   }
 
   Future<ToggleWishlistResult> toggle({
-    required String userId,
     required String commissionTypeId,
   }) async {
     final json = await _client.post(
       '/wishlists/toggle',
-      queryParameters: {'userId': userId},
       body: {'commissionTypeId': commissionTypeId},
     );
     return ToggleWishlistResult.fromJson(json);

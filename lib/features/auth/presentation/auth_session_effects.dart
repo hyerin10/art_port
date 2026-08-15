@@ -26,7 +26,7 @@ Future<void> refreshCurrentUser(WidgetRef ref) async {
   if (current == null) return;
 
   try {
-    final user = await ref.read(userRepositoryProvider).getUser(current.id);
+    final user = await ref.read(userRepositoryProvider).getMe();
     ref.read(authProvider.notifier).update(user);
     syncSessionSideEffects(ref, user);
     await refreshArtistApprovalStatus(ref.read);
@@ -40,7 +40,7 @@ Future<void> refreshCurrentUserFromRef(Ref ref) async {
   if (current == null) return;
 
   try {
-    final user = await ref.read(userRepositoryProvider).getUser(current.id);
+    final user = await ref.read(userRepositoryProvider).getMe();
     ref.read(authProvider.notifier).update(user);
     syncSessionSideEffectsFromRef(ref, user);
     await refreshArtistApprovalStatus(ref.read);

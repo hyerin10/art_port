@@ -205,7 +205,7 @@ class ClientMyPageActions {
     );
 
     if (confirmed == true) {
-      ref.read(authProvider.notifier).signOut();
+      await ref.read(authProvider.notifier).signOut();
       ref.read(showMyPageProvider.notifier).close();
     }
   }

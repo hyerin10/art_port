@@ -22,7 +22,7 @@ final myClientProfileProvider = FutureProvider<ClientProfileDto?>((ref) async {
   final userId = ref.watch(currentUserIdProvider);
   if (userId == null) return null;
   try {
-    return await ref.watch(clientProfileRepositoryProvider).get(userId);
+    return await ref.watch(clientProfileRepositoryProvider).getMe();
   } on ApiException catch (e) {
     if (e.status == 404 || e.code == 'CLIENT_PROFILE_NOT_FOUND') {
       return null;
