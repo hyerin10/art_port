@@ -16,7 +16,7 @@ final mySupportInquiriesProvider = FutureProvider<List<SupportInquiryItem>>((
   final userId = ref.watch(currentUserIdProvider);
   if (userId == null) return const [];
 
-  final inquiries = await ref.watch(supportRepositoryProvider).getMy(userId);
+  final inquiries = await ref.watch(supportRepositoryProvider).getMy();
   final items = [
     for (final inquiry in inquiries) _toItem(inquiry),
   ]..sort((a, b) => b.lastMessageAt.compareTo(a.lastMessageAt));
@@ -29,10 +29,7 @@ final supportInquiryDetailProvider =
   if (userId == null || inquiryId.isEmpty) return null;
 
   try {
-    return await ref.watch(supportRepositoryProvider).getById(
-          inquiryId: inquiryId,
-          userId: userId,
-        );
+    return await ref.watch(supportRepositoryProvider).getById(inquiryId);
   } on ApiException catch (e) {
     if (e.status == 404 || e.code == 'SUPPORT_INQUIRY_NOT_FOUND') {
       return null;

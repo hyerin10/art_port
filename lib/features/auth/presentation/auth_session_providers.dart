@@ -16,7 +16,7 @@ final userRepositoryProvider = Provider<UserRepository>((ref) {
 /// 로그인된 사용자 정보.
 final currentUserProvider = Provider<User?>((ref) => ref.watch(authProvider));
 
-/// API `?userId=` 파라미터용.
+/// 로그인된 사용자 ID.
 final currentUserIdProvider = Provider<String?>((ref) {
   return ref.watch(authProvider)?.id;
 });

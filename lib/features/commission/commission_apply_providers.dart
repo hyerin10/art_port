@@ -40,7 +40,6 @@ class CommissionApplySubmissionsNotifier
     }
 
     final room = await ref.read(chatRoomRepositoryProvider).findOrCreate(
-          userId: userId,
           clientId: userId,
           artistId: detail.artistUserId,
         );
@@ -52,7 +51,6 @@ class CommissionApplySubmissionsNotifier
     ];
 
     await ref.read(orderRepositoryProvider).submit(
-          clientId: userId,
           commissionTypeId: submission.commissionId,
           requestContent: submission.requestContent,
           referenceImageUrls: remoteImageUrls,

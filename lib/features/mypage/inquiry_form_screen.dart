@@ -76,7 +76,6 @@ class _InquiryFormViewState extends ConsumerState<_InquiryFormView> {
     try {
       final title = _titleController.text.trim();
       final created = await ref.read(supportRepositoryProvider).create(
-            userId: userId,
             category: _category,
             title: title.isEmpty ? null : title,
             content: content,

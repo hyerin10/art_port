@@ -69,7 +69,6 @@ class CommissionTypeRepository {
 
   Future<CommissionTypeDto> update({
     required String typeId,
-    required String userId,
     String? name,
     String? description,
     String? thumbnailUrl,
@@ -89,7 +88,6 @@ class CommissionTypeRepository {
   }) async {
     final json = await _client.patch(
       '/commission-types/$typeId',
-      queryParameters: {'userId': userId},
       body: {
         'name': ?name,
         'description': ?description,
@@ -112,13 +110,7 @@ class CommissionTypeRepository {
     return CommissionTypeDto.fromJson(json);
   }
 
-  Future<void> delete({
-    required String typeId,
-    required String userId,
-  }) async {
-    await _client.delete(
-      '/commission-types/$typeId',
-      queryParameters: {'userId': userId},
-    );
+  Future<void> delete(String typeId) async {
+    await _client.delete('/commission-types/$typeId');
   }
 }

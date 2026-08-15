@@ -38,10 +38,7 @@ abstract final class ChatRoomActions {
     if (userId == null) return false;
 
     try {
-      await ref.read(chatRoomRepositoryProvider).delete(
-            roomId: roomId,
-            userId: userId,
-          );
+      await ref.read(chatRoomRepositoryProvider).delete(roomId);
       ref.invalidate(workroomChatsProvider);
       ref.invalidate(chatRoomDetailProvider(roomId));
       ref.invalidate(chatMessagesProvider(roomId));

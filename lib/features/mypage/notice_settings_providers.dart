@@ -157,8 +157,8 @@ class NoticeSettingsNotifier extends Notifier<NoticeSettingsState> {
         isRestMode: state.slotStatus == WorkSlotStatus.resting,
       );
 
-      await _syncPinned(profileId: profileId, userId: userId);
-      await _syncGeneral(profileId: profileId, userId: userId);
+      await _syncPinned(profileId: profileId);
+      await _syncGeneral(profileId: profileId);
 
       invalidateArtistWorkspaceQueries(ref, artistProfileId: profileId);
       state = state.copyWith(
@@ -178,10 +178,7 @@ class NoticeSettingsNotifier extends Notifier<NoticeSettingsState> {
     }
   }
 
-  Future<void> _syncPinned({
-    required String profileId,
-    required String userId,
-  }) async {
+  Future<void> _syncPinned({required String profileId}) async {
     final repo = ref.read(artistProfileRepositoryProvider);
     final pinned = state.pinnedNotice;
     final hasContent =
@@ -190,7 +187,7 @@ class NoticeSettingsNotifier extends Notifier<NoticeSettingsState> {
     if (!hasContent) {
       final id = pinned.id;
       if (id != null && ResourceIds.isUuid(id)) {
-        await repo.deleteNotice(noticeId: id, userId: userId);
+        await repo.deleteNotice(id);
         state = state.copyWith(pinnedNotice: _emptyPinned);
       }
       return;
@@ -199,7 +196,6 @@ class NoticeSettingsNotifier extends Notifier<NoticeSettingsState> {
     if (pinned.id != null && ResourceIds.isUuid(pinned.id!)) {
       await repo.updateNotice(
         noticeId: pinned.id!,
-        userId: userId,
         type: 'pinned',
         title: pinned.title.trim(),
         bulletPoints: pinned.bulletPoints,
@@ -220,10 +216,7 @@ class NoticeSettingsNotifier extends Notifier<NoticeSettingsState> {
     );
   }
 
-  Future<void> _syncGeneral({
-    required String profileId,
-    required String userId,
-  }) async {
+  Future<void> _syncGeneral({required String profileId}) async {
     final repo = ref.read(artistProfileRepositoryProvider);
     final currentIds = [
       for (final notice in state.generalNotices)
@@ -233,7 +226,7 @@ class NoticeSettingsNotifier extends Notifier<NoticeSettingsState> {
     for (final id in _loadedNoticeIds) {
       final stillPinned = state.pinnedNotice.id == id;
       if (!currentIds.contains(id) && !stillPinned) {
-        await repo.deleteNotice(noticeId: id, userId: userId);
+        await repo.deleteNotice(id);
       }
     }
 
@@ -242,7 +235,6 @@ class NoticeSettingsNotifier extends Notifier<NoticeSettingsState> {
       if (ResourceIds.isUuid(notice.id)) {
         await repo.updateNotice(
           noticeId: notice.id,
-          userId: userId,
           type: 'general',
           title: notice.title.trim(),
           content: notice.content.trim(),

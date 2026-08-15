@@ -40,7 +40,7 @@ final reviewRepositoryProvider = Provider<ReviewRepository>((ref) {
 final myReviewsProvider = FutureProvider<List<ReviewDto>>((ref) async {
   final userId = ref.watch(currentUserIdProvider);
   if (userId == null) return const [];
-  return ref.watch(reviewRepositoryProvider).getMy(userId);
+  return ref.watch(reviewRepositoryProvider).getMy();
 });
 
 final artistReviewsProvider =

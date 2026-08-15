@@ -91,7 +91,6 @@ class _OrderDetailViewState extends ConsumerState<OrderDetailView> {
     try {
       await ref.read(orderRepositoryProvider).updateStep(
             orderId: widget.orderId,
-            userId: userId,
             newStep: nextStep.apiValue,
           );
       refreshOrderQueries(invalidate: ref.invalidate, orderId: widget.orderId);
@@ -130,7 +129,6 @@ class _OrderDetailViewState extends ConsumerState<OrderDetailView> {
     try {
       await ref.read(orderRepositoryProvider).cancel(
             orderId: widget.orderId,
-            userId: userId,
             reason: reason,
           );
       refreshOrderQueries(invalidate: ref.invalidate, orderId: widget.orderId);

@@ -30,7 +30,6 @@ final adminArtistApplicationsProvider =
   if (user == null || !user.isAdmin) return const [];
 
   return ref.watch(artistApplicationRepositoryProvider).getAllForAdmin(
-        adminUserId: user.id,
         status: ref.watch(adminApplicationStatusFilterProvider),
       );
 });
@@ -41,7 +40,6 @@ final adminSupportInquiriesProvider =
   if (user == null || !user.isAdmin) return const [];
 
   final inquiries = await ref.watch(supportRepositoryProvider).getAllForAdmin(
-        adminUserId: user.id,
         status: ref.watch(adminInquiryStatusFilterProvider),
       );
   return [
@@ -71,7 +69,6 @@ Future<ArtistApplicationDto> reviewArtistApplication(
 
   final updated = await ref.read(artistApplicationRepositoryProvider).review(
         applicationId: applicationId,
-        reviewedBy: adminId,
         status: status,
         rejectionReason: rejectionReason,
       );
@@ -92,7 +89,6 @@ Future<SupportInquiryDto> updateAdminInquiryStatus(
 
   final updated = await ref.read(supportRepositoryProvider).updateStatus(
         inquiryId: inquiryId,
-        adminUserId: adminId,
         status: status,
       );
   ref.invalidate(adminSupportInquiriesProvider);

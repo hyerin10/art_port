@@ -118,14 +118,12 @@ class _ReviewFormViewState extends ConsumerState<_ReviewFormView> {
       if (_isEdit) {
         await ref.read(reviewRepositoryProvider).update(
               reviewId: widget.reviewId!,
-              clientId: userId,
               rating: _rating,
               content: content,
             );
       } else {
         await ref.read(reviewRepositoryProvider).create(
               orderId: widget.orderId,
-              clientId: userId,
               rating: _rating,
               content: content.isEmpty ? null : content,
             );

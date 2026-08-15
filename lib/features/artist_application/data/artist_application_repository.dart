@@ -6,16 +6,12 @@ class ArtistApplicationRepository {
 
   final ApiClient _client;
 
-  Future<ArtistApplicationDto> getMyApplication(String userId) async {
-    final json = await _client.get(
-      '/artist-applications/my',
-      queryParameters: {'userId': userId},
-    );
+  Future<ArtistApplicationDto> getMyApplication() async {
+    final json = await _client.get('/artist-applications/my');
     return ArtistApplicationDto.fromJson(json);
   }
 
   Future<ArtistApplicationDto> apply({
-    required String userId,
     required String artistName,
     required String bankName,
     required String accountNumber,
@@ -34,7 +30,6 @@ class ArtistApplicationRepository {
     final json = await _client.post(
       '/artist-applications',
       body: {
-        'userId': userId,
         'artistName': artistName,
         'bankName': bankName,
         'accountNumber': accountNumber,
@@ -54,14 +49,10 @@ class ArtistApplicationRepository {
     return ArtistApplicationDto.fromJson(json);
   }
 
-  Future<List<ArtistApplicationDto>> getAllForAdmin({
-    required String adminUserId,
-    String? status,
-  }) async {
+  Future<List<ArtistApplicationDto>> getAllForAdmin({String? status}) async {
     final json = await _client.getList(
       '/artist-applications',
       queryParameters: {
-        'adminUserId': adminUserId,
         if (status != null && status.isNotEmpty) 'status': status,
       },
     );
@@ -70,13 +61,11 @@ class ArtistApplicationRepository {
 
   Future<ArtistApplicationDto> review({
     required String applicationId,
-    required String reviewedBy,
     required String status,
     String? rejectionReason,
   }) async {
     final json = await _client.patch(
       '/artist-applications/$applicationId/review',
-      queryParameters: {'reviewedBy': reviewedBy},
       body: {
         'status': status,
         'rejectionReason': ?rejectionReason,

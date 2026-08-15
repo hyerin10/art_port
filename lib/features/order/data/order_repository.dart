@@ -6,35 +6,22 @@ class OrderRepository {
 
   final ApiClient _client;
 
-  Future<OrderDto> getById({
-    required String orderId,
-    required String userId,
-  }) async {
-    final json = await _client.get(
-      '/orders/$orderId',
-      queryParameters: {'userId': userId},
-    );
+  Future<OrderDto> getById(String orderId) async {
+    final json = await _client.get('/orders/$orderId');
     return OrderDto.fromJson(json);
   }
 
-  Future<List<OrderDto>> getMyClient(String userId) async {
-    final json = await _client.getList(
-      '/orders/my/client',
-      queryParameters: {'userId': userId},
-    );
+  Future<List<OrderDto>> getMyClient() async {
+    final json = await _client.getList('/orders/my/client');
     return json.map(OrderDto.fromJson).toList();
   }
 
-  Future<List<OrderDto>> getMyArtist(String userId) async {
-    final json = await _client.getList(
-      '/orders/my/artist',
-      queryParameters: {'userId': userId},
-    );
+  Future<List<OrderDto>> getMyArtist() async {
+    final json = await _client.getList('/orders/my/artist');
     return json.map(OrderDto.fromJson).toList();
   }
 
   Future<OrderDto> submit({
-    required String clientId,
     required String commissionTypeId,
     required String requestContent,
     List<String>? referenceImageUrls,
@@ -44,7 +31,6 @@ class OrderRepository {
   }) async {
     final json = await _client.post(
       '/orders',
-      queryParameters: {'clientId': clientId},
       body: {
         'commissionTypeId': commissionTypeId,
         'requestContent': requestContent,
@@ -57,25 +43,17 @@ class OrderRepository {
     return OrderDto.fromJson(json);
   }
 
-  Future<OrderDto> accept({
-    required String orderId,
-    required String artistId,
-  }) async {
-    final json = await _client.patch(
-      '/orders/$orderId/accept',
-      queryParameters: {'artistId': artistId},
-    );
+  Future<OrderDto> accept(String orderId) async {
+    final json = await _client.patch('/orders/$orderId/accept');
     return OrderDto.fromJson(json);
   }
 
   Future<OrderDto> reject({
     required String orderId,
-    required String artistId,
     required String reason,
   }) async {
     final json = await _client.patch(
       '/orders/$orderId/reject',
-      queryParameters: {'artistId': artistId},
       body: {'reason': reason},
     );
     return OrderDto.fromJson(json);
@@ -83,12 +61,10 @@ class OrderRepository {
 
   Future<OrderDto> updateStep({
     required String orderId,
-    required String userId,
     required String newStep,
   }) async {
     final json = await _client.patch(
       '/orders/$orderId/step',
-      queryParameters: {'userId': userId},
       body: {'newStep': newStep},
     );
     return OrderDto.fromJson(json);
@@ -96,13 +72,11 @@ class OrderRepository {
 
   Future<void> cancel({
     required String orderId,
-    required String userId,
     String? reason,
   }) async {
     final trimmed = reason?.trim();
     await _client.delete(
       '/orders/$orderId',
-      queryParameters: {'userId': userId},
       body: (trimmed == null || trimmed.isEmpty)
           ? null
           : {'reason': trimmed},

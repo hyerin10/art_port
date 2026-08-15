@@ -76,12 +76,9 @@ class FollowedArtistIdsNotifier extends Notifier<Set<String>> {
     try {
       final repo = ref.read(followRepositoryProvider);
       if (isFollowing) {
-        await repo.unfollow(
-          followerId: followerId,
-          followingId: followingUserId,
-        );
+        await repo.unfollow(followingUserId);
       } else {
-        await repo.follow(followerId: followerId, followingId: followingUserId);
+        await repo.follow(followingUserId);
       }
       ref.invalidate(followersProvider(followingUserId));
       ref.invalidate(followersProvider(followerId));

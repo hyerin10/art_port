@@ -28,7 +28,7 @@ final workroomChatsProvider = FutureProvider<List<WorkroomChatItem>>((ref) async
   if (userId == null) return const [];
 
   final isArtistMode = ref.watch(appModeProvider);
-  final rooms = await ref.watch(chatRoomRepositoryProvider).getAll(userId);
+  final rooms = await ref.watch(chatRoomRepositoryProvider).getAll();
   final filtered = [
     for (final room in rooms)
       if (isArtistMode ? room.artistId == userId : room.clientId == userId) room,

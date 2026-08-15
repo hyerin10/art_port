@@ -11,23 +11,19 @@ class ReviewRepository {
     return json.map(ReviewDto.fromJson).toList();
   }
 
-  Future<List<ReviewDto>> getMy(String clientId) async {
-    final json = await _client.getList(
-      '/reviews/my',
-      queryParameters: {'clientId': clientId},
-    );
+  Future<List<ReviewDto>> getMy() async {
+    final json = await _client.getList('/reviews/my');
     return json.map(ReviewDto.fromJson).toList();
   }
 
   Future<ReviewDto> create({
     required String orderId,
-    required String clientId,
     required double rating,
     String? content,
   }) async {
     final json = await _client.post(
       '/reviews',
-      queryParameters: {'orderId': orderId, 'clientId': clientId},
+      queryParameters: {'orderId': orderId},
       body: {
         'rating': rating,
         'content': ?content,
@@ -38,13 +34,11 @@ class ReviewRepository {
 
   Future<ReviewDto> update({
     required String reviewId,
-    required String clientId,
     double? rating,
     String? content,
   }) async {
     final json = await _client.patch(
       '/reviews/$reviewId',
-      queryParameters: {'clientId': clientId},
       body: {
         'rating': ?rating,
         'content': ?content,
@@ -53,13 +47,7 @@ class ReviewRepository {
     return ReviewDto.fromJson(json);
   }
 
-  Future<void> delete({
-    required String reviewId,
-    required String clientId,
-  }) async {
-    await _client.delete(
-      '/reviews/$reviewId',
-      queryParameters: {'clientId': clientId},
-    );
+  Future<void> delete(String reviewId) async {
+    await _client.delete('/reviews/$reviewId');
   }
 }

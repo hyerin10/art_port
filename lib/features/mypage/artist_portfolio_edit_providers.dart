@@ -249,8 +249,8 @@ class ArtistPortfolioEditNotifier extends AutoDisposeNotifier<ArtistPortfolioEdi
             : null,
       );
 
-      await _syncSocialLinks(profileId: profileId, userId: userId);
-      await _syncPortfolioImages(profileId: profileId, userId: userId);
+      await _syncSocialLinks(profileId: profileId);
+      await _syncPortfolioImages(profileId: profileId);
 
       ref.read(artistProfileProvider.notifier).updateName(updated.displayName);
       if (updated.avatarUrl != null && updated.avatarUrl!.isNotEmpty) {
@@ -272,13 +272,9 @@ class ArtistPortfolioEditNotifier extends AutoDisposeNotifier<ArtistPortfolioEdi
     }
   }
 
-  Future<void> _syncSocialLinks({
-    required String profileId,
-    required String userId,
-  }) async {
+  Future<void> _syncSocialLinks({required String profileId}) async {
     await _upsertSocialLink(
       profileId: profileId,
-      userId: userId,
       type: 'twitter',
       currentId: _twitterLinkId,
       url: _twitterUrl(state.twitterHandle),
@@ -289,7 +285,6 @@ class ArtistPortfolioEditNotifier extends AutoDisposeNotifier<ArtistPortfolioEdi
     );
     await _upsertSocialLink(
       profileId: profileId,
-      userId: userId,
       type: 'instagram',
       currentId: _instagramLinkId,
       url: _instagramUrl(state.instagramHandle),
@@ -300,7 +295,6 @@ class ArtistPortfolioEditNotifier extends AutoDisposeNotifier<ArtistPortfolioEdi
     );
     await _upsertSocialLink(
       profileId: profileId,
-      userId: userId,
       type: 'website',
       currentId: _websiteLinkId,
       url: _websiteUrl(state.websiteUrl),
@@ -311,7 +305,6 @@ class ArtistPortfolioEditNotifier extends AutoDisposeNotifier<ArtistPortfolioEdi
 
   Future<void> _upsertSocialLink({
     required String profileId,
-    required String userId,
     required String type,
     required String? currentId,
     required String? url,
@@ -321,7 +314,7 @@ class ArtistPortfolioEditNotifier extends AutoDisposeNotifier<ArtistPortfolioEdi
     final repo = ref.read(artistProfileRepositoryProvider);
     if (url == null) {
       if (currentId != null) {
-        await repo.deleteSocialLink(linkId: currentId, userId: userId);
+        await repo.deleteSocialLink(currentId);
         onId(null);
       }
       return;
@@ -330,7 +323,6 @@ class ArtistPortfolioEditNotifier extends AutoDisposeNotifier<ArtistPortfolioEdi
     if (currentId != null) {
       await repo.updateSocialLink(
         linkId: currentId,
-        userId: userId,
         label: label,
         url: url,
       );
@@ -346,10 +338,7 @@ class ArtistPortfolioEditNotifier extends AutoDisposeNotifier<ArtistPortfolioEdi
     onId(created.id);
   }
 
-  Future<void> _syncPortfolioImages({
-    required String profileId,
-    required String userId,
-  }) async {
+  Future<void> _syncPortfolioImages({required String profileId}) async {
     final repo = ref.read(artistProfileRepositoryProvider);
     final currentIds = [
       for (final item in state.portfolioImages)
@@ -357,13 +346,12 @@ class ArtistPortfolioEditNotifier extends AutoDisposeNotifier<ArtistPortfolioEdi
     ];
     for (final id in _loadedPortfolioIds) {
       if (!currentIds.contains(id)) {
-        await repo.deletePortfolioImage(imageId: id, userId: userId);
+        await repo.deletePortfolioImage(id);
       }
     }
     if (currentIds.length >= 2) {
       await repo.reorderPortfolioImages(
         profileId: profileId,
-        userId: userId,
         orderedIds: currentIds,
       );
     }

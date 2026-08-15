@@ -105,7 +105,7 @@ class CommissionTypeSettingsNotifier
     try {
       final repo = ref.read(commissionTypeRepositoryProvider);
       for (final id in [..._pendingDeleteIds]) {
-        await repo.delete(typeId: id, userId: userId);
+        await repo.delete(id);
       }
       _pendingDeleteIds.clear();
 
@@ -123,7 +123,6 @@ class CommissionTypeSettingsNotifier
         if (ResourceIds.isUuid(type.id)) {
           await repo.update(
             typeId: type.id,
-            userId: userId,
             name: type.name,
             description: type.description,
             thumbnailUrl: thumbnail,

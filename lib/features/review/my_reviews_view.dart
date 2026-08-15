@@ -119,10 +119,7 @@ class MyReviewsView extends ConsumerWidget {
     if (userId == null) return;
 
     try {
-      await ref.read(reviewRepositoryProvider).delete(
-            reviewId: item.review.id,
-            clientId: userId,
-          );
+      await ref.read(reviewRepositoryProvider).delete(item.review.id);
       invalidateReviewQueries(ref, artistUserId: item.review.artistId);
       if (!context.mounted) return;
       AppToast.show(ScaffoldMessenger.of(context), message: '리뷰가 삭제되었습니다.');

@@ -79,25 +79,17 @@ class ArtistProfileRepository {
 
   Future<List<PortfolioImageDto>> reorderPortfolioImages({
     required String profileId,
-    required String userId,
     required List<String> orderedIds,
   }) async {
     final json = await _client.patchList(
       '/artist-profiles/$profileId/portfolio-images/reorder',
-      queryParameters: {'userId': userId},
       body: {'orderedIds': orderedIds},
     );
     return json.map(PortfolioImageDto.fromJson).toList();
   }
 
-  Future<void> deletePortfolioImage({
-    required String imageId,
-    required String userId,
-  }) async {
-    await _client.delete(
-      '/portfolio-images/$imageId',
-      queryParameters: {'userId': userId},
-    );
+  Future<void> deletePortfolioImage(String imageId) async {
+    await _client.delete('/portfolio-images/$imageId');
   }
 
   Future<List<ArtistNoticeDto>> getNotices(
@@ -138,7 +130,6 @@ class ArtistProfileRepository {
 
   Future<ArtistNoticeDto> updateNotice({
     required String noticeId,
-    required String userId,
     String? type,
     String? title,
     String? content,
@@ -148,7 +139,6 @@ class ArtistProfileRepository {
   }) async {
     final json = await _client.patch(
       '/artist-notices/$noticeId',
-      queryParameters: {'userId': userId},
       body: {
         'type': ?type,
         'title': ?title,
@@ -161,14 +151,8 @@ class ArtistProfileRepository {
     return ArtistNoticeDto.fromJson(json);
   }
 
-  Future<void> deleteNotice({
-    required String noticeId,
-    required String userId,
-  }) async {
-    await _client.delete(
-      '/artist-notices/$noticeId',
-      queryParameters: {'userId': userId},
-    );
+  Future<void> deleteNotice(String noticeId) async {
+    await _client.delete('/artist-notices/$noticeId');
   }
 
   Future<List<SocialLinkDto>> getSocialLinks(String profileId) async {
@@ -197,14 +181,12 @@ class ArtistProfileRepository {
 
   Future<SocialLinkDto> updateSocialLink({
     required String linkId,
-    required String userId,
     String? type,
     String? label,
     String? url,
   }) async {
     final json = await _client.patch(
       '/artist-social-links/$linkId',
-      queryParameters: {'userId': userId},
       body: {
         'type': ?type,
         'label': ?label,
@@ -214,14 +196,8 @@ class ArtistProfileRepository {
     return SocialLinkDto.fromJson(json);
   }
 
-  Future<void> deleteSocialLink({
-    required String linkId,
-    required String userId,
-  }) async {
-    await _client.delete(
-      '/artist-social-links/$linkId',
-      queryParameters: {'userId': userId},
-    );
+  Future<void> deleteSocialLink(String linkId) async {
+    await _client.delete('/artist-social-links/$linkId');
   }
 
   Future<

@@ -26,10 +26,7 @@ final workroomOrderDetailProvider =
   if (userId == null) return null;
 
   try {
-    final order = await ref.watch(orderRepositoryProvider).getById(
-          orderId: orderId,
-          userId: userId,
-        );
+    final order = await ref.watch(orderRepositoryProvider).getById(orderId);
     final lookups = await ParticipantLookups.resolve(
       ref,
       userIds: [order.clientId, order.artistId],

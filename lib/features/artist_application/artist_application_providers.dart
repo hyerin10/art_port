@@ -264,7 +264,6 @@ class ArtistApplicationFormNotifier
     try {
       final data = state.data;
       await ref.read(artistApplicationRepositoryProvider).apply(
-            userId: userId,
             artistName: data.artistName.trim(),
             bankName: data.bankName!.trim(),
             accountNumber: data.accountNumber.trim(),

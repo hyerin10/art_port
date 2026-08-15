@@ -65,10 +65,7 @@ class CommissionTransactionNotifier
       return;
     }
 
-    await ref.read(orderRepositoryProvider).accept(
-          orderId: current.orderId,
-          artistId: userId,
-        );
+    await ref.read(orderRepositoryProvider).accept(current.orderId);
     _refresh(current.orderId);
   }
 
@@ -86,7 +83,6 @@ class CommissionTransactionNotifier
 
     await ref.read(orderRepositoryProvider).reject(
           orderId: current.orderId,
-          artistId: userId,
           reason: reason,
         );
     _refresh(current.orderId);

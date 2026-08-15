@@ -17,24 +17,14 @@ class FollowRepository {
     return json.map(FollowerDto.fromJson).toList();
   }
 
-  Future<void> follow({
-    required String followerId,
-    required String followingId,
-  }) async {
+  Future<void> follow(String followingId) async {
     await _client.post(
       '/follows',
-      queryParameters: {'followerId': followerId},
       body: {'followingId': followingId},
     );
   }
 
-  Future<void> unfollow({
-    required String followerId,
-    required String followingId,
-  }) async {
-    await _client.delete(
-      '/follows/$followingId',
-      queryParameters: {'followerId': followerId},
-    );
+  Future<void> unfollow(String followingId) async {
+    await _client.delete('/follows/$followingId');
   }
 }

@@ -55,8 +55,8 @@ Future<void> refreshArtistApprovalStatus(
   }
 
   try {
-    final application = await read(artistApplicationRepositoryProvider)
-        .getMyApplication(user.id);
+    final application =
+        await read(artistApplicationRepositoryProvider).getMyApplication();
 
     if (application.isPending) {
       read(artistApprovalStatusProvider.notifier).markPending();

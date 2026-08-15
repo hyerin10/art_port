@@ -57,15 +57,9 @@ final chatRoomDetailProvider =
   final transaction = ref.watch(commissionTransactionProvider(roomId));
 
   try {
-    final room = await ref.watch(chatRoomRepositoryProvider).getById(
-          roomId: roomId,
-          userId: userId,
-        );
+    final room = await ref.watch(chatRoomRepositoryProvider).getById(roomId);
     try {
-      await ref.read(chatRoomRepositoryProvider).markRead(
-            roomId: roomId,
-            userId: userId,
-          );
+      await ref.read(chatRoomRepositoryProvider).markRead(roomId);
     } catch (_) {}
 
     final lookups = await ParticipantLookups.resolve(
@@ -119,10 +113,8 @@ class ChatMessagesNotifier
     final userId = ref.watch(currentUserIdProvider);
     if (userId == null) return const [];
 
-    final messages = await ref.watch(chatMessageRepositoryProvider).getAll(
-          roomId: roomId,
-          userId: userId,
-        );
+    final messages =
+        await ref.watch(chatMessageRepositoryProvider).getAll(roomId);
     return [
       for (final message in messages)
         if (!message.isCardType) message.toChatMessage(userId),
@@ -176,7 +168,6 @@ class ChatMessagesNotifier
     try {
       final sent = await ref.read(chatMessageRepositoryProvider).send(
             roomId: arg,
-            userId: userId,
             type: 'text',
             content: trimmed,
           );
@@ -226,7 +217,6 @@ class ChatMessagesNotifier
     try {
       final sent = await ref.read(supportRepositoryProvider).addMessage(
             inquiryId: inquiryId,
-            userId: userId,
             content: text,
           );
       final current = state.valueOrNull ?? previous;
@@ -302,10 +292,7 @@ class ChatMessagesNotifier
     ]);
 
     try {
-      await ref.read(chatMessageRepositoryProvider).delete(
-            messageId: messageId,
-            userId: userId,
-          );
+      await ref.read(chatMessageRepositoryProvider).delete(messageId);
     } catch (_) {
       state = AsyncData(previous);
       rethrow;

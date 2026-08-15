@@ -6,56 +6,33 @@ class ChatRoomRepository {
 
   final ApiClient _client;
 
-  Future<List<ChatRoomDto>> getAll(String userId) async {
-    final json = await _client.getList(
-      '/chat-rooms',
-      queryParameters: {'userId': userId},
-    );
+  Future<List<ChatRoomDto>> getAll() async {
+    final json = await _client.getList('/chat-rooms');
     return json.map(ChatRoomDto.fromJson).toList();
   }
 
-  Future<ChatRoomDto> getById({
-    required String roomId,
-    required String userId,
-  }) async {
-    final json = await _client.get(
-      '/chat-rooms/$roomId',
-      queryParameters: {'userId': userId},
-    );
+  Future<ChatRoomDto> getById(String roomId) async {
+    final json = await _client.get('/chat-rooms/$roomId');
     return ChatRoomDto.fromJson(json);
   }
 
   Future<ChatRoomDto> findOrCreate({
-    required String userId,
     required String clientId,
     required String artistId,
   }) async {
     final json = await _client.post(
       '/chat-rooms',
-      queryParameters: {'userId': userId},
       body: {'clientId': clientId, 'artistId': artistId},
     );
     return ChatRoomDto.fromJson(json);
   }
 
-  Future<ChatRoomDto> markRead({
-    required String roomId,
-    required String userId,
-  }) async {
-    final json = await _client.patch(
-      '/chat-rooms/$roomId/read',
-      queryParameters: {'userId': userId},
-    );
+  Future<ChatRoomDto> markRead(String roomId) async {
+    final json = await _client.patch('/chat-rooms/$roomId/read');
     return ChatRoomDto.fromJson(json);
   }
 
-  Future<void> delete({
-    required String roomId,
-    required String userId,
-  }) async {
-    await _client.delete(
-      '/chat-rooms/$roomId',
-      queryParameters: {'userId': userId},
-    );
+  Future<void> delete(String roomId) async {
+    await _client.delete('/chat-rooms/$roomId');
   }
 }

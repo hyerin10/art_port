@@ -16,7 +16,7 @@ final myOrdersProvider = FutureProvider<List<OrderDto>>((ref) async {
 
   final repo = ref.watch(orderRepositoryProvider);
   final isArtistMode = ref.watch(appModeProvider);
-  return isArtistMode ? repo.getMyArtist(userId) : repo.getMyClient(userId);
+  return isArtistMode ? repo.getMyArtist() : repo.getMyClient();
 });
 
 final orderLookupsProvider = FutureProvider<ParticipantLookups>((ref) async {
