@@ -228,6 +228,7 @@
 
 **공개(인증 불필요)**  
 `POST /users/login`, `POST /users`, 이메일 인증 관련, `POST /auth/refresh`, `POST /auth/logout`, Actuator health/info  
+탐색·프로필 공개 조회: `GET /artist-profiles/**`, `GET /commission-types/**`, `GET /reviews/artist/**`, `GET /users/{id}`, `GET /users/{id}/followers|followings`  
 **그 외** 전부 `Authorization: Bearer <accessToken>` 필요
 
 기본 TTL: Access `15m`, Refresh `14d` (`app.jwt.*`로 설정)

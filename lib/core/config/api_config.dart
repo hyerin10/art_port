@@ -17,4 +17,35 @@ abstract final class ApiConfig {
     }
     return 'http://localhost:$defaultPort';
   }
+
+  /// 서버가 내려준 `localhost`/`127.0.0.1`(포트 무관, 예: 8080) URL을
+  /// 현재 디바이스에서 도달 가능한 [baseUrl] 호스트·포트로 바꿉니다.
+  static String resolveMediaUrl(String url) {
+    final trimmed = url.trim();
+    if (trimmed.isEmpty) return trimmed;
+
+    final baseUri = Uri.parse(baseUrl);
+
+    if (trimmed.startsWith('/')) {
+      return '$baseUri$trimmed';
+    }
+
+    final uri = Uri.tryParse(trimmed);
+    if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
+      return trimmed;
+    }
+
+    final host = uri.host.toLowerCase();
+    if (host != 'localhost' && host != '127.0.0.1') {
+      return trimmed;
+    }
+
+    return uri
+        .replace(
+          scheme: baseUri.scheme,
+          host: baseUri.host,
+          port: baseUri.hasPort ? baseUri.port : null,
+        )
+        .toString();
+  }
 }

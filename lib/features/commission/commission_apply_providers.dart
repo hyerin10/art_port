@@ -1,4 +1,6 @@
 import 'package:art_port/core/network/api_exception.dart';
+import 'package:art_port/core/network/upload_purpose.dart';
+import 'package:art_port/core/network/upload_repository.dart';
 import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
 import 'package:art_port/features/chat/data/chat_providers.dart';
 import 'package:art_port/features/commission/data/commission_catalog_providers.dart';
@@ -45,15 +47,18 @@ class CommissionApplySubmissionsNotifier
         );
 
     final isBaseOption = submission.selectedOption.label == '기본';
-    final remoteImageUrls = [
-      for (final path in submission.referenceImagePaths)
-        if (path.startsWith('http')) path,
-    ];
+    final remoteImageUrls = await ref
+        .read(uploadRepositoryProvider)
+        .resolveToRemoteUrls(
+          pathsOrUrls: submission.referenceImagePaths,
+          purpose: UploadPurpose.orderReference,
+        );
 
     await ref.read(orderRepositoryProvider).submit(
           commissionTypeId: submission.commissionId,
           requestContent: submission.requestContent,
-          referenceImageUrls: remoteImageUrls,
+          referenceImageUrls:
+              remoteImageUrls.isEmpty ? null : remoteImageUrls,
           usagePurpose: submission.usagePurpose.name,
           desiredDeadline: submission.desiredDeadline == null
               ? null

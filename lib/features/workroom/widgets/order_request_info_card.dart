@@ -1,4 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/core/widgets/local_or_network_image.dart';
 import 'package:art_port/features/workroom/models/workroom_order_detail.dart';
 import 'package:flutter/material.dart';
 
@@ -235,18 +236,10 @@ class _ReferenceThumbnail extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
-      child: Image.network(
-        imageUrl,
+      child: SizedBox(
         width: 72,
         height: 72,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => Container(
-          width: 72,
-          height: 72,
-          color: AppColors.chipBackground,
-          alignment: Alignment.center,
-          child: const Icon(Icons.image_outlined, color: AppColors.textMuted),
-        ),
+        child: LocalOrNetworkImage(source: imageUrl),
       ),
     );
   }

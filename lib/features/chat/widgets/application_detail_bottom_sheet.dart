@@ -1,7 +1,10 @@
-import 'dart:io';
-
+import 'package:art_port/core/config/api_config.dart';
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/core/formatters/currency_formatter.dart';
+import 'package:art_port/core/network/resource_ids.dart';
+import 'package:art_port/core/widgets/local_or_network_image.dart';
+import 'package:art_port/features/chat/models/chat_image_attachment.dart';
+import 'package:art_port/features/chat/widgets/chat_image_viewer.dart';
 import 'package:art_port/features/commission/models/commission_transaction.dart';
 import 'package:flutter/material.dart';
 
@@ -267,23 +270,37 @@ class _ReferenceGrid extends StatelessWidget {
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final path = paths[index];
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.file(
-              File(path),
-              width: 88,
-              height: 88,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => Container(
+          final attachment = _attachmentFor(path, index);
+          return GestureDetector(
+            onTap: () => ChatImageViewer.open(context, attachment),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
                 width: 88,
                 height: 88,
-                color: AppColors.chipBackground,
-                child: const Icon(Icons.broken_image_outlined),
+                child: Hero(
+                  tag: attachment.heroTag,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: LocalOrNetworkImage(source: path),
+                  ),
+                ),
               ),
             ),
           );
         },
       ),
+    );
+  }
+
+  static ChatImageAttachment _attachmentFor(String path, int index) {
+    final isRemote =
+        ResourceIds.isRemoteUrl(path) || path.startsWith('/');
+    return ChatImageAttachment(
+      messageId: 'order-ref-$index-${path.hashCode}',
+      fileName: '참고이미지_${index + 1}.jpg',
+      localPath: isRemote ? null : path,
+      networkUrl: isRemote ? ApiConfig.resolveMediaUrl(path) : null,
     );
   }
 }

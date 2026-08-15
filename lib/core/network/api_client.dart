@@ -159,6 +159,54 @@ class ApiClient {
     );
   }
 
+  /// 절대 URL(또는 상대 path)로 raw bytes PUT. 업로드 티켓용(보통 JWT 불필요).
+  Future<void> putBytes(
+    String url, {
+    required List<int> bytes,
+    required String contentType,
+    bool authenticated = false,
+  }) async {
+    final resolved = ApiConfig.resolveMediaUrl(url);
+    final uri = resolved.startsWith('http://') || resolved.startsWith('https://')
+        ? Uri.parse(resolved)
+        : Uri.parse('$_baseUrl$resolved');
+
+    final headers = <String, String>{
+      'Content-Type': contentType,
+      'Accept': '*/*',
+    };
+    final accessTokenProvider = _accessTokenProvider;
+    if (authenticated && accessTokenProvider != null) {
+      final token = await accessTokenProvider();
+      if (token != null && token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+    }
+
+    try {
+      final response = await _httpClient.put(
+        uri,
+        headers: headers,
+        body: bytes,
+      );
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return;
+      }
+      if (response.body.isEmpty) {
+        throw ApiException(
+          code: 'HTTP_${response.statusCode}',
+          status: response.statusCode,
+          message: '파일 업로드에 실패했습니다.',
+        );
+      }
+      _parseResponse(response, allowEmptyData: true);
+    } on ApiException {
+      rethrow;
+    } catch (_) {
+      throw ApiException.network();
+    }
+  }
+
   Future<Map<String, dynamic>> _requestObject(
     String method,
     String path, {

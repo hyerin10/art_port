@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:art_port/core/config/api_config.dart';
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -38,9 +39,9 @@ class LocalOrNetworkImage extends StatelessWidget {
       return emptyPlaceholder;
     }
 
-    if (source!.startsWith('http')) {
+    if (source!.startsWith('http') || source!.startsWith('/')) {
       return Image.network(
-        source!,
+        ApiConfig.resolveMediaUrl(source!),
         fit: fit,
         errorBuilder: (_, _, _) => failedPlaceholder,
       );
