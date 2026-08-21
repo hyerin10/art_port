@@ -39,9 +39,17 @@ abstract final class SearchActions {
     required SearchFilterOverlayController overlay,
     required String tag,
   }) {
-    controller.text = tag;
-    controller.selection = TextSelection.collapsed(offset: tag.length);
-    ref.read(searchFilterProvider.notifier).setQuery(tag);
+    final currentQuery = ref.read(searchFilterProvider).query;
+    final isSelected = currentQuery == tag;
+
+    if (isSelected) {
+      controller.clear();
+      ref.read(searchFilterProvider.notifier).setQuery('');
+    } else {
+      controller.text = tag;
+      controller.selection = TextSelection.collapsed(offset: tag.length);
+      ref.read(searchFilterProvider.notifier).setQuery(tag);
+    }
     overlay.hide();
   }
 
