@@ -20,6 +20,14 @@ class CommissionCatalog {
   static const featuredBannerFallback =
       'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&h=400&fit=crop';
 
+  /// 시즌 테마 배너용 폴백 이미지
+  static const seasonBannerFallback =
+      'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&h=400&fit=crop';
+
+  /// 슬롯 알림 배너용 폴백 이미지
+  static const slotBannerFallback =
+      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&h=400&fit=crop';
+
   ArtistProfileDto? artistOf(CommissionTypeDto type) =>
       artistsById[type.artistProfileId];
 
@@ -78,6 +86,29 @@ class CommissionCatalog {
       if (url != null && url.isNotEmpty) return url;
     }
     return featuredBannerFallback;
+  }
+
+  /// 홈 프로모 배너 3장용 이미지 (피처드 → 슬롯 → 시즌)
+  List<String> get promoBannerImages {
+    final collected = <String>[];
+
+    void addUrl(String? url) {
+      if (url == null || url.isEmpty) return;
+      if (!collected.contains(url)) collected.add(url);
+    }
+
+    for (final artist in artists) {
+      addUrl(artist.backgroundUrl);
+    }
+    for (final type in _sortedTypes) {
+      addUrl(type.primaryImageUrl);
+    }
+
+    return [
+      collected.isNotEmpty ? collected[0] : featuredBannerFallback,
+      collected.length > 1 ? collected[1] : slotBannerFallback,
+      collected.length > 2 ? collected[2] : seasonBannerFallback,
+    ];
   }
 
   CommissionTypeDto? typeById(String commissionId) {

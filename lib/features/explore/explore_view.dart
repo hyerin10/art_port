@@ -1,5 +1,6 @@
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/core/widgets/api_async_body.dart';
+import 'package:art_port/features/artist_profile/artist_profile_screen.dart';
 import 'package:art_port/features/commission/commission_detail_screen.dart';
 import 'package:art_port/features/commission/data/commission_catalog.dart';
 import 'package:art_port/features/commission/data/commission_catalog_providers.dart';
@@ -28,7 +29,7 @@ class ExploreView extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _FeaturedBanner(imageUrl: data.featuredBannerImage),
+                _PromoBannerCarousel(slides: _promoSlidesFrom(data)),
                 const SizedBox(height: 24),
                 _LiveSlotsSection(slots: data.liveSlots),
                 const SizedBox(height: 28),
@@ -58,6 +59,57 @@ class ExploreView extends ConsumerWidget {
   }
 }
 
+List<_PromoBannerSlide> _promoSlidesFrom(CommissionCatalog data) {
+  final images = data.promoBannerImages;
+  final featuredArtist = data.artists.isNotEmpty ? data.artists.first : null;
+  final urgentSlot = data.liveSlots.isNotEmpty ? data.liveSlots.first : null;
+  final seasonSample =
+      data.gallerySamples.isNotEmpty ? data.gallerySamples.first : null;
+
+  return [
+    _PromoBannerSlide(
+      title: '이번 주 주목받는 일러스트레이터',
+      subtitle: featuredArtist == null
+          ? '당신의 최애캐를 완벽한 퀄리티로 만나보세요'
+          : '${featuredArtist.displayName} 작가의 대표작을 만나보세요',
+      ctaLabel: '작가 보기',
+      imageUrl: images[0],
+      onTap: featuredArtist == null
+          ? null
+          : (context) => ArtistProfileScreen.open(
+                context,
+                artistId: featuredArtist.id,
+              ),
+    ),
+    _PromoBannerSlide(
+      title: '슬롯 마감·오픈 알림',
+      subtitle: urgentSlot == null
+          ? '지금 열려 있는 커미션 슬롯을 확인해 보세요'
+          : '${urgentSlot.artistName} · ${urgentSlot.slotsLeft}슬롯 남음',
+      ctaLabel: '슬롯 확인',
+      imageUrl: images[1],
+      onTap: urgentSlot == null
+          ? null
+          : (context) => CommissionDetailScreen.open(
+                context,
+                commissionId: urgentSlot.commissionId,
+              ),
+    ),
+    _PromoBannerSlide(
+      title: '시즌 테마 의뢰',
+      subtitle: '졸업·기념일·시즌 일러스트, 지금이 타이밍',
+      ctaLabel: '테마 둘러보기',
+      imageUrl: images[2],
+      onTap: seasonSample == null
+          ? null
+          : (context) => CommissionDetailScreen.open(
+                context,
+                commissionId: seasonSample.id,
+              ),
+    ),
+  ];
+}
+
 class _ArtPortScrollBehavior extends ScrollBehavior {
   const _ArtPortScrollBehavior();
 
@@ -80,103 +132,189 @@ class _ArtPortScrollBehavior extends ScrollBehavior {
   }
 }
 
-// ─── Featured Banner ───────────────────────────────────────────────────────
+// ─── Promo Banner Carousel ─────────────────────────────────────────────────
 
-class _FeaturedBanner extends StatefulWidget {
-  const _FeaturedBanner({required this.imageUrl});
+class _PromoBannerSlide {
+  const _PromoBannerSlide({
+    required this.title,
+    required this.subtitle,
+    required this.ctaLabel,
+    required this.imageUrl,
+    this.onTap,
+  });
 
+  final String title;
+  final String subtitle;
+  final String ctaLabel;
   final String imageUrl;
-
-  @override
-  State<_FeaturedBanner> createState() => _FeaturedBannerState();
+  final void Function(BuildContext context)? onTap;
 }
 
-class _FeaturedBannerState extends State<_FeaturedBanner> {
-  static const _slideCount = 3;
+class _PromoBannerCarousel extends StatefulWidget {
+  const _PromoBannerCarousel({required this.slides});
+
+  final List<_PromoBannerSlide> slides;
+
+  @override
+  State<_PromoBannerCarousel> createState() => _PromoBannerCarouselState();
+}
+
+class _PromoBannerCarouselState extends State<_PromoBannerCarousel> {
+  late final PageController _pageController;
   int _currentPage = 0;
 
   @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Column(
+    final slides = widget.slides;
+    if (slides.isEmpty) return const SizedBox.shrink();
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: SizedBox(
+        height: 196,
+        width: double.infinity,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            PageView.builder(
+              controller: _pageController,
+              itemCount: slides.length,
+              onPageChanged: (index) => setState(() => _currentPage = index),
+              itemBuilder: (context, index) {
+                return _PromoBannerPage(slide: slides[index]);
+              },
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 12,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(slides.length, (i) {
+                  final active = i == _currentPage;
+                  return GestureDetector(
+                    onTap: () => _pageController.animateToPage(
+                      i,
+                      duration: const Duration(milliseconds: 280),
+                      curve: Curves.easeOutCubic,
+                    ),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      width: active ? 18 : 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: active
+                            ? Colors.white
+                            : Colors.white.withValues(alpha: 0.45),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PromoBannerPage extends StatelessWidget {
+  const _PromoBannerPage({required this.slide});
+
+  final _PromoBannerSlide slide;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: SizedBox(
-            height: 168,
-            width: double.infinity,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Image.network(
-                  widget.imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) =>
-                      Container(color: AppColors.primarySoft),
+        Image.network(
+          slide.imageUrl,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) =>
+              const ColoredBox(color: AppColors.primarySoft),
+        ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withValues(alpha: 0.2),
+                Colors.black.withValues(alpha: 0.62),
+              ],
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 34),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                slide.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  height: 1.25,
+                  letterSpacing: -0.3,
                 ),
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.15),
-                        Colors.black.withValues(alpha: 0.55),
-                      ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                slide.subtitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white.withValues(alpha: 0.9),
+                  height: 1.3,
+                ),
+              ),
+              const Spacer(),
+              if (slide.onTap != null)
+                Material(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  child: InkWell(
+                    onTap: () => slide.onTap!(context),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      child: Text(
+                        slide.ctaLabel,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.brandNavy,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '이번 주 주목받는 일러스트레이터',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          height: 1.25,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '당신의 최애캐를 완벽한 퀄리티로 만나보세요',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white.withValues(alpha: 0.9),
-                          height: 1.3,
-                        ),
-                      ),
-                      const Spacer(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(_slideCount, (i) {
-                          final active = i == _currentPage;
-                          return GestureDetector(
-                            onTap: () => setState(() => _currentPage = i),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              margin: const EdgeInsets.symmetric(horizontal: 3),
-                              width: active ? 18 : 6,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: active
-                                    ? Colors.white
-                                    : Colors.white.withValues(alpha: 0.45),
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                            ),
-                          );
-                        }),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+            ],
           ),
         ),
       ],
