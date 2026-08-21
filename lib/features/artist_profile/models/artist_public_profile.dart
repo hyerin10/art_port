@@ -38,6 +38,7 @@ class ArtistPublicProfile {
     required this.restrictedItems,
     required this.portfolioImageUrls,
     this.primaryCommissionId,
+    this.hasSlotOpen = false,
   });
 
   final String id;
@@ -61,12 +62,15 @@ class ArtistPublicProfile {
   final List<String> portfolioImageUrls;
   final String? primaryCommissionId;
 
+  /// 작가 슬롯이 열려 있고 신청 가능한 커미션 타입이 있는지
+  final bool hasSlotOpen;
+
   /// 평점을 소수점 둘째 자리까지 표시 (부동소수점 버그 방지)
   String get formattedRating => rating.toStringAsFixed(2);
 
-  String get formattedFollowerCount => _formatCount(followerCount);
+  String get formattedFollowerCount => formatCount(followerCount);
 
-  static String _formatCount(int count) {
+  static String formatCount(int count) {
     final s = count.toString();
     final buf = StringBuffer();
     for (var i = 0; i < s.length; i++) {
@@ -76,3 +80,4 @@ class ArtistPublicProfile {
     return buf.toString();
   }
 }
+

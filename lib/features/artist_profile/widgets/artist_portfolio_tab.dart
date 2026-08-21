@@ -1,4 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/features/artist_profile/widgets/portfolio_image_viewer.dart';
 import 'package:flutter/material.dart';
 
 /// 포트폴리오 탭 — 3열 정방형 이미지 그리드
@@ -38,18 +39,29 @@ class ArtistPortfolioTab extends StatelessWidget {
           ),
           itemCount: imageUrls.length,
           itemBuilder: (context, index) {
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: Image.network(
-                imageUrls[index],
-                width: cellSize,
-                height: cellSize,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => const ColoredBox(
-                  color: AppColors.chipBackground,
-                  child: Icon(
-                    Icons.broken_image_outlined,
-                    color: AppColors.textMuted,
+            return Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => PortfolioImageViewer.open(
+                  context,
+                  imageUrls: imageUrls,
+                  initialIndex: index,
+                ),
+                borderRadius: BorderRadius.circular(4),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: Image.network(
+                    imageUrls[index],
+                    width: cellSize,
+                    height: cellSize,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => const ColoredBox(
+                      color: AppColors.chipBackground,
+                      child: Icon(
+                        Icons.broken_image_outlined,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
                   ),
                 ),
               ),

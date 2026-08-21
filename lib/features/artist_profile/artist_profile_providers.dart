@@ -19,7 +19,7 @@ final artistPublicProfileProvider =
           portfolio: bundle.portfolio,
           notices: bundle.notices,
           socialLinks: bundle.socialLinks,
-          primaryCommissionId: types.isEmpty ? null : types.first.id,
+          commissionTypes: types,
         );
       } on ApiException catch (e) {
         if (e.status == 404 || e.code == 'ARTIST_PROFILE_NOT_FOUND') {

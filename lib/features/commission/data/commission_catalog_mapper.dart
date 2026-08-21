@@ -118,12 +118,20 @@ abstract final class CommissionCatalogMapper {
     required List<PortfolioImageDto> portfolio,
     required List<ArtistNoticeDto> notices,
     required List<SocialLinkDto> socialLinks,
-    String? primaryCommissionId,
+    List<CommissionTypeDto> commissionTypes = const [],
   }) {
     final sortedNotices = [...notices]
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     final pinned = sortedNotices.where((notice) => notice.isPinned).firstOrNull;
     final general = sortedNotices.where((notice) => !notice.isPinned);
+    final openTypes = [
+      for (final type in commissionTypes)
+        if (type.isActive && type.openSlots > 0) type,
+    ];
+    final hasSlotOpen = profile.isSlotOpen && openTypes.isNotEmpty;
+    final primaryCommissionId = hasSlotOpen
+        ? openTypes.first.id
+        : (commissionTypes.isEmpty ? null : commissionTypes.first.id);
 
     return ArtistPublicProfile(
       id: profile.id,
@@ -148,6 +156,7 @@ abstract final class CommissionCatalogMapper {
       restrictedItems: profile.restrictedItems,
       portfolioImageUrls: [for (final image in portfolio) image.imageUrl],
       primaryCommissionId: primaryCommissionId,
+      hasSlotOpen: hasSlotOpen,
     );
   }
 

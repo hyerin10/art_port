@@ -11,6 +11,7 @@ class InquiryHeader extends ConsumerWidget {
     this.title = '1:1 문의',
     this.onNotificationTap,
     this.onFilterTap,
+    this.showActions = true,
   });
 
   final VoidCallback onBack;
@@ -18,11 +19,14 @@ class InquiryHeader extends ConsumerWidget {
   final VoidCallback? onNotificationTap;
   final VoidCallback? onFilterTap;
 
+  /// false면 알림·필터·모드 전환 버튼을 숨긴다.
+  final bool showActions;
+
   static const double _actionSize = 40;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isArtistMode = ref.watch(appModeProvider);
+    final isArtistMode = showActions ? ref.watch(appModeProvider) : false;
 
     return ColoredBox(
       color: AppColors.background,
@@ -61,18 +65,21 @@ class InquiryHeader extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  _NotificationButton(onPressed: onNotificationTap ?? () {}),
-                  const SizedBox(width: 4),
-                  _IconActionButton(
-                    icon: Icons.tune,
-                    onPressed: onFilterTap ?? () {},
-                  ),
-                  const SizedBox(width: 6),
-                  _ModeToggleChip(
-                    isArtistMode: isArtistMode,
-                    onTap: () =>
-                        ref.read(appModeProvider.notifier).toggleMode(),
-                  ),
+                  if (showActions) ...[
+                    _NotificationButton(onPressed: onNotificationTap ?? () {}),
+                    const SizedBox(width: 4),
+                    _IconActionButton(
+                      icon: Icons.tune,
+                      onPressed: onFilterTap ?? () {},
+                    ),
+                    const SizedBox(width: 6),
+                    _ModeToggleChip(
+                      isArtistMode: isArtistMode,
+                      onTap: () =>
+                          ref.read(appModeProvider.notifier).toggleMode(),
+                    ),
+                  ] else
+                    const SizedBox(width: 40),
                 ],
               ),
             ),

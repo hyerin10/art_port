@@ -8,6 +8,7 @@ import 'package:art_port/features/artist_profile/widgets/artist_profile_info_sec
 import 'package:art_port/features/artist_profile/widgets/artist_profile_sub_header.dart';
 import 'package:art_port/features/artist_profile/widgets/artist_profile_tab.dart';
 import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
+import 'package:art_port/features/commission/commission_detail_screen.dart';
 import 'package:art_port/features/common/widgets/art_port_bottom_nav.dart';
 import 'package:art_port/features/follow/followers_screen.dart';
 import 'package:art_port/features/review/data/review_providers.dart';
@@ -98,6 +99,9 @@ class _ArtistProfileViewState extends ConsumerState<ArtistProfileView>
           final reviewStats = ref
               .watch(artistReviewStatsProvider(profile.userId))
               .valueOrNull;
+          final followers = ref
+              .watch(followersProvider(profile.userId))
+              .valueOrNull;
 
           return Scaffold(
             backgroundColor: AppColors.background,
@@ -117,6 +121,7 @@ class _ArtistProfileViewState extends ConsumerState<ArtistProfileView>
                   isFollowing: isFollowing,
                   notificationsEnabled: _notificationsEnabled,
                   reviewStats: reviewStats,
+                  followerCount: followers?.length,
                   onFollowTap: isSelf
                       ? null
                       : () => toggleFollowedArtist(
@@ -125,11 +130,24 @@ class _ArtistProfileViewState extends ConsumerState<ArtistProfileView>
                           followingUserId: profile.userId,
                           artistProfileId: profile.id,
                         ),
+                  onCommissionApplyTap: isSelf
+                      ? null
+                      : () {
+                          final commissionId = profile.primaryCommissionId;
+                          if (!profile.hasSlotOpen || commissionId == null) {
+                            return;
+                          }
+                          CommissionDetailScreen.open(
+                            context,
+                            commissionId: commissionId,
+                          );
+                        },
                   onFollowersTap: () => FollowersScreen.open(
                     context,
                     userId: profile.userId,
                     title: '${profile.displayName}의 팔로워',
                   ),
+                  onRatingTap: () => _tabController.animateTo(3),
                   onNotificationTap: () => setState(
                     () => _notificationsEnabled = !_notificationsEnabled,
                   ),

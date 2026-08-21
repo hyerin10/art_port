@@ -28,6 +28,7 @@ class FollowersView extends ConsumerWidget {
       header: InquiryHeader(
         title: title,
         onBack: () => Navigator.of(context).pop(),
+        showActions: false,
       ),
       body: ApiAsyncBody<List<FollowerListItem>>(
         value: followersAsync,
