@@ -94,16 +94,3 @@ class GoogleLogo extends StatelessWidget {
     );
   }
 }
-
-class XLogo extends StatelessWidget {
-  const XLogo({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Icon(
-      Icons.close_rounded,
-      size: 18,
-      color: AppColors.textPrimary,
-    );
-  }
-}

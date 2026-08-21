@@ -140,13 +140,6 @@ class _SignInViewState extends ConsumerState<SignInView> {
                       isLoading: form.isGoogleSubmitting,
                       onPressed: _onGoogleSignIn,
                     ),
-                    const SizedBox(height: 12),
-                    SocialLoginButton(
-                      label: 'Continue with X',
-                      leading: const XLogo(),
-                      enabled: form.canSocialSubmit,
-                      onPressed: () {},
-                    ),
                     const SizedBox(height: 28),
                     const _OrDivider(),
                     const SizedBox(height: 28),
