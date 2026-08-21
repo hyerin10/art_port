@@ -7,48 +7,64 @@ class SocialLoginButton extends StatelessWidget {
     required this.label,
     required this.leading,
     required this.onPressed,
+    this.enabled = true,
+    this.isLoading = false,
   });
 
   final String label;
   final Widget leading;
   final VoidCallback onPressed;
+  final bool enabled;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 52,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderSubtle, width: 1),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Material(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          onTap: onPressed,
+    final isInteractive = enabled && !isLoading;
+
+    return Opacity(
+      opacity: (isInteractive || isLoading) ? 1 : 0.55,
+      child: Container(
+        width: double.infinity,
+        height: 52,
+        decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              leading,
-              const SizedBox(width: 12),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+          border: Border.all(color: AppColors.borderSubtle, width: 1),
+          boxShadow: const [
+            BoxShadow(
+              color: AppColors.shadow,
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Material(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: isInteractive ? onPressed : null,
+            borderRadius: BorderRadius.circular(12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (isLoading)
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                else
+                  leading,
+                const SizedBox(width: 12),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

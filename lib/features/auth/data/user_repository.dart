@@ -27,6 +27,15 @@ class UserRepository {
     return AuthResponseDto.fromJson(json).toDomain();
   }
 
+  Future<AuthSession> loginWithGoogle(String idToken) async {
+    final json = await _client.post(
+      '/auth/google',
+      body: GoogleLoginRequest(idToken: idToken).toJson(),
+      authenticated: false,
+    );
+    return AuthResponseDto.fromJson(json).toDomain();
+  }
+
   Future<AuthSession> refresh(String refreshToken) async {
     final json = await _client.post(
       '/auth/refresh',

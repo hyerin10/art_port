@@ -2,9 +2,11 @@ import 'package:art_port/core/network/api_exception.dart';
 import 'package:art_port/features/auth/auth_messages.dart';
 import 'package:art_port/features/auth/auth_validators.dart';
 import 'package:art_port/features/auth/data/dto/user_dto.dart';
+import 'package:art_port/features/auth/data/google_sign_in_service.dart';
 import 'package:art_port/features/auth/presentation/auth_session_effects.dart';
 import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
 import 'package:art_port/providers/artist_status_provider.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final signInFormProvider =
@@ -18,6 +20,7 @@ class SignInFormState {
     this.password = '',
     this.obscurePassword = true,
     this.isSubmitting = false,
+    this.isGoogleSubmitting = false,
     this.emailTouched = false,
     this.emailBlurred = false,
     this.submitAttempted = false,
@@ -28,6 +31,7 @@ class SignInFormState {
   final String password;
   final bool obscurePassword;
   final bool isSubmitting;
+  final bool isGoogleSubmitting;
   final bool emailTouched;
   final bool emailBlurred;
   final bool submitAttempted;
@@ -37,6 +41,8 @@ class SignInFormState {
       !isSubmitting &&
       AuthValidators.isValidEmail(email) &&
       password.isNotEmpty;
+
+  bool get canSocialSubmit => !isSubmitting;
 
   String? get emailError {
     if (!emailTouched && !emailBlurred) return null;
@@ -58,6 +64,7 @@ class SignInFormState {
     String? password,
     bool? obscurePassword,
     bool? isSubmitting,
+    bool? isGoogleSubmitting,
     bool? emailTouched,
     bool? emailBlurred,
     bool? submitAttempted,
@@ -69,6 +76,7 @@ class SignInFormState {
       password: password ?? this.password,
       obscurePassword: obscurePassword ?? this.obscurePassword,
       isSubmitting: isSubmitting ?? this.isSubmitting,
+      isGoogleSubmitting: isGoogleSubmitting ?? this.isGoogleSubmitting,
       emailTouched: emailTouched ?? this.emailTouched,
       emailBlurred: emailBlurred ?? this.emailBlurred,
       submitAttempted: submitAttempted ?? this.submitAttempted,
@@ -134,6 +142,84 @@ class SignInFormNotifier extends AutoDisposeNotifier<SignInFormState> {
       return false;
     }
   }
+
+  Future<bool> signInWithGoogle() async {
+    if (!state.canSocialSubmit) return false;
+
+    state = state.copyWith(
+      isSubmitting: true,
+      isGoogleSubmitting: true,
+      clearSubmitError: true,
+    );
+    try {
+      final idToken =
+          await ref.read(googleSignInServiceProvider).getIdToken();
+      if (idToken == null) {
+        state = state.copyWith(
+          isSubmitting: false,
+          isGoogleSubmitting: false,
+        );
+        return false;
+      }
+
+      final session =
+          await ref.read(userRepositoryProvider).loginWithGoogle(idToken);
+      await ref.read(authProvider.notifier).applySession(session);
+      syncSessionSideEffectsFromRef(ref, session.user);
+      await refreshArtistApprovalStatus(ref.read);
+      state = state.copyWith(
+        isSubmitting: false,
+        isGoogleSubmitting: false,
+      );
+      return true;
+    } on ApiException catch (e) {
+      state = state.copyWith(
+        isSubmitting: false,
+        isGoogleSubmitting: false,
+        submitError: e.displayMessage,
+      );
+      return false;
+    } on GoogleSignInConfigException catch (e) {
+      state = state.copyWith(
+        isSubmitting: false,
+        isGoogleSubmitting: false,
+        submitError: e.message,
+      );
+      return false;
+    } on GoogleSignInTokenException catch (e) {
+      state = state.copyWith(
+        isSubmitting: false,
+        isGoogleSubmitting: false,
+        submitError: e.message,
+      );
+      return false;
+    } on PlatformException catch (e) {
+      state = state.copyWith(
+        isSubmitting: false,
+        isGoogleSubmitting: false,
+        submitError: _googlePlatformErrorMessage(e),
+      );
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        isSubmitting: false,
+        isGoogleSubmitting: false,
+        submitError: AuthMessages.signInNetworkError,
+      );
+      return false;
+    }
+  }
+}
+
+String _googlePlatformErrorMessage(PlatformException e) {
+  final raw = '${e.code} ${e.message ?? ''}';
+  // Google Play Services: 10 = DEVELOPER_ERROR (패키지명/SHA-1/OAuth 클라이언트 불일치)
+  if (raw.contains('ApiException: 10') || raw.contains(': 10:')) {
+    return AuthMessages.googleSignInDeveloperError;
+  }
+  final detail = (e.message ?? e.code).trim();
+  if (detail.isEmpty) return AuthMessages.googleSignInFailed;
+  return '${AuthMessages.googleSignInFailed} ($detail)';
 }
 
 final signUpFormProvider =
@@ -155,6 +241,7 @@ class SignUpFormState {
     this.isVerifyingPhone = false,
     this.verificationCodeSent = false,
     this.isSubmitting = false,
+    this.isGoogleSubmitting = false,
     this.nameTouched = false,
     this.emailTouched = false,
     this.phoneTouched = false,
@@ -177,6 +264,7 @@ class SignUpFormState {
   final bool isVerifyingPhone;
   final bool verificationCodeSent;
   final bool isSubmitting;
+  final bool isGoogleSubmitting;
   final bool nameTouched;
   final bool emailTouched;
   final bool phoneTouched;
@@ -214,6 +302,8 @@ class SignUpFormState {
       isPhoneVerified &&
       isPasswordValid &&
       isConfirmPasswordValid;
+
+  bool get canSocialSubmit => !isSubmitting;
 
   String? get nameError {
     if (!nameTouched) return null;
@@ -270,6 +360,7 @@ class SignUpFormState {
     bool? isVerifyingPhone,
     bool? verificationCodeSent,
     bool? isSubmitting,
+    bool? isGoogleSubmitting,
     bool? nameTouched,
     bool? emailTouched,
     bool? phoneTouched,
@@ -295,6 +386,7 @@ class SignUpFormState {
       isVerifyingPhone: isVerifyingPhone ?? this.isVerifyingPhone,
       verificationCodeSent: verificationCodeSent ?? this.verificationCodeSent,
       isSubmitting: isSubmitting ?? this.isSubmitting,
+      isGoogleSubmitting: isGoogleSubmitting ?? this.isGoogleSubmitting,
       nameTouched: nameTouched ?? this.nameTouched,
       emailTouched: emailTouched ?? this.emailTouched,
       phoneTouched: phoneTouched ?? this.phoneTouched,
@@ -455,6 +547,76 @@ class SignUpFormNotifier extends AutoDisposeNotifier<SignUpFormState> {
     } catch (_) {
       state = state.copyWith(
         isSubmitting: false,
+        submitError: AuthMessages.signUpNetworkError,
+      );
+      return false;
+    }
+  }
+
+  /// Google 가입·로그인 공통 엔드포인트 (`POST /auth/google`).
+  /// 신규이면 서버가 계정을 만들고, 이미 이메일 가입된 동일 메일이면
+  /// `409 ACCOUNT_EXISTS_WITH_EMAIL`(자동 연결 없음).
+  Future<bool> signUpWithGoogle() async {
+    if (!state.canSocialSubmit) return false;
+
+    state = state.copyWith(
+      isSubmitting: true,
+      isGoogleSubmitting: true,
+      clearSubmitError: true,
+    );
+    try {
+      final idToken =
+          await ref.read(googleSignInServiceProvider).getIdToken();
+      if (idToken == null) {
+        state = state.copyWith(
+          isSubmitting: false,
+          isGoogleSubmitting: false,
+        );
+        return false;
+      }
+
+      final session =
+          await ref.read(userRepositoryProvider).loginWithGoogle(idToken);
+      await ref.read(authProvider.notifier).applySession(session);
+      syncSessionSideEffectsFromRef(ref, session.user);
+      await refreshArtistApprovalStatus(ref.read);
+      state = state.copyWith(
+        isSubmitting: false,
+        isGoogleSubmitting: false,
+      );
+      return true;
+    } on ApiException catch (e) {
+      state = state.copyWith(
+        isSubmitting: false,
+        isGoogleSubmitting: false,
+        submitError: e.displayMessage,
+      );
+      return false;
+    } on GoogleSignInConfigException catch (e) {
+      state = state.copyWith(
+        isSubmitting: false,
+        isGoogleSubmitting: false,
+        submitError: e.message,
+      );
+      return false;
+    } on GoogleSignInTokenException catch (e) {
+      state = state.copyWith(
+        isSubmitting: false,
+        isGoogleSubmitting: false,
+        submitError: e.message,
+      );
+      return false;
+    } on PlatformException catch (e) {
+      state = state.copyWith(
+        isSubmitting: false,
+        isGoogleSubmitting: false,
+        submitError: _googlePlatformErrorMessage(e),
+      );
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        isSubmitting: false,
+        isGoogleSubmitting: false,
         submitError: AuthMessages.signUpNetworkError,
       );
       return false;

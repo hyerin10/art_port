@@ -1,4 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/features/auth/auth_messages.dart';
 import 'package:art_port/features/auth/auth_providers.dart';
 import 'package:art_port/features/auth/forgot_password_screen.dart';
 import 'package:art_port/features/auth/sign_up_screen.dart';
@@ -64,6 +65,23 @@ class _SignInViewState extends ConsumerState<SignInView> {
     Navigator.of(context).pop();
   }
 
+  Future<void> _onGoogleSignIn() async {
+    FocusScope.of(context).unfocus();
+    final success =
+        await ref.read(signInFormProvider.notifier).signInWithGoogle();
+    if (!mounted) return;
+
+    final form = ref.read(signInFormProvider);
+    if (form.submitError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(form.submitError!)),
+      );
+    }
+    if (!success) return;
+
+    Navigator.of(context).pop();
+  }
+
   void _onSignUpTap() {
     SignUpScreen.open(context);
   }
@@ -116,14 +134,17 @@ class _SignInViewState extends ConsumerState<SignInView> {
                     ),
                     const SizedBox(height: 32),
                     SocialLoginButton(
-                      label: 'Continue with Google',
+                      label: AuthMessages.googleContinue,
                       leading: const GoogleLogo(),
-                      onPressed: () {},
+                      enabled: form.canSocialSubmit,
+                      isLoading: form.isGoogleSubmitting,
+                      onPressed: _onGoogleSignIn,
                     ),
                     const SizedBox(height: 12),
                     SocialLoginButton(
                       label: 'Continue with X',
                       leading: const XLogo(),
+                      enabled: form.canSocialSubmit,
                       onPressed: () {},
                     ),
                     const SizedBox(height: 28),
@@ -190,7 +211,8 @@ class _SignInViewState extends ConsumerState<SignInView> {
                     AuthPrimaryButton(
                       label: 'Sign In',
                       enabled: form.canSubmit,
-                      isLoading: form.isSubmitting,
+                      isLoading:
+                          form.isSubmitting && !form.isGoogleSubmitting,
                       onPressed: _onSignIn,
                     ),
                     const SizedBox(height: 24),

@@ -86,6 +86,14 @@ class LoginRequest {
   }
 }
 
+class GoogleLoginRequest {
+  const GoogleLoginRequest({required this.idToken});
+
+  final String idToken;
+
+  Map<String, dynamic> toJson() => {'idToken': idToken};
+}
+
 class CreateUserRequest {
   const CreateUserRequest({
     required this.email,

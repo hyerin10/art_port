@@ -3,6 +3,16 @@ abstract final class AuthMessages {
   static const signInEmailInvalid = '올바른 이메일 형식을 입력해주세요.';
   static const signInPasswordEmpty = '비밀번호를 입력해주세요.';
   static const signInNetworkError = '서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.';
+  static const googleContinue = 'Google로 계속하기';
+  static const googleSignUp = 'Google로 가입하기';
+  static const googleSignInFailed = 'Google 로그인에 실패했습니다. 잠시 후 다시 시도해주세요.';
+  static const googleSignUpFailed = 'Google 가입에 실패했습니다. 잠시 후 다시 시도해주세요.';
+  static const googleSignInDeveloperError =
+      'Google 로그인 설정 오류입니다. GCP Android 클라이언트(패키지명·SHA-1)와 Web Client ID를 확인해주세요.';
+  static const googleSignInNotConfigured =
+      'Google 로그인이 설정되지 않았습니다. 앱을 다시 설치하거나 관리자에게 문의해주세요.';
+  static const googleSignInTokenMissing =
+      'Google 인증 정보를 받지 못했습니다. 다시 시도해주세요.';
 
   // 회원가입
   static const signUpNameEmpty = '이름을 입력해주세요.';

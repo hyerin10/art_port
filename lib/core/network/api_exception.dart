@@ -52,6 +52,12 @@ class ApiException implements Exception {
         return '커미션을 찾을 수 없습니다.';
       case 'INVALID_CREDENTIALS':
         return '이메일 또는 비밀번호가 올바르지 않습니다.';
+      case 'ACCOUNT_EXISTS_WITH_EMAIL':
+        return '이미 이메일로 가입된 계정입니다. 이메일과 비밀번호로 로그인해 주세요.';
+      case 'INVALID_GOOGLE_TOKEN':
+        return 'Google 로그인 정보가 올바르지 않습니다. 다시 시도해주세요.';
+      case 'GOOGLE_EMAIL_NOT_VERIFIED':
+        return 'Google 계정의 이메일이 인증되지 않았습니다. Google에서 이메일을 인증한 뒤 다시 시도해주세요.';
       case 'USER_INACTIVE':
         return '비활성화된 계정입니다. 고객센터에 문의해주세요.';
       case 'EXPIRED_TOKEN':

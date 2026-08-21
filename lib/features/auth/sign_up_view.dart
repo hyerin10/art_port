@@ -1,4 +1,5 @@
 import 'package:art_port/core/constants/app_colors.dart';
+import 'package:art_port/features/auth/auth_messages.dart';
 import 'package:art_port/features/auth/auth_providers.dart';
 import 'package:art_port/features/auth/email_verification/email_verification_pending_screen.dart';
 import 'package:art_port/features/auth/widgets/auth_footer_link.dart';
@@ -6,6 +7,7 @@ import 'package:art_port/features/auth/widgets/auth_primary_button.dart';
 import 'package:art_port/features/auth/widgets/auth_text_field.dart';
 import 'package:art_port/features/auth/widgets/password_visibility_toggle.dart';
 import 'package:art_port/features/auth/widgets/phone_verification_field.dart';
+import 'package:art_port/features/auth/widgets/social_login_button.dart';
 import 'package:art_port/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,6 +46,18 @@ class _SignUpViewState extends ConsumerState<SignUpView> {
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
+  Future<void> _finishAuthSuccess() async {
+    final user = ref.read(authProvider);
+    if (user != null && !user.isEmailVerified) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      if (!mounted) return;
+      await EmailVerificationPendingScreen.open(context);
+      return;
+    }
+
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
   Future<void> _onSignUp() async {
     FocusScope.of(context).unfocus();
     final success = await ref.read(signUpFormProvider.notifier).submit();
@@ -57,15 +71,25 @@ class _SignUpViewState extends ConsumerState<SignUpView> {
     }
     if (!success) return;
 
-    final user = ref.read(authProvider);
-    if (user != null && !user.isEmailVerified) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
-      if (!mounted) return;
-      await EmailVerificationPendingScreen.open(context);
-      return;
-    }
+    await _finishAuthSuccess();
+  }
 
-    Navigator.of(context).popUntil((route) => route.isFirst);
+  Future<void> _onGoogleSignUp() async {
+    FocusScope.of(context).unfocus();
+    final success =
+        await ref.read(signUpFormProvider.notifier).signUpWithGoogle();
+    if (!mounted) return;
+
+    final form = ref.read(signUpFormProvider);
+    if (form.submitError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(form.submitError!)),
+      );
+    }
+    if (!success) return;
+
+    // Google 가입은 서버에서 이메일이 이미 인증된 상태로 생성됩니다.
+    await _finishAuthSuccess();
   }
 
   void _onSignInTap() {
@@ -127,7 +151,15 @@ class _SignUpViewState extends ConsumerState<SignUpView> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Divider(height: 1, thickness: 1, color: AppColors.borderLight),
+                    SocialLoginButton(
+                      label: AuthMessages.googleSignUp,
+                      leading: const GoogleLogo(),
+                      enabled: form.canSocialSubmit,
+                      isLoading: form.isGoogleSubmitting,
+                      onPressed: _onGoogleSignUp,
+                    ),
+                    const SizedBox(height: 24),
+                    const _OrDivider(),
                     const SizedBox(height: 24),
                     AuthTextField(
                       controller: _nameController,
@@ -214,7 +246,8 @@ class _SignUpViewState extends ConsumerState<SignUpView> {
                     AuthPrimaryButton(
                       label: 'Sign Up',
                       enabled: form.canSubmit,
-                      isLoading: form.isSubmitting,
+                      isLoading:
+                          form.isSubmitting && !form.isGoogleSubmitting,
                       onPressed: _onSignUp,
                     ),
                     const SizedBox(height: 24),
@@ -230,6 +263,31 @@ class _SignUpViewState extends ConsumerState<SignUpView> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _OrDivider extends StatelessWidget {
+  const _OrDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      children: [
+        Expanded(child: Divider(color: AppColors.borderLight, thickness: 1)),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            '또는',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textMuted,
+            ),
+          ),
+        ),
+        Expanded(child: Divider(color: AppColors.borderLight, thickness: 1)),
+      ],
     );
   }
 }
