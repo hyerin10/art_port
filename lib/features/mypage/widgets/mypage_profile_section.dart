@@ -1,3 +1,4 @@
+import 'package:art_port/core/config/api_config.dart';
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -21,6 +22,8 @@ class MyPageProfileSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasAvatar = avatarUrl.trim().isNotEmpty;
+
     return Column(
       children: [
         Stack(
@@ -35,7 +38,16 @@ class MyPageProfileSection extends StatelessWidget {
               child: CircleAvatar(
                 radius: 52,
                 backgroundColor: AppColors.chipBackground,
-                backgroundImage: avatarUrl.isEmpty ? null : NetworkImage(avatarUrl),
+                backgroundImage: hasAvatar
+                    ? NetworkImage(ApiConfig.resolveMediaUrl(avatarUrl))
+                    : null,
+                child: hasAvatar
+                    ? null
+                    : const Icon(
+                        Icons.person_rounded,
+                        size: 52,
+                        color: AppColors.textMuted,
+                      ),
               ),
             ),
             Positioned(

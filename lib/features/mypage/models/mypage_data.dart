@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 
+/// DB에 저장된 avatarUrl이 있으면 사용하고, 없으면 빈 문자열(기본 아바타 UI).
+String resolveProfileAvatarUrl(String? dbAvatarUrl, [String localAvatarUrl = '']) {
+  final fromDb = dbAvatarUrl?.trim() ?? '';
+  if (fromDb.isNotEmpty) return fromDb;
+  return localAvatarUrl.trim();
+}
+
 /// 고객 프로필 데이터 (추후 API 연동)
 class ClientProfileData {
   const ClientProfileData({

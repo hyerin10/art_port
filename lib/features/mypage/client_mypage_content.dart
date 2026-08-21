@@ -4,6 +4,7 @@ import 'package:art_port/features/auth/email_verification/email_verification_pen
 import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/mypage/data/mypage_write_providers.dart';
 import 'package:art_port/features/mypage/mypage_navigation.dart';
+import 'package:art_port/features/mypage/models/mypage_data.dart';
 import 'package:art_port/features/mypage/mypage_providers.dart';
 import 'package:art_port/features/mypage/widgets/email_verification_banner.dart';
 import 'package:art_port/features/mypage/widgets/menu_list_item.dart';
@@ -24,13 +25,22 @@ class ClientMyPageContent extends ConsumerWidget {
     final liveProfile = ref.watch(myClientProfileProvider).valueOrNull;
     final actions = ref.watch(clientMyPageActionsProvider);
     final isEmailVerified = ref.watch(isEmailVerifiedProvider);
+    final avatarUrl = resolveProfileAvatarUrl(
+      liveProfile?.avatarUrl,
+      profile.avatarUrl,
+    );
+
+    ref.listen(myClientProfileProvider, (previous, next) {
+      final url = next.valueOrNull?.avatarUrl?.trim() ?? '';
+      ref.read(clientProfileProvider.notifier).updateAvatar(url);
+    });
 
     return MyPageScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           MyPageProfileSection(
-            avatarUrl: liveProfile?.avatarUrl ?? profile.avatarUrl,
+            avatarUrl: avatarUrl,
             onEditPhoto: () => AppToast.show(
               ScaffoldMessenger.of(context),
               message: '이미지 업로드는 아직 지원되지 않습니다.',

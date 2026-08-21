@@ -1,5 +1,8 @@
+import 'package:art_port/core/config/api_config.dart';
 import 'package:art_port/core/constants/app_colors.dart';
 import 'package:art_port/features/auth/sign_in_screen.dart';
+import 'package:art_port/features/mypage/data/mypage_write_providers.dart';
+import 'package:art_port/features/mypage/models/mypage_data.dart';
 import 'package:art_port/features/mypage/mypage_providers.dart';
 import 'package:art_port/providers/app_mode_provider.dart';
 import 'package:art_port/providers/auth_provider.dart';
@@ -21,8 +24,14 @@ class ArtPortHeader extends ConsumerWidget {
     final showMyPage = ref.watch(showMyPageProvider);
 
     final profileAvatarUrl = isArtistMode
-        ? ref.watch(artistProfileProvider).avatarUrl
-        : ref.watch(clientProfileProvider).avatarUrl;
+        ? resolveProfileAvatarUrl(
+            ref.watch(myArtistProfileProvider).valueOrNull?.avatarUrl,
+            ref.watch(artistProfileProvider).avatarUrl,
+          )
+        : resolveProfileAvatarUrl(
+            ref.watch(myClientProfileProvider).valueOrNull?.avatarUrl,
+            ref.watch(clientProfileProvider).avatarUrl,
+          );
 
     return ColoredBox(
       color: AppColors.background,
@@ -214,6 +223,8 @@ class _ProfileAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasAvatar = imageUrl.trim().isNotEmpty;
+
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
@@ -231,7 +242,16 @@ class _ProfileAvatar extends StatelessWidget {
               child: CircleAvatar(
                 radius: 18,
                 backgroundColor: AppColors.chipBackground,
-                backgroundImage: NetworkImage(imageUrl),
+                backgroundImage: hasAvatar
+                    ? NetworkImage(ApiConfig.resolveMediaUrl(imageUrl))
+                    : null,
+                child: hasAvatar
+                    ? null
+                    : const Icon(
+                        Icons.person_rounded,
+                        size: 20,
+                        color: AppColors.textMuted,
+                      ),
               ),
             ),
             Positioned(

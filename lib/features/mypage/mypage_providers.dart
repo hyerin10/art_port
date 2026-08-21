@@ -46,8 +46,7 @@ class ClientProfileNotifier extends Notifier<ClientProfileData> {
     return const ClientProfileData(
       name: '김하늘',
       email: 'haneul.kim@email.com',
-      avatarUrl:
-          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop',
+      avatarUrl: '',
     );
   }
 
@@ -59,10 +58,16 @@ class ClientProfileNotifier extends Notifier<ClientProfileData> {
     state = state.copyWith(name: name);
   }
 
+  void updateAvatar(String avatarUrl) {
+    state = state.copyWith(avatarUrl: avatarUrl);
+  }
+
   void syncFromUser(User user) {
-    state = state.copyWith(
+    // 아바타는 DB 프로필 기준으로만 표시. 이전 세션 이미지가 남지 않도록 초기화.
+    state = ClientProfileData(
       name: user.name,
       email: user.email,
+      avatarUrl: '',
     );
   }
 }
@@ -77,8 +82,7 @@ class ArtistProfileNotifier extends Notifier<ArtistProfileData> {
   ArtistProfileData build() {
     return const ArtistProfileData(
       name: '하늘작가',
-      avatarUrl:
-          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop',
+      avatarUrl: '',
       rating: 4.9,
       reviewCount: 42,
     );
@@ -97,7 +101,12 @@ class ArtistProfileNotifier extends Notifier<ArtistProfileData> {
   }
 
   void syncFromUser(User user) {
-    state = state.copyWith(name: user.name);
+    state = ArtistProfileData(
+      name: user.name,
+      avatarUrl: '',
+      rating: state.rating,
+      reviewCount: state.reviewCount,
+    );
   }
 }
 

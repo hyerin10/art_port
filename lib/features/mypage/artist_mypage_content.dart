@@ -3,6 +3,7 @@ import 'package:art_port/features/admin/widgets/admin_menu_section.dart';
 import 'package:art_port/features/auth/presentation/auth_session_providers.dart';
 import 'package:art_port/features/common/widgets/app_toast.dart';
 import 'package:art_port/features/mypage/data/mypage_write_providers.dart';
+import 'package:art_port/features/mypage/models/mypage_data.dart';
 import 'package:art_port/features/mypage/mypage_navigation.dart';
 import 'package:art_port/features/mypage/mypage_providers.dart';
 import 'package:art_port/features/mypage/widgets/menu_list_item.dart';
@@ -34,11 +35,18 @@ class ArtistMyPageContent extends ConsumerWidget {
     final ratingLabel = reviewStats == null
         ? null
         : '⭐ ${reviewStats.averageLabel} (리뷰 ${reviewStats.count}개)';
+    final avatarUrl = resolveProfileAvatarUrl(
+      liveProfile?.avatarUrl,
+      profile.avatarUrl,
+    );
 
     ref.listen(myArtistProfileProvider, (previous, next) {
       final dto = next.value;
       if (dto == null) return;
       ref.read(restModeProvider.notifier).sync(dto.isRestMode);
+      ref
+          .read(artistProfileProvider.notifier)
+          .updateAvatar(dto.avatarUrl?.trim() ?? '');
     });
 
     return MyPageScrollView(
@@ -46,7 +54,7 @@ class ArtistMyPageContent extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           MyPageProfileSection(
-            avatarUrl: liveProfile?.avatarUrl ?? profile.avatarUrl,
+            avatarUrl: avatarUrl,
             onEditPhoto: () => AppToast.show(
               ScaffoldMessenger.of(context),
               message: '이미지 업로드는 아직 지원되지 않습니다.',
